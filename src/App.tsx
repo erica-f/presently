@@ -1,14 +1,8 @@
-import './App.css'
+﻿import './App.css'
+import LandingPage from './pages/LandingPage'
 
 function App() {
-
-  return (
-    <>
-      <section id="center">
-          Test
-      </section>
-    </>
-  )
+  return <LandingPage />
 }
 
 export default App
