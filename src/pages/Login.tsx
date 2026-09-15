@@ -1,13 +1,16 @@
 import { useState, useContext } from 'react'
-import UserContext from '../contexts/UserContext';
+import { useNavigate } from 'react-router'
+import UserContext from '../contexts/AuthContext';
 
 const login = () => {
     let [userEmail, setUserEmail] = useState('');
     let [password, setPassword] = useState('');
     let { user, setUser } = useContext(UserContext);
+    let navigate = useNavigate();
 
-    async function postData(e: React.MouseEvent<HTMLInputElement, MouseEvent>) {
+    async function login(e: React.MouseEvent<HTMLInputElement, MouseEvent>) {
         e.preventDefault();
+        console.log("login");
         try {
             let login = {
                 userEmail: userEmail,
@@ -24,7 +27,10 @@ const login = () => {
             });
             let data = await response.json();
             if (data.success) {
-                setUser(userEmail);
+                if (userEmail == 'test@test.com')
+                    setUser(userEmail);
+
+                navigate("/");
             } else {
                 console.log("Couldn't log in");
             }
@@ -33,38 +39,25 @@ const login = () => {
         }
     }
 
-    async function logOut(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-        e.preventDefault();
-        try {
-            await fetch(`/logout`, {
-                method: "POST",
-                headers: {
-                    "Content-type": "application/json"
-                },
-                credentials: 'include',
-                body: JSON.stringify({})
-            });
-            setUser(null);
-        } catch (error) {
-            console.log("Couldn't log out: " + error);
-        }
+
+    if (user) {
+        navigate("/");
     }
 
     return (
-        <div>
-            {user ?
-                <div>
-                    <button onClick={(e) => logOut(e)}> Logout</button>
-                </div>
-                :
+        <div className="grid grid-cols-2 justify-center justify-items-center w-full">
+            <section className="w-md rounded-lg border border-black gap-px">
                 <form method="post">
                     <label htmlFor="userEmail">Email</label>
                     <input type="text" name="userEmail" value={userEmail} onChange={e => setUserEmail(e.target.value)} /> <br />
                     <label htmlFor="password">Password </label>
                     <input type="text" name="password" value={password} onChange={e => setPassword(e.target.value)} /> <br />
-                    <input type="submit" value="Enter" onClick={(e) => postData(e)} />
+                    <input type="submit" value="Log in" onClick={(e) => login(e)} />
                 </form>
-            }
+            </section>
+            <section className="w-lg rounded-lg border border-black">
+
+            </section>
         </div>
     )
 }
