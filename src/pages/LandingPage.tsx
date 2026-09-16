@@ -1,4 +1,3 @@
-import './LandingPage.css'
 import { Button } from '../components/Button'
 
 type Membership = {
@@ -107,8 +106,8 @@ function CheckIcon() {
 function LandingPage() {
   return (
     <main className="w-full">
-      <section aria-labelledby="hero-title" className="landing-section border-b border-border">
-        <div className="landing-container grid items-center gap-8 md:grid-cols-12 md:gap-12">
+      <section aria-labelledby="hero-title" className="border-b border-border py-10 md:py-16">
+        <div className="mx-auto grid w-[calc(100%-2rem)] max-w-4xl items-center gap-8 sm:w-[calc(100%-3rem)] md:grid-cols-12 md:gap-12">
           <div className="space-y-5 md:col-span-7">
             <h1 id="hero-title" className="max-w-xl text-3xl leading-tight tracking-tight text-foreground sm:text-4xl font-bold">
               Skicka gåvor utan krångel.
@@ -128,15 +127,15 @@ function LandingPage() {
           <div className="overflow-hidden rounded-card border border-border bg-surface md:col-span-5">
             <img
               alt="En inslagen Presently-gåva med ljus och kopp på ett bord"
-              className="landing-hero-image"
+              className="block h-60 w-full object-cover md:h-80"
               src="https://lh3.googleusercontent.com/aida/AEtjO1UyQFkbqinEcUu4Wc8eQZNUPVwPmbRcw1RTgukK-S6Z-Va33ex87whv85L7YOf25Zmn3lTwgO_FxGe0bXA2rrj7w76ldqmL45iO56tji5JwsPHlzfv9LIkQN818Qi5_oTUVsy2TWWE8uXM0fA48OcUk71ZKUzFVN8A5noPu7JC-fliZs0AadYFzAUn98TLBMW5wnBqJ5zxATan3AQNhPBMw8P0z3IwNZzDaRmvR2ouY9nGfh6ylUxJRAho"
             />
           </div>
         </div>
       </section>
 
-      <section aria-labelledby="how-title" className="landing-section border-b border-border" id="sa-fungerar-det">
-        <div className="landing-container">
+      <section aria-labelledby="how-title" className="border-b border-border py-10 md:py-16" id="sa-fungerar-det">
+        <div className="mx-auto w-[calc(100%-2rem)] max-w-4xl sm:w-[calc(100%-3rem)]">
           <div className="mb-10 max-w-xl">
             <h2 id="how-title" className="text-2xl tracking-tight text-foreground font-bold">Så fungerar Presently</h2>
             <p className="mt-1 text-sm text-muted-foreground">Ett flexibelt sätt att uppvakta vänner, familj och kollegor.</p>
@@ -153,15 +152,15 @@ function LandingPage() {
         </div>
       </section>
 
-      <section aria-labelledby="membership-title" className="landing-section border-b border-border" id="medlemskap">
-        <div className="landing-container">
+      <section aria-labelledby="membership-title" className="border-b border-border py-10 md:py-16" id="medlemskap">
+        <div className="mx-auto w-[calc(100%-2rem)] max-w-4xl sm:w-[calc(100%-3rem)]">
           <div className="mb-10 max-w-xl">
             <h2 id="membership-title" className="text-2xl tracking-tight text-foreground font-bold">Hitta din nivå av omtanke</h2>
             <p className="mt-1 text-sm text-muted-foreground">Alltid fri frakt, fin inslagning och personligt kort inkluderat i varje utskick.</p>
           </div>
           <div className="grid items-stretch gap-6 md:grid-cols-3">
             {memberships.map((membership) => (
-              <article className={`membership-card ${membership.name === 'Plus' ? 'membership-card-featured' : ''}`} key={membership.name}>
+              <article className={`flex flex-col justify-between overflow-hidden rounded-control border border-border bg-surface p-6 ${membership.name === 'Plus' ? 'border-primary' : ''}`} key={membership.name}>
                 <div>
                   <div className="flex items-center justify-between gap-2 border-b border-border pb-3">
                     <div className="flex items-center gap-2">
@@ -192,16 +191,16 @@ function LandingPage() {
         </div>
       </section>
 
-      <section aria-labelledby="gifts-title" className="landing-section border-b border-border" id="gavor">
-        <div className="landing-container">
+      <section aria-labelledby="gifts-title" className="border-b border-border py-10 md:py-16" id="gavor">
+        <div className="mx-auto w-[calc(100%-2rem)] max-w-4xl sm:w-[calc(100%-3rem)]">
           <div className="mb-10 max-w-xl">
             <h2 id="gifts-title" className="text-2xl tracking-tight text-foreground font-bold">Utvalda gåvoexempel</h2>
             <p className="mt-1 text-sm text-muted-foreground">Ett kurerat sortiment från mindre skandinaviska formgivare och producenter.</p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {exampleProducts.map((product) => (
-              <article className="product-card" key={product.id}>
-                <img className="product-image" src={product.imageUrl} alt={product.name} loading="lazy" />
+              <article className="flex flex-col justify-between overflow-hidden rounded-control border border-border bg-surface" key={product.id}>
+                <img className="block h-48 w-full border-b border-border object-cover" src={product.imageUrl} alt={product.name} loading="lazy" />
                 <div className="flex flex-1 flex-col justify-between">
                   <div className="p-5">
                     <div className="mb-2 flex items-center justify-between gap-2">
