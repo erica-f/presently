@@ -7,10 +7,12 @@ const login = () => {
     let [password, setPassword] = useState('');
     let { user, setUser } = useContext(UserContext);
     let navigate = useNavigate();
+    if (user) {
+        navigate("/");
+    }
 
     async function login(e: React.MouseEvent<HTMLInputElement, MouseEvent>) {
         e.preventDefault();
-        console.log("login");
         try {
             let login = {
                 userEmail: userEmail,
@@ -27,12 +29,13 @@ const login = () => {
             });
             let data = await response.json();
             if (data.success) {
-                if (userEmail == 'test@test.com')
+                if (userEmail == 'test@test.com') {
                     setUser(userEmail);
 
-                navigate("/");
-            } else {
-                console.log("Couldn't log in");
+                    navigate("/");
+                } else {
+                    console.log("Couldn't log in");
+                }
             }
         } catch (error) {
             console.log("Couldn't log in: " + error);
@@ -40,9 +43,6 @@ const login = () => {
     }
 
 
-    if (user) {
-        navigate("/");
-    }
 
     return (
         <div className="grid grid-cols-2 justify-center justify-items-center w-full">
@@ -50,9 +50,9 @@ const login = () => {
                 <form method="post">
                     <label htmlFor="userEmail">Email</label>
                     <input type="text" name="userEmail" value={userEmail} onChange={e => setUserEmail(e.target.value)} /> <br />
-                    <label htmlFor="password">Password </label>
+                    <label htmlFor="password">Lösenord </label>
                     <input type="text" name="password" value={password} onChange={e => setPassword(e.target.value)} /> <br />
-                    <input type="submit" value="Log in" onClick={(e) => login(e)} />
+                    <input type="submit" value="Logga in" onClick={(e) => login(e)} />
                 </form>
             </section>
             <section className="w-lg rounded-lg border border-black">

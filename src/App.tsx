@@ -13,6 +13,7 @@ function App() {
         <UserContext value={{ user, setUser }} >
           <BrowserRouter>
             <Routes>
+              <Route path="/" element={<div>Home</div>} />
               <Route path="/login" element={<Login />} />
             </Routes>
           </BrowserRouter>
