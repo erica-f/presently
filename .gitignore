@@ -27,3 +27,5 @@ dist-ssr
 # Local agent instructions
 AGENTS.md
 
+.env*
+
