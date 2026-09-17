@@ -7,7 +7,7 @@ const Logout = () => {
     async function logout(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         e.preventDefault();
         try {
-            await fetch(`/logout`, {
+            await fetch(`/api/logout`, {
                 method: "POST",
                 headers: {
                     "Content-type": "application/json"

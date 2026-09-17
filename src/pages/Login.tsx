@@ -18,7 +18,7 @@ const login = () => {
                 userEmail: userEmail,
                 password: password
             }
-            let url = `/login`;
+            let url = `/api/login`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
