@@ -1,14 +1,26 @@
 import express, { type Request, type Response } from 'express';
-
+import { db } from './db.js';
+import dotenv from 'dotenv';
 import loginRouter from './login.js';
 import logoutRouter from './logout.js';
 
+dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
 
 app.use("/api/login", loginRouter);
 app.use("/api/logout", logoutRouter);
+
+app.get('/api/health', async (_req: Request, res: Response) => {
+    try {
+        await db.query('SELECT 1');
+        res.json({ database: 'connected' });
+    } catch (error) {
+        console.error('Database health check failed:', error);
+        res.status(503).json({ database: 'unavailable' });
+    }
+});
 
 app.get("/api/", (_req: Request, res: Response) => {
     res.json({ "test": true });
