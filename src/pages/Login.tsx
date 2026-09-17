@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router'
 import UserContext from '../contexts/AuthContext';
 import { Button } from '../components/Button'
 
-
 const login = () => {
     let [email, setEmail] = useState('');
     let [password, setPassword] = useState('');

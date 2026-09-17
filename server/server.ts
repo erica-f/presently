@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from 'express';
-import { db } from './db.js';
 import dotenv from 'dotenv';
+import { db } from './db.js';
 import loginRouter from './login.js';
 import logoutRouter from './logout.js';
 

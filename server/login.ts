@@ -1,5 +1,5 @@
 import express, { type Request, type Response } from 'express';
-import { db } from './db.ts';
+import { db } from './db.js';
 
 let loginRouter = express.Router();
 
