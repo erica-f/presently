@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -26,6 +29,4 @@ dist-ssr
 
 # Local agent instructions
 AGENTS.md
-
-.env*
 
