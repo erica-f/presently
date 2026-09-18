@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import LandingPage from './pages/LandingPage'
+import Gifts from './pages/Gifts'
 
 function App() {
   const [user, setUser] = useState(null);
@@ -18,6 +19,7 @@ function App() {
             <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/gifts" element={<Gifts />} />
             </Routes>
           </BrowserRouter>
         </UserContext>
