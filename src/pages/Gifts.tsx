@@ -1,4 +1,4 @@
-import  GiftsCard from '../components/GiftsCard'
+import GiftsCard from '../components/GiftsCard'
 
 type Membership = {
   name: 'Simple' | 'Plus' | 'Signature'
@@ -7,7 +7,6 @@ type Membership = {
 type UserDetail = {
   first_name: string
   user_id: number
-  membership_name: string
   membership_id: number
   current_points: number
 }
@@ -20,6 +19,10 @@ type ProductInfo = {
   thumbnail_img_url: string
   category: string
 }
+type Categories = {
+  name: string
+  id: number
+}
 
 const Gifts = () => {
 
@@ -27,13 +30,12 @@ const Gifts = () => {
   const userDetails: UserDetail = {
     first_name: 'Test',
     user_id: 1,
-    membership_name: 'Plus',
-    membership_id: 2,
-    current_points: 420,
+    membership_id: 3,
+    current_points: 500,
   }
   // Temp data, will be replaced by data fetched from API
 
-  const memberships: Membership[] = [
+  const membership: Membership[] = [
     {
       name: 'Simple',
       id: 1,
@@ -88,6 +90,22 @@ const Gifts = () => {
     },
   ]
 
+  const categories: Categories[] = [
+    {
+      name: 'Choklad & godsaker',
+      id: 1
+    },
+    {
+      name: 'Hem & livsstil',
+      id: 2
+    },
+    {
+      name: 'Personligt & Handgjort',
+      id: 3
+    }
+  ]
+  let userMembership = membership.find(item => item.id == userDetails.membership_id);
+
 
   return (
     <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
@@ -105,7 +123,7 @@ const Gifts = () => {
               <span className="text-xs font-semibold tracking-wider uppercase text-[#3b5e4c]">Inloggad som</span>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#effcf9] text-[#244d36] border border-[#d4ede4]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#244d36] mr-1.5"></span>
-                Presently {userDetails.membership_name}
+                Presently {userMembership && userMembership.name}
               </span>
             </div>
             <p className="text-sm text-[#506359] mt-0.5">
@@ -134,6 +152,7 @@ const Gifts = () => {
           </a>
         </div>
       </section>
+
       <header className="mb-10 text-left max-w-3xl">
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-semibold text-[#193927] tracking-tight mb-3">
           Gåvor
@@ -142,14 +161,113 @@ const Gifts = () => {
           Välj en genomtänkt gåva till någon du bryr dig om. Alla gåvor paketeras för hand i återvunnet premiumpapper med handskrivet kort och levereras direkt till mottagaren.
         </p>
       </header>
-      {/* filter goess here */}
+
+      <section className="mb-10 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+          {/* <!-- CATEGORY TABS / CHIPS --> */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 ">
+            <button className="filter-chip-active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 bg-white border border-[#e4ede7]">
+              <span>Alla gåvor</span>
+              <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">{productInfo.length}</span>
+            </button>
+            {categories.map((category) => (
+              <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]">
+                {category.name}
+              </button>
+            ))
+            }
+          </div>
+
+          {/* <!-- SEARCH & POINT TIER FILTER --> */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* <div className="relative flex-1 sm:w-64">
+              <input
+                type="text"
+                placeholder="Sök gåva eller hantverkare..."
+                className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-[#e4ede7] rounded-xl placeholder-[#8a9b91] text-[#1c2922] focus:outline-none focus:ring-2 focus:ring-[#244d36]/20 focus:border-[#244d36] transition-all"
+               />
+                <svg className="w-4 h-4 text-[#8a9b91] absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div> */}
+
+            <div className="relative">
+              <select className="appearance-none bg-white border border-[#e4ede7] text-sm text-[#3f4e46] py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-[#244d36] cursor-pointer">
+                <option>Gåvonivåer</option>
+                <option>Simple</option>
+                <option>Plus</option>
+                <option>Signature</option>
+              </select>
+              <svg className="w-4 h-4 text-[#6e8076] absolute right-2.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* <!-- LEGEND / ACCESS STATES GUIDE FOR USER CLARITY --> */}
+        {/* <div className="bg-[#f2f7f4] border border-[#dfeae3] rounded-xl px-4 py-3 text-xs text-[#4b5f54] flex flex-wrap items-center gap-y-2 gap-x-6">
+          <span className="font-semibold text-[#193927] flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-[#244d36]" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            Dina behörigheter:
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+            <span><strong>Kan skickas nu:</strong> Gåvor upp till 420 p i Simple/Plus</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span><strong>Fler poäng krävs:</strong> Plus-gåvor över 420 p (sparas automatiskt)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#bb9b56]"></span>
+            <span><strong>Kräver Signature:</strong> Exklusiva unika gåvor (uppgradera medlemskap)</span>
+          </div>
+        </div> */}
+      </section>
+
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
         {productInfo.map((product) => (
-         <GiftsCard userDetails={userDetails} product={product} />
+          <GiftsCard userDetails={userDetails} product={product} membership={membership} />
         ))
         }
-
       </section>
+      {userDetails.membership_id < 3 &&
+
+        <section id="signature-info" className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-lg">
+          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#bb9b56]/10 transform skew-x-12 pointer-events-none"></div>
+
+          <div className="max-w-2xl relative z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#bb9b56] text-xs font-semibold mb-4 border border-white/10">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              <span>Presently Medlemsförmåner</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-serif font-semibold text-white tracking-tight mb-3">
+              Vill du kunna välja skräddarsydda Signature-gåvor?
+            </h2>
+            <p className="text-sm sm:text-base text-[#d8e5df] leading-relaxed mb-6 font-light">
+              Som <strong className="text-white font-medium">{userMembership && userMembership.name}-medlem</strong> sparar du dina {userDetails.current_points} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">Signature</strong> behåller du självklart alla dina intjänade poäng och låser upp handgjord gravyr, obegränsade sparade mottagare och våra mest exklusiva kureringar.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4">
+              <button className="bg-[#bb9b56] hover:bg-[#a88a48] text-[#193927] font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-md flex items-center gap-2">
+                <span>Uppgradera medlemskap</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+              <a href="#" className="text-sm font-medium text-[#d8e5df] hover:text-white underline underline-offset-4 transition-colors">
+                Jämför alla medlemsnivåer
+              </a>
+            </div>
+          </div>
+        </section>
+      }
     </main>
   )
 }
