@@ -1,4 +1,7 @@
 import mariadb from 'mariadb';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const required = (name: string): string => {
     const value = process.env[name];
@@ -18,3 +21,13 @@ export const db = mariadb.createPool({
     connectionLimit: 5,
     connectTimeout: 5000,
 });
+
+export const options = {
+    host: required('DB_HOST'),
+    port,
+    user: required('DB_USER'),
+    password: required('DB_PASSWORD'),
+    database: required('DB_NAME'),
+    connectionLimit: 5,
+    connectTimeout: 5000,
+}
