@@ -1,30 +1,48 @@
+import { useState } from 'react'
 import GiftsCard from '../components/GiftsCard'
-
-type Membership = {
-  name: 'Simple' | 'Plus' | 'Signature'
-  id: number
-}
-type UserDetail = {
-  first_name: string
-  user_id: number
-  membership_id: number
-  current_points: number
-}
-type ProductInfo = {
-  id: number
-  name: string
-  description: string
-  point_cost: number
-  minimum_membership_plan_id: number,
-  thumbnail_img_url: string
-  category: string
-}
-type Categories = {
-  name: string
-  id: number
-}
+import { confirmExistence } from '../utils/confirmType'
+import type { Membership, UserDetail, GiftInfo, Categories } from '../types/gifts'
 
 const Gifts = () => {
+  const giftInfo: GiftInfo[] = [
+    {
+      id: 1,
+      name: 'Hantverkskaffe &amp; Chokladtryffel',
+      description: 'Mellanrostat ekologiskt singelkaffe från skånska mikrorosterier, parat med handrullade havssaltstryfflar i fin ask.',
+      point_cost: 100,
+      minimum_membership_plan_id: 1,
+      thumbnail_img_url: 'https://lh3.googleusercontent.com/aida/AEtjO1U_gA67PDRHx4wahnTqHoEebeqkxKYl_KCFQtnCF6G_jo-RLOSIucJKl8W6ZYEb4ACPVSWvPptaQJmVxIi8NzFBi9gur9PAVo8fbulxknX_MwNt707-thjqeU3Or5EXTQochoReZbloX54skybLllvvOVXIxDuttMaUP3I6IB85R7JUMSWGO0wpdcIl_N77XbfPOrq_t2NtItIsTZVB3tjGa4aAkbKbNkOeUqNRwRzJ5CF7oBMW6UfY2g',
+      category: 1,
+    },
+    {
+      id: 2,
+      name: 'Botanisk Handvård & Linnehandduk',
+      description: 'Ekologisk handtvål och vårdande lotion i bärnstensglas med doft av tallbarr och bergamott, ackompanjerad av tvättat linne.',
+      point_cost: 300,
+      minimum_membership_plan_id: 2,
+      thumbnail_img_url: 'https://lh3.googleusercontent.com/aida/AEtjO1X_ESMlrV15WJacIiZEfZ12P5yH-uJbv7_ikXpP5USNEfrTPQmKHXUdM-Rq59Lo_HM_eXCJChe7Sz4DKlvv84lFE1AvCmlxoVGjqnJwSj6Tpbe5Pha3tpfKV_NijZr93ZuFoGb5F8A9_hkbGb4bUCOImldWLsFfTA1NXhk05cJsU5EAmuwBl9-NcEErnjj1GwHbHGAbofgSRRWvVQ0cWEPmM_CXVDRSKGEZAxHx9vRZ090ifzEcHvRFxuA',
+      category: 2
+    },
+    {
+      id: 3,
+      name: 'Munblåst Vas & Mässingsljusstake',
+      description: 'Skandinavisk inredningsfavorit i rökfärgat glas med massiv mässingshållare och två handstöpta herrgårdsljus.',
+      point_cost: 500,
+      minimum_membership_plan_id: 2,
+      thumbnail_img_url: 'https://lh3.googleusercontent.com/aida/AEtjO1VYKwiYSEJDViTck3MjDzWbTb8FacATmbjRHELlqKcY8ZkuGJaj2FDj-iZ6mqJ5scVj9l0sstMtgeQhbYZfLJgwZW0z2Q7OaC0NHaPsVh7VaGt8YrXHs-Du-H6r75p4g9lDX1rLxrvmaeyDTDy1HT0MlCxQtmrku_iSg5T_BsjOTdLRJI7BumrQn_ns5BWe-Bslmjv9ojh-vcWUwAUAsnESE5Tkr_3yFSMNzwWI0kVzPmIbh2UQe04wTS4',
+      category: 2
+    },
+    {
+      id: 4,
+      name: 'Presently Signature Exklusiv Gåvobox',
+      description: 'Skräddarsydd gåva med personligt handgraverat monogram eller hälsning på svenskt läder och handgjord keramikkopp.',
+      point_cost: 500,
+      minimum_membership_plan_id: 3,
+      thumbnail_img_url: 'https://lh3.googleusercontent.com/aida/AEtjO1U9x8OdFO7i3rIjIIQJOgl0Gnn13DtS_r3Cs4q2uotDy1RRs3fqMiRteMp--uDenFGMWX0WW7D_wC6EiFtMaFmNMKOuRs-wHXsRnelLU_jBBH5Zd50YXPCFz3OIyMa00QvOwd8a_PhTg8AFizoHVQoZMGcizS2IX42jjw9bVnnb3kfbXSKXTivONeOYJQQe5HWVoFIojmn1K8KzA8E0-G4XMDKLGGie6yrBmwGC8Evg8uqyorGOWKEA7b4',
+      category: 3
+    },
+  ]
+  let [gifts, setGifts] = useState(giftInfo);
 
   // Temp data, will be replaced by data fetched from API
   const userDetails: UserDetail = {
@@ -51,60 +69,49 @@ const Gifts = () => {
   ]
   // Temp data, will be replaced by data fetched from API
 
-  const productInfo: ProductInfo[] = [
-    {
-      id: 1,
-      name: 'Hantverkskaffe &amp; Chokladtryffel',
-      description: 'Mellanrostat ekologiskt singelkaffe från skånska mikrorosterier, parat med handrullade havssaltstryfflar i fin ask.',
-      point_cost: 100,
-      minimum_membership_plan_id: 1,
-      thumbnail_img_url: 'https://lh3.googleusercontent.com/aida/AEtjO1U_gA67PDRHx4wahnTqHoEebeqkxKYl_KCFQtnCF6G_jo-RLOSIucJKl8W6ZYEb4ACPVSWvPptaQJmVxIi8NzFBi9gur9PAVo8fbulxknX_MwNt707-thjqeU3Or5EXTQochoReZbloX54skybLllvvOVXIxDuttMaUP3I6IB85R7JUMSWGO0wpdcIl_N77XbfPOrq_t2NtItIsTZVB3tjGa4aAkbKbNkOeUqNRwRzJ5CF7oBMW6UfY2g',
-      category: 'Choklad & godsaker'
-    },
-    {
-      id: 2,
-      name: 'Botanisk Handvård & Linnehandduk',
-      description: 'Ekologisk handtvål och vårdande lotion i bärnstensglas med doft av tallbarr och bergamott, ackompanjerad av tvättat linne.',
-      point_cost: 300,
-      minimum_membership_plan_id: 2,
-      thumbnail_img_url: 'https://lh3.googleusercontent.com/aida/AEtjO1X_ESMlrV15WJacIiZEfZ12P5yH-uJbv7_ikXpP5USNEfrTPQmKHXUdM-Rq59Lo_HM_eXCJChe7Sz4DKlvv84lFE1AvCmlxoVGjqnJwSj6Tpbe5Pha3tpfKV_NijZr93ZuFoGb5F8A9_hkbGb4bUCOImldWLsFfTA1NXhk05cJsU5EAmuwBl9-NcEErnjj1GwHbHGAbofgSRRWvVQ0cWEPmM_CXVDRSKGEZAxHx9vRZ090ifzEcHvRFxuA',
-      category: 'Hem & livsstil'
-    },
-    {
-      id: 3,
-      name: 'Munblåst Vas & Mässingsljusstake',
-      description: 'Skandinavisk inredningsfavorit i rökfärgat glas med massiv mässingshållare och två handstöpta herrgårdsljus.',
-      point_cost: 500,
-      minimum_membership_plan_id: 2,
-      thumbnail_img_url: 'https://lh3.googleusercontent.com/aida/AEtjO1VYKwiYSEJDViTck3MjDzWbTb8FacATmbjRHELlqKcY8ZkuGJaj2FDj-iZ6mqJ5scVj9l0sstMtgeQhbYZfLJgwZW0z2Q7OaC0NHaPsVh7VaGt8YrXHs-Du-H6r75p4g9lDX1rLxrvmaeyDTDy1HT0MlCxQtmrku_iSg5T_BsjOTdLRJI7BumrQn_ns5BWe-Bslmjv9ojh-vcWUwAUAsnESE5Tkr_3yFSMNzwWI0kVzPmIbh2UQe04wTS4',
-      category: 'Hem & livsstil'
-    },
-    {
-      id: 4,
-      name: 'Presently Signature Exklusiv Gåvobox',
-      description: 'Skräddarsydd gåva med personligt handgraverat monogram eller hälsning på svenskt läder och handgjord keramikkopp.',
-      point_cost: 500,
-      minimum_membership_plan_id: 3,
-      thumbnail_img_url: 'https://lh3.googleusercontent.com/aida/AEtjO1U9x8OdFO7i3rIjIIQJOgl0Gnn13DtS_r3Cs4q2uotDy1RRs3fqMiRteMp--uDenFGMWX0WW7D_wC6EiFtMaFmNMKOuRs-wHXsRnelLU_jBBH5Zd50YXPCFz3OIyMa00QvOwd8a_PhTg8AFizoHVQoZMGcizS2IX42jjw9bVnnb3kfbXSKXTivONeOYJQQe5HWVoFIojmn1K8KzA8E0-G4XMDKLGGie6yrBmwGC8Evg8uqyorGOWKEA7b4',
-      category: 'Personligt & Handgjort'
-    },
-  ]
+
 
   const categories: Categories[] = [
     {
-      name: 'Choklad & godsaker',
-      id: 1
+      name: 'Godis',
+      id: 1,
+      label: 'Choklad & godsaker'
     },
     {
-      name: 'Hem & livsstil',
+      name: 'home',
+      label: 'Hem & livsstil',
       id: 2
     },
     {
-      name: 'Personligt & Handgjort',
+      name: 'personal',
+      label: 'Personligt & Handgjort',
       id: 3
     }
   ]
-  let userMembership = membership.find(item => item.id == userDetails.membership_id);
+  let userMembership = confirmExistence(membership.find(item => item.id == userDetails.membership_id));
+
+  const filterGifts = (item: number | string, type: string) => {
+    let selectedGifts: GiftInfo[] = [];
+    console.log(type);
+    if (item == 0) {
+      setGifts(giftInfo);
+    } else {
+      if (type == 'category') {
+        giftInfo.map(gift => {
+          if (gift.category == item) {
+            selectedGifts.push(gift);
+          }
+        })
+      } else {
+        giftInfo.map(gift => {
+          if (gift.minimum_membership_plan_id == item) {
+            selectedGifts.push(gift);
+          }
+        })
+      }
+      setGifts(selectedGifts);
+    }
+  }
 
 
   return (
@@ -123,7 +130,7 @@ const Gifts = () => {
               <span className="text-xs font-semibold tracking-wider uppercase text-[#3b5e4c]">Inloggad som</span>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#effcf9] text-[#244d36] border border-[#d4ede4]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#244d36] mr-1.5"></span>
-                Presently {userMembership && userMembership.name}
+                Presently {userMembership.name}
               </span>
             </div>
             <p className="text-sm text-[#506359] mt-0.5">
@@ -167,13 +174,13 @@ const Gifts = () => {
 
           {/* <!-- CATEGORY TABS / CHIPS --> */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 ">
-            <button className="filter-chip-active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 bg-white border border-[#e4ede7]">
+            <button className="filter-chip-active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 bg-white border border-[#e4ede7]" onClick={() => filterGifts(0, 'category')}>
               <span>Alla gåvor</span>
-              <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">{productInfo.length}</span>
+              <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">{giftInfo.length}</span>
             </button>
             {categories.map((category) => (
-              <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]">
-                {category.name}
+              <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]" onClick={() => filterGifts(category.id, 'category')} key={category.id}>
+                {category.label}
               </button>
             ))
             }
@@ -193,11 +200,11 @@ const Gifts = () => {
             </div> */}
 
             <div className="relative">
-              <select className="appearance-none bg-white border border-[#e4ede7] text-sm text-[#3f4e46] py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-[#244d36] cursor-pointer">
-                <option>Gåvonivåer</option>
-                <option>Simple</option>
-                <option>Plus</option>
-                <option>Signature</option>
+              <select className="appearance-none bg-white border border-[#e4ede7] text-sm text-[#3f4e46] py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-[#244d36] cursor-pointer" onChange={(e) => filterGifts(e.target.value, 'level')}>
+                <option value="0">Gåvonivå</option>
+                <option value={membership[0].id}>{membership[0].name}</option>
+                <option value={membership[1].id}>{membership[1].name}</option>
+                <option value={membership[2].id}>{membership[2].name}</option>
               </select>
               <svg className="w-4 h-4 text-[#6e8076] absolute right-2.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -205,33 +212,11 @@ const Gifts = () => {
             </div>
           </div>
         </div>
-
-        {/* <!-- LEGEND / ACCESS STATES GUIDE FOR USER CLARITY --> */}
-        {/* <div className="bg-[#f2f7f4] border border-[#dfeae3] rounded-xl px-4 py-3 text-xs text-[#4b5f54] flex flex-wrap items-center gap-y-2 gap-x-6">
-          <span className="font-semibold text-[#193927] flex items-center gap-1.5">
-            <svg className="w-3.5 h-3.5 text-[#244d36]" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-            </svg>
-            Dina behörigheter:
-          </span>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-            <span><strong>Kan skickas nu:</strong> Gåvor upp till 420 p i Simple/Plus</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span><strong>Fler poäng krävs:</strong> Plus-gåvor över 420 p (sparas automatiskt)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#bb9b56]"></span>
-            <span><strong>Kräver Signature:</strong> Exklusiva unika gåvor (uppgradera medlemskap)</span>
-          </div>
-        </div> */}
       </section>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-        {productInfo.map((product) => (
-          <GiftsCard userDetails={userDetails} product={product} membership={membership} />
+        {gifts.map((gift) => (
+          <GiftsCard userDetails={userDetails} gift={gift} membership={membership} category={confirmExistence(categories.find(item => item.id == gift.category))} key={gift.id} />
         ))
         }
       </section>
@@ -251,7 +236,7 @@ const Gifts = () => {
               Vill du kunna välja skräddarsydda Signature-gåvor?
             </h2>
             <p className="text-sm sm:text-base text-[#d8e5df] leading-relaxed mb-6 font-light">
-              Som <strong className="text-white font-medium">{userMembership && userMembership.name}-medlem</strong> sparar du dina {userDetails.current_points} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">Signature</strong> behåller du självklart alla dina intjänade poäng och låser upp handgjord gravyr, obegränsade sparade mottagare och våra mest exklusiva kureringar.
+              Som <strong className="text-white font-medium">{userMembership.name}-medlem</strong> sparar du dina {userDetails.current_points} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">Signature</strong> behåller du självklart alla dina intjänade poäng och låser upp handgjord gravyr, obegränsade sparade mottagare och våra mest exklusiva kureringar.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
