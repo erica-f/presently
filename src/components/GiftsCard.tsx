@@ -1,62 +1,36 @@
 import { useState, useEffect } from 'react'
+import { confirmExistence } from '../utils/confirmType'
+import type { CardDetails} from '../types/gifts'
 
-interface CardDetails {
-    userDetails: UserDetail
-    product: ProductInfo
-    membership: Membership[]
-}
-type UserDetail = {
-    first_name: string
-    user_id: number
-    membership_id: number
-    current_points: number
-}
-type ProductInfo = {
-    id: number
-    name: string
-    description: string
-    point_cost: number
-    minimum_membership_plan_id: number,
-    thumbnail_img_url: string
-    category: string
-}
-type Membership = {
-    name: 'Simple' | 'Plus' | 'Signature'
-    id: number
-}
-
-const GiftsCard = ({ userDetails, product, membership }: CardDetails) => {
-    let pointsLeft = userDetails.current_points - product.point_cost;
+const GiftsCard = ({ userDetails, gift, membership, category }: CardDetails) => {
+    let pointsLeft = userDetails.current_points - gift.point_cost;
     let [available, setAvailable] = useState(false);
-    let productMembership = membership.find(item => item.id == product.minimum_membership_plan_id);
-    let userMembership = membership.find(item => item.id == userDetails.membership_id);
+    let productMembership = confirmExistence(membership.find(item => item.id == gift.minimum_membership_plan_id));
+    let userMembership = confirmExistence(membership.find(item => item.id == userDetails.membership_id));
     useEffect(() => {
-        if (product.minimum_membership_plan_id <= userDetails.membership_id) {
+        if (gift.minimum_membership_plan_id <= userDetails.membership_id) {
             setAvailable(true);
         }
     }, []);
 
     return (
-        <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={product.id}>
+        <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
             <div>
                 {/* <!-- Product Image Container --> */}
                 <div className="relative aspect-[4/3] bg-[#f5f1eb] overflow-hidden">
                     <img
-                        src={product.thumbnail_img_url}
-                        alt={product.name}
+                        src={gift.thumbnail_img_url}
+                        alt={gift.name}
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-                        {
-                            productMembership &&
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#193927]/80 text-white backdrop-blur-md">
                                 Presently {productMembership.name}
                             </span>
-                        }
                     </div>
                     {/* <!-- Price Tag Overlay --> */}
                     <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-xl shadow-sm border border-[#e5ede8]">
-                        <span className="text-base font-bold text-[#193927]">{product.point_cost}</span>
+                        <span className="text-base font-bold text-[#193927]">{gift.point_cost}</span>
                         <span className="text-xs font-semibold text-[#bb9b56] ml-0.5">p</span>
                     </div>
                 </div>
@@ -64,13 +38,13 @@ const GiftsCard = ({ userDetails, product, membership }: CardDetails) => {
                 {/* <!-- Product Details --> */}
                 <div className="p-5">
                     <div className="flex items-center justify-between text-xs text-[#708278] mb-1.5">
-                        <span>{product.category}</span>
+                        <span>{category.name}</span>
                     </div>
                     <h2 className="text-lg font-serif font-semibold text-[#193927] group-hover:text-[#244d36] transition-colors line-clamp-1">
-                        {product.name}
+                        {gift.name}
                     </h2>
                     <p className="text-xs text-[#52655c] mt-2 line-clamp-2 leading-relaxed">
-                        {product.description}
+                        {gift.description}
                     </p>
                     {available ?
                         <div className="mt-4 pt-3 border-t border-[#f0f5f2] flex items-center justify-between text-xs text-[#52655c]">
@@ -88,7 +62,7 @@ const GiftsCard = ({ userDetails, product, membership }: CardDetails) => {
                                 <div className="w-full">
                                     <div className="flex items-center justify-between text-[11px] text-[#607469] mb-1.5">
                                         <span>Poängframsteg</span>
-                                        <span className="font-medium text-[#193927]">{userDetails.current_points} / {product.point_cost} p ({Math.round((userDetails.current_points / product.point_cost) * 100)}%)
+                                        <span className="font-medium text-[#193927]">{userDetails.current_points} / {gift.point_cost} p ({Math.round((userDetails.current_points / gift.point_cost) * 100)}%)
                                         </span>
                                     </div>
                                     <div className="w-full bg-[#e8efe9] h-1.5 rounded-full overflow-hidden">
@@ -98,7 +72,7 @@ const GiftsCard = ({ userDetails, product, membership }: CardDetails) => {
                                         <svg className="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                         </svg>
-                                        Ingår i ditt {userMembership && userMembership.name}-medlemskap. Fylls på nästa månad.
+                                        Ingår i ditt {userMembership.name}-medlemskap. Fylls på nästa månad.
                                     </p>
                                 </div>
                             }
@@ -111,9 +85,9 @@ const GiftsCard = ({ userDetails, product, membership }: CardDetails) => {
                                     <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
                                 </svg>
                                 <div className="leading-relaxed">
-                                    <span className="font-semibold text-[#3b2e11]">Låst för Presently {userMembership && userMembership.name}.</span>
+                                    <span className="font-semibold text-[#3b2e11]">Låst för Presently {userMembership.name}.</span>
                                     <p className="text-[11px] text-[#735e31] mt-0.5">
-                                        Denna gåva kräver {productMembership && productMembership.name}-medlemskap för personlig anpassning och gravyr.
+                                        Denna gåva kräver {productMembership.name}-medlemskap för personlig anpassning och gravyr.
                                     </p>
                                 </div>
                             </div>
@@ -137,7 +111,7 @@ const GiftsCard = ({ userDetails, product, membership }: CardDetails) => {
                             <svg className="w-4 h-4 text-[#8ea096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
-                            <span>Otillräckligt saldo (Saknas {product.point_cost - userDetails.current_points} p)</span>
+                            <span>Otillräckligt saldo (Saknas {gift.point_cost - userDetails.current_points} p)</span>
                         </button>
                     :
                     <button className="w-full bg-[#244d36] hover:bg-[#193927] text-[#bb9b56] hover:text-[#d3b472] border border-[#bb9b56]/30 py-2.5 px-4 rounded-xl text-sm font-semibold tracking-wide shadow-sm hover:shadow transition-all flex items-center justify-center gap-2">
