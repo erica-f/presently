@@ -2,6 +2,7 @@ import { useState } from 'react'
 import GiftsCard from '../components/GiftsCard'
 import { confirmExistence } from '../utils/confirmType'
 import type { Membership, UserDetail, GiftInfo, Categories } from '../types/gifts'
+import { getGiftsList } from '../api/GiftsApi'
 
 const Gifts = () => {
   const giftInfo: GiftInfo[] = [
@@ -42,6 +43,9 @@ const Gifts = () => {
       category: 3
     },
   ]
+
+  let giftsList = getGiftsList();
+  console.log(giftsList);
   let [gifts, setGifts] = useState(giftInfo);
 
   // Temp data, will be replaced by data fetched from API

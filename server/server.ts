@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { db } from './db.js';
 import loginRouter from './login.js';
 import logoutRouter from './logout.js';
+import gifts from './gifts.ts';
 
 dotenv.config();
 const app = express();
@@ -11,6 +12,7 @@ app.use(express.urlencoded());
 
 app.use("/api/login", loginRouter);
 app.use("/api/logout", logoutRouter);
+app.use("/api/gifts", gifts);
 
 app.get('/api/health', async (_req: Request, res: Response) => {
     try {
