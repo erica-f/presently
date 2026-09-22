@@ -1,7 +1,9 @@
 import express, { type Request, type Response } from 'express';
+import expressSession from 'express-session'
+import expressMySqlSession from 'express-mysql-session';
 import dotenv from 'dotenv';
 import setupBigIntSerialization from './utils/bigIntSerialization.js';
-import { db } from './db.js';
+import { db, options } from './db.js';
 import loginRouter from './login.js';
 import logoutRouter from './logout.js';
 import gifts from './gifts.js';
@@ -13,6 +15,21 @@ setupBigIntSerialization();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
+
+const MySQLStore = expressMySqlSession(expressSession);
+
+const sessionStore = new MySQLStore(options);
+
+app.use(expressSession({
+    secret: process.env.SESSION_SECRET as string,
+    resave: false,
+    store: sessionStore,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        maxAge: 60 * 60 * 1000
+    }
+}))
 
 app.use("/api/login", loginRouter);
 app.use("/api/logout", logoutRouter);

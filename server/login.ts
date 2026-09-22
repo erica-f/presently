@@ -4,14 +4,12 @@ import { db } from './db.js';
 let loginRouter = express.Router();
 
 loginRouter.post("/", async (req: Request, res: Response) => {
-    let userEmail = req.body.userEmail;
+    let email = req.body.email;
     let password = req.body.password;
     try {
-        let [connect] = await db.query(`SELECT users.id, email, users.password FROM users WHERE email = ${userEmail}`);
-        let storedPassword = (connect as any)[0].password;
-        console.log(connect);
-        if (storedPassword === password) {
-            // (req.session as any).userId = (connect as any)[0].id;
+        let [connect] = await db.query(`SELECT id, email, password_hash FROM users WHERE email = '${email}'`);
+        if (connect.password_hash === password) {
+            (req.session as any).userId = (connect as any).id;
             res.json({ "success": true })
         } else {
             res.json({ "success": false })
