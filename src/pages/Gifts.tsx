@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import GiftsCard from '../components/GiftsCard'
 import { confirmExistence } from '../utils/confirmType'
 import type { Membership, UserDetail, GiftInfo, Categories } from '../types/gifts'
@@ -11,7 +11,22 @@ const Gifts = () => {
   let [categories, setCategories] = useState<Categories[]>([]);
   let [memberships, setMemberships] = useState<Membership[]>([]);
   let [loading, setLoading] = useState(true);
-  console.log(memberships);
+
+  //Scrolling categories
+  let [scrolled, setScrolled] = useState(0);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    categoryScrollRef.current?.scrollBy({
+      left: direction === 'right' ? 300 : -300,
+      behavior: 'smooth',
+    });
+  };
+
+  const handleCategoryScroll = () => {
+    setScrolled(categoryScrollRef.current?.scrollLeft ?? 0);
+  };
+
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
@@ -40,8 +55,9 @@ const Gifts = () => {
     current_points: 200,
   }
 
-  let userMembership = !loading ? confirmExistence(memberships.find(item => item.level == userDetails.membership_id)) : {id: 0, name: '', level: 0};
+  let userMembership = !loading ? confirmExistence(memberships.find(item => item.level == userDetails.membership_id)) : { id: 0, name: '', level: 0 };
 
+  //Filter product by category or membership 
   const filterGifts = (item: number | string, type: string) => {
     let selectedGifts: GiftInfo[] = [];
     if (item == 0) {
@@ -63,7 +79,6 @@ const Gifts = () => {
       setGifts(selectedGifts);
     }
   }
-
 
   return (
     <>
@@ -125,21 +140,23 @@ const Gifts = () => {
           </header>
 
           <section className="mb-10 space-y-4">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
 
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              {scrolled > 0 && <span onClick={() => scrollCategories('left')}>{'<<'}</span>}
               {/* <!-- CATEGORY TABS / CHIPS --> */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 ">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0" ref={categoryScrollRef} onScroll={handleCategoryScroll}>
                 <button className="filter-chip-active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 bg-white border border-[#e4ede7]" onClick={() => filterGifts(0, 'category')}>
                   <span>Alla gåvor</span>
                   <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">{allgifts.length}</span>
                 </button>
                 {categories.map((category) => (
-                  <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]" onClick={() => filterGifts(category.id, 'category')} key={category.id}>
+                  <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]" id={'cat' + category.id.toString()} onClick={() => filterGifts(category.id, 'category')} key={category.id}>
                     {category.label}
                   </button>
                 ))
                 }
               </div>
+              <span onClick={() => scrollCategories('right')}>{'>>'}</span>
 
               {/* <!-- SEARCH & POINT TIER FILTER --> */}
               <div className="flex items-center gap-3 shrink-0">
