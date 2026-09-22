@@ -12,6 +12,12 @@ const Gifts = () => {
   let [memberships, setMemberships] = useState<Membership[]>([]);
   let [loading, setLoading] = useState(true);
 
+  //divide products in pages
+  let [currentPage, setCurrentPage] = useState(1);
+  const numberOfPages = Math.ceil(gifts.length / 24);
+  let currentItems = gifts.slice((currentPage - 1) * 24, currentPage * 24);
+  const pages = [...Array(numberOfPages).keys()];
+
   //Scrolling categories
   let [scrolled, setScrolled] = useState(0);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
@@ -22,7 +28,6 @@ const Gifts = () => {
       behavior: 'smooth',
     });
   };
-
   const handleCategoryScroll = () => {
     setScrolled(categoryScrollRef.current?.scrollLeft ?? 0);
   };
@@ -62,6 +67,7 @@ const Gifts = () => {
     let selectedGifts: GiftInfo[] = [];
     if (item == 0) {
       setGifts(allgifts);
+      setCurrentPage(1);
     } else {
       if (type == 'category') {
         allgifts.map(gift => {
@@ -77,6 +83,7 @@ const Gifts = () => {
         })
       }
       setGifts(selectedGifts);
+      setCurrentPage(1);
     }
   }
 
@@ -151,7 +158,7 @@ const Gifts = () => {
                 </button>
                 {categories.map((category) => (
                   <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]" id={'cat' + category.id.toString()} onClick={() => filterGifts(category.id, 'category')} key={category.id}>
-                    {category.label}
+                    <span>{category.label}</span>
                   </button>
                 ))
                 }
@@ -186,10 +193,23 @@ const Gifts = () => {
             </div>
           </section>
           <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-            {gifts.map((gift) => (
+            {currentItems.map((gift) => (
               <GiftsCard userDetails={userDetails} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
             ))
             }
+          </section>
+          <section className="mb-10 mt-10">
+            <div>
+              {pages.map(page => (
+                <button
+                  className={currentPage == page + 1 ? 'selected filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-[#244d36] text-white border border-[#e4ede7] p-2 ml-1' : 'filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7] p-2 ml-1'}
+                  onClick={() => setCurrentPage(page + 1)}
+                  key={page + 1}
+                >
+                  {page + 1}
+                </button>
+              ))}
+            </div>
           </section>
           {userDetails.membership_id < 3 &&
 
