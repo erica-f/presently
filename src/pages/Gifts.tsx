@@ -10,6 +10,8 @@ const Gifts = () => {
   let [allgifts, setAllGifts] = useState<GiftInfo[]>([]);
   let [categories, setCategories] = useState<Categories[]>([]);
   let [memberships, setMemberships] = useState<Membership[]>([]);
+  let [level, setLevel] = useState<number | string>(0);
+  let [selectedCat, setSelectedCat] = useState<number | string>(0);
   let [loading, setLoading] = useState(true);
 
   //divide products in pages
@@ -65,26 +67,32 @@ const Gifts = () => {
   //Filter product by category or membership 
   const filterGifts = (item: number | string, type: string) => {
     let selectedGifts: GiftInfo[] = [];
-    if (item == 0) {
-      setGifts(allgifts);
-      setCurrentPage(1);
-    } else {
-      if (type == 'category') {
-        allgifts.map(gift => {
-          if (gift.category_id == item) {
-            selectedGifts.push(gift);
-          }
-        })
+
+    if (type == 'category') {
+      if (item == 0) {
+        setGifts(allgifts);
+        setLevel(0);
       } else {
         allgifts.map(gift => {
-          if (gift.minimum_membership_plan_id == item) {
-            selectedGifts.push(gift);
+          if (gift.category_id == item || item == 0) {
+            if (gift.minimum_membership_plan_id == level || level == 0) {
+              selectedGifts.push(gift);
+            }
           }
         })
+        setGifts(selectedGifts);
       }
+    } else {
+      allgifts.map(gift => {
+        if (gift.category_id == selectedCat || selectedCat == 0) {
+          if (gift.minimum_membership_plan_id == item || item == 0) {
+            selectedGifts.push(gift);
+          }
+        }
+      })
       setGifts(selectedGifts);
-      setCurrentPage(1);
     }
+    setCurrentPage(1);
   }
 
   return (
@@ -150,14 +158,13 @@ const Gifts = () => {
 
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               {scrolled > 0 && <span onClick={() => scrollCategories('left')}>{'<<'}</span>}
-              {/* <!-- CATEGORY TABS / CHIPS --> */}
               <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0" ref={categoryScrollRef} onScroll={handleCategoryScroll}>
-                <button className="filter-chip-active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 bg-white border border-[#e4ede7]" onClick={() => filterGifts(0, 'category')}>
+                <button className="filter-chip-active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 bg-white border border-[#e4ede7]" onClick={() => { setSelectedCat(0); filterGifts(0, 'category') }}>
                   <span>Alla gåvor</span>
                   <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">{allgifts.length}</span>
                 </button>
                 {categories.map((category) => (
-                  <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]" id={'cat' + category.id.toString()} onClick={() => filterGifts(category.id, 'category')} key={category.id}>
+                  <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]" id={'cat' + category.id.toString()} onClick={() => { setSelectedCat(category.id); filterGifts(category.id, 'category') }} key={category.id}>
                     <span>{category.label}</span>
                   </button>
                 ))
@@ -165,21 +172,9 @@ const Gifts = () => {
               </div>
               <span onClick={() => scrollCategories('right')}>{'>>'}</span>
 
-              {/* <!-- SEARCH & POINT TIER FILTER --> */}
               <div className="flex items-center gap-3 shrink-0">
-                {/* <div className="relative flex-1 sm:w-64">
-              <input
-                type="text"
-                placeholder="Sök gåva eller hantverkare..."
-                className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-[#e4ede7] rounded-xl placeholder-[#8a9b91] text-[#1c2922] focus:outline-none focus:ring-2 focus:ring-[#244d36]/20 focus:border-[#244d36] transition-all"
-               />
-                <svg className="w-4 h-4 text-[#8a9b91] absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div> */}
-
                 <div className="relative">
-                  <select className="appearance-none bg-white border border-[#e4ede7] text-sm text-[#3f4e46] py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-[#244d36] cursor-pointer" onChange={(e) => filterGifts(e.target.value, 'level')}>
+                  <select className="appearance-none bg-white border border-[#e4ede7] text-sm text-[#3f4e46] py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-[#244d36] cursor-pointer" onChange={(e) => { setLevel(e.target.value); filterGifts(e.target.value, 'level') }} value={level}>
                     <option value="0">Gåvonivå</option>
                     <option value={memberships[0].level}>{memberships[0].name}</option>
                     <option value={memberships[1].level}>{memberships[1].name}</option>
