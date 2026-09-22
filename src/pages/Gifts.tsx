@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
+import { ChevronRight, ChevronLeft } from 'lucide-react'
 import GiftsCard from '../components/GiftsCard'
 import { confirmExistence } from '../utils/confirmType'
 import type { Membership, UserDetail, GiftInfo, Categories } from '../types/gifts'
 import { getGiftsList, getCategoriesList } from '../api/giftsApi'
 import { getMembershipPlans } from '../api/generalApi'
+import { Button } from '../components/Button'
 
 const Gifts = () => {
   let [gifts, setGifts] = useState<GiftInfo[]>([]);
@@ -98,7 +100,7 @@ const Gifts = () => {
   return (
     <>
       {loading ?
-        <p>loading..</p>
+        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">loading..</main>
         :
         <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
           <section className="mb-10 bg-white border border-[#e4ede7] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
@@ -136,12 +138,14 @@ const Gifts = () => {
                 </div>
               </div>
               <div className="h-9 w-px bg-[#e4ede7] hidden sm:block"></div>
-              <a href="#signature-info" className="text-xs font-semibold text-[#244d36] hover:text-[#bb9b56] transition-colors flex items-center gap-1 group py-1.5 px-3 rounded-lg hover:bg-[#effcf9]">
-                <span>Om {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor</span>
-                <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </a>
+              {userDetails.membership_id < 3 &&
+                <a href="#signature-info" className="text-xs font-semibold text-[#244d36] hover:text-[#bb9b56] transition-colors flex items-center gap-1 group py-1.5 px-3 rounded-lg hover:bg-[#effcf9]">
+                  <span>Om {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor</span>
+                  <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              }
             </div>
           </section>
 
@@ -157,7 +161,7 @@ const Gifts = () => {
           <section className="mb-10 space-y-4">
 
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              {scrolled > 0 && <span onClick={() => scrollCategories('left')}>{'<<'}</span>}
+              {scrolled > 0 && <button className="py-2 px-1" onClick={() => scrollCategories('left')}><ChevronLeft className="size-4" strokeWidth={1.8} /></button>}
               <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0" ref={categoryScrollRef} onScroll={handleCategoryScroll}>
                 <button className="filter-chip-active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 bg-white border border-[#e4ede7]" onClick={() => { setSelectedCat(0); filterGifts(0, 'category') }}>
                   <span>Alla gåvor</span>
@@ -170,7 +174,7 @@ const Gifts = () => {
                 ))
                 }
               </div>
-              <span onClick={() => scrollCategories('right')}>{'>>'}</span>
+              <button className="py-2 px-1" onClick={() => scrollCategories('right')}><ChevronRight className="size-4" strokeWidth={1.8} /></button>
 
               <div className="flex items-center gap-3 shrink-0">
                 <div className="relative">
@@ -196,19 +200,20 @@ const Gifts = () => {
           <section className="mb-10 mt-10">
             <div>
               {pages.map(page => (
-                <button
-                  className={currentPage == page + 1 ? 'selected filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-[#244d36] text-white border border-[#e4ede7] p-2 ml-1' : 'filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7] p-2 ml-1'}
+                <Button
+                  variant={currentPage == page + 1 ? 'primary' : 'secondary'}
+                  className="ml-1"
                   onClick={() => setCurrentPage(page + 1)}
                   key={page + 1}
                 >
                   {page + 1}
-                </button>
+                </Button>
               ))}
             </div>
           </section>
           {userDetails.membership_id < 3 &&
 
-            <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-lg">
+            <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-lg" id="signature-info">
               <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#bb9b56]/10 transform skew-x-12 pointer-events-none"></div>
 
               <div className="max-w-2xl relative z-10">

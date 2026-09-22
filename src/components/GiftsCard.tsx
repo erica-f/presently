@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { confirmExistence } from '../utils/confirmType'
 import type { CardDetails} from '../types/gifts'
+import { Button } from '../components/Button'
+
 
 const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) => {
     let pointsLeft = userDetails.current_points - gift.point_cost;
@@ -16,10 +18,9 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
     return (
         <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
             <div>
-                {/* <!-- Product Image Container --> */}
                 <div className="relative aspect-[4/3] bg-[#f5f1eb] overflow-hidden">
                     <img
-                        src={gift.thumbnail_img_url}
+                        src={gift.thumbnail_image_url}
                         alt={gift.name}
                         className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     />
@@ -28,14 +29,12 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
                                 Presently {productMembership.name}
                             </span>
                     </div>
-                    {/* <!-- Price Tag Overlay --> */}
                     <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-xl shadow-sm border border-[#e5ede8]">
                         <span className="text-base font-bold text-[#193927]">{gift.point_cost}</span>
                         <span className="text-xs font-semibold text-[#bb9b56] ml-0.5">p</span>
                     </div>
                 </div>
 
-                {/* <!-- Product Details --> */}
                 <div className="p-5">
                     <div className="flex items-center justify-between text-xs text-[#708278] mb-1.5">
                         <span>{category.name}</span>
@@ -100,26 +99,26 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
             <div className="p-5 pt-0">
                 {available ?
                     pointsLeft >= 0 ?
-                        <button className="w-full bg-[#244d36] hover:bg-[#193927] text-white py-2.5 px-4 rounded-xl text-sm font-semibold tracking-wide shadow-sm hover:shadow transition-all flex items-center justify-center gap-2">
+                        <Button className="w-full">
                             <span>Välj denna gåva</span>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
-                        </button>
+                        </Button>
                         :
-                        <button disabled className="w-full bg-[#f4f7f5] text-[#7d8f85] border border-[#d9e4dc] py-2.5 px-4 rounded-xl text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2">
+                        <Button disabled className="w-full" variant="secondary">
                             <svg className="w-4 h-4 text-[#8ea096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                             <span>Otillräckligt saldo (Saknas {gift.point_cost - userDetails.current_points} p)</span>
-                        </button>
+                        </Button>
                     :
-                    <button className="w-full bg-[#244d36] hover:bg-[#193927] text-[#bb9b56] hover:text-[#d3b472] border border-[#bb9b56]/30 py-2.5 px-4 rounded-xl text-sm font-semibold tracking-wide shadow-sm hover:shadow transition-all flex items-center justify-center gap-2">
+                    <Button variant="secondary" className="w-full" >
                         <span>{productMembership ? 'Uppgradera till ' + productMembership.name : 'Uppgradera ditt medlemskap'}</span>
                         <svg className="w-4 h-4 text-[#bb9b56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
-                    </button>
+                    </Button>
                 }
             </div>
         </article>

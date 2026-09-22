@@ -19,7 +19,7 @@ export type GiftInfo = {
     description: string
     point_cost: number
     minimum_membership_plan_id: number,
-    thumbnail_img_url: string
+    thumbnail_image_url: string
     category_id: number
 }
 export type Categories = {
