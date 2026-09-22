@@ -1,11 +1,11 @@
 import express, { type Request, type Response } from 'express';
 import { db } from './db.js';
 
-let gifts = express.Router();
+let categories = express.Router();
 
-gifts.get("/", async (_req: Request, res: Response) => {
+categories.get("/", async (_req: Request, res: Response) => {
     try {
-        let connect = await db.query(`SELECT * FROM products`);
+        let connect = await db.query(`SELECT * FROM categories`);
         res.json(connect);
     } catch (error) {
         console.log("error:" + error);
@@ -13,4 +13,4 @@ gifts.get("/", async (_req: Request, res: Response) => {
     }
 })
 
-export default gifts;
+export default categories;
