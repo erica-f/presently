@@ -1,6 +1,11 @@
 export type Membership = {
-    name: 'Simple' | 'Plus' | 'Signature'
+    name: string
     id: number
+    level: number
+    monthly_points: number
+    max_saved_contacts: number | null
+    price: number
+    is_active: number
 }
 export type UserDetail = {
     first_name: string
@@ -15,7 +20,7 @@ export type GiftInfo = {
     point_cost: number
     minimum_membership_plan_id: number,
     thumbnail_img_url: string
-    category: number
+    category_id: number
 }
 export type Categories = {
     id: number
@@ -26,6 +31,6 @@ export type Categories = {
 export interface CardDetails {
     userDetails: UserDetail
     gift: GiftInfo
-    membership: Membership[]
+    memberships: Membership[]
     category: Categories
 }

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { confirmExistence } from '../utils/confirmType'
 import type { CardDetails} from '../types/gifts'
 
-const GiftsCard = ({ userDetails, gift, membership, category }: CardDetails) => {
+const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) => {
     let pointsLeft = userDetails.current_points - gift.point_cost;
     let [available, setAvailable] = useState(false);
-    let productMembership = confirmExistence(membership.find(item => item.id == gift.minimum_membership_plan_id));
-    let userMembership = confirmExistence(membership.find(item => item.id == userDetails.membership_id));
+    let productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_id));
+    let userMembership = confirmExistence(memberships.find(item => item.level == userDetails.membership_id));
     useEffect(() => {
         if (gift.minimum_membership_plan_id <= userDetails.membership_id) {
             setAvailable(true);
