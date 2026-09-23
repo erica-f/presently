@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CreditCard, Mail, Pencil, Plus, Trash2, UserRound, X } from 'lucide-react'
 import { Button } from '../components/Button'
-import { ProfileApiError, type Contact, type ContactForm, type Gift as GiftRecord, type Overview, type Payment, type Profile as ProfileData, profileApi, validateContactForm } from '../lib/profileApi'
+import { ProfileApiError, normalizePhone, type Contact, type ContactForm, type Gift as GiftRecord, type Overview, type Payment, type Profile as ProfileData, profileApi, validateContactForm } from '../lib/profileApi'
 
 const formatDate = (value: unknown) => value ? new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium' }).format(new Date(String(value))) : '—'
 const money = (value: unknown, currency: string) => value === null || value === undefined ? '—' : `${Number(value).toLocaleString('sv-SE')} ${currency}`
@@ -25,6 +25,7 @@ function Profile() {
     const [editingId, setEditingId] = useState<unknown>(null)
     const [contactMessage, setContactMessage] = useState('')
     const [contactErrors, setContactErrors] = useState<Record<string, string>>({})
+    const [contactSaving, setContactSaving] = useState(false)
 
     const load = useCallback(async () => {
         setLoading(true); setError('')
@@ -52,19 +53,22 @@ function Profile() {
     const contactLimitReached = contactLimit !== null && contacts.length >= contactLimit
     const fullName = useMemo(() => [profile?.user.firstName, profile?.user.lastName].filter(Boolean).join(' ') || 'Din profil', [profile])
 
-    const submitContact = async (event: FormEvent) => {
+    const submitContact = async (event: SubmitEvent<HTMLFormElement>) => {
         event.preventDefault(); setContactMessage(''); setContactErrors({})
-        const validationErrors = validateContactForm(contactForm, editingId === 'new')
+        const normalizedContactForm = { ...contactForm, phone: normalizePhone(contactForm.phone) }
+        const validationErrors = validateContactForm(normalizedContactForm, editingId === 'new')
         if (Object.keys(validationErrors).length) {
             setContactErrors(validationErrors)
             setContactMessage('Kontrollera uppgifterna och försök igen.')
             return
         }
+        setContactSaving(true)
         try {
-            if (editingId === 'new') await profileApi.addContact(contactForm)
-            else await profileApi.updateContact(editingId, contactForm)
+            if (editingId === 'new') await profileApi.addContact(normalizedContactForm)
+            else await profileApi.updateContact(editingId, normalizedContactForm)
             setContactForm(emptyContact); setEditingId(null); setContactMessage('Kontakten är sparad.'); setContacts(await profileApi.contacts())
         } catch (saveError) { setContactMessage(saveError instanceof Error ? saveError.message : 'Kontakten kunde inte sparas.') }
+        finally { setContactSaving(false) }
     }
 
     const startEdit = (contact: Contact) => { setEditingId(contact.id); setContactErrors({}); setContactMessage(''); setContactForm({ firstName: contact.firstName, lastName: contact.lastName, email: contact.email, phone: contact.phone, address: contact.address, postalCode: contact.postalCode, city: contact.city }) }
@@ -103,7 +107,7 @@ function Profile() {
             {contacts.length === 0 && !editingId && <p className="mb-5 text-sm text-muted-foreground">Spara mottagare du ofta skickar till för en snabbare checkout.</p>}
             <div className="divide-y divide-border">{contacts.map((contact) => <div className="flex flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center" key={String(contact.id)}><div><p className="font-semibold text-foreground">{contact.firstName} {contact.lastName}</p><p className="text-sm text-muted-foreground">{contact.email || contact.phone || 'Ingen kontaktuppgift'}</p></div><div className="flex gap-2"><Button variant="ghost" onClick={() => startEdit(contact)} icon={<Pencil className="size-4" />}>Redigera</Button><Button variant="ghost" onClick={() => void removeContact(contact.id)} icon={<Trash2 className="size-4" />}>Ta bort</Button></div></div>)}</div>
             {!editingId && !contactLimitReached && <Button className="mt-5" variant="secondary" onClick={() => setEditingId('new')} icon={<Plus className="size-4" />}>Lägg till kontakt</Button>}
-            {editingId !== null && <form className="mt-6 border-t border-border pt-6" onSubmit={submitContact}><div className="mb-4 flex items-center justify-between"><h3 className="text-base text-foreground">{editingId === 'new' ? 'Ny kontakt' : 'Redigera kontakt'}</h3><button aria-label="Stäng formulär" className="text-muted-foreground hover:text-foreground" onClick={() => { setEditingId(null); setContactForm(emptyContact); setContactErrors({}); setContactMessage('') }} type="button"><X className="size-5" /></button></div><div className="grid gap-4 sm:grid-cols-2">{[['firstName', 'Förnamn'], ['lastName', 'Efternamn'], ['email', 'E-post'], ['phone', 'Telefon'], ['address', 'Adress'], ['postalCode', 'Postnummer'], ['city', 'Ort']].map(([name, label]) => <label className="grid gap-1 text-sm text-foreground" key={name}>{label}<input aria-invalid={Boolean(contactErrors[name])} aria-describedby={contactErrors[name] ? `${name}-error` : undefined} className={`rounded-control border bg-surface px-3 py-2 text-sm ${contactErrors[name] ? 'border-danger' : 'border-border'}`} required={name === 'firstName' || name === 'lastName'} type={name === 'email' ? 'email' : 'text'} maxLength={name === 'firstName' || name === 'lastName' ? 80 : 160} value={contactForm[name as keyof typeof contactForm]} onChange={(event) => { setContactForm({ ...contactForm, [name]: event.target.value }); setContactErrors({ ...contactErrors, [name]: '' }) }} />{contactErrors[name] && <span className="text-xs text-danger" id={`${name}-error`}>{contactErrors[name]}</span>}</label>)}</div>{contactMessage && <p className="mt-4 text-sm text-muted-foreground" role="status">{contactMessage}</p>}<Button className="mt-5" type="submit">Spara kontakt</Button></form>}
+            {editingId !== null && <form className="mt-6 border-t border-border pt-6" onSubmit={submitContact}><div className="mb-4 flex items-center justify-between"><h3 className="text-base text-foreground">{editingId === 'new' ? 'Ny kontakt' : 'Redigera kontakt'}</h3><button aria-label="Stäng formulär" className="text-muted-foreground hover:text-foreground" onClick={() => { setEditingId(null); setContactForm(emptyContact); setContactErrors({}); setContactMessage('') }} type="button"><X className="size-5" /></button></div><div className="grid gap-4 sm:grid-cols-2">{[['firstName', 'Förnamn'], ['lastName', 'Efternamn'], ['email', 'E-post'], ['phone', 'Telefon'], ['address', 'Adress'], ['postalCode', 'Postnummer'], ['city', 'Ort']].map(([name, label]) => <label className="grid gap-1 text-sm text-foreground" key={name}>{label}<input aria-invalid={Boolean(contactErrors[name])} aria-describedby={contactErrors[name] ? `${name}-error` : undefined} className={`rounded-control border bg-surface px-3 py-2 text-sm ${contactErrors[name] ? 'border-danger' : 'border-border'}`} required={name === 'firstName' || name === 'lastName'} type={name === 'email' ? 'email' : 'text'} maxLength={name === 'firstName' || name === 'lastName' ? 80 : 160} value={contactForm[name as keyof typeof contactForm]} onChange={(event) => { setContactForm({ ...contactForm, [name]: event.target.value }); setContactErrors({ ...contactErrors, [name]: '' }) }} />{contactErrors[name] && <span className="text-xs text-danger" id={`${name}-error`}>{contactErrors[name]}</span>}</label>)}</div>{contactMessage && <p className="mt-4 text-sm text-muted-foreground" role="status">{contactMessage}</p>}<Button className="mt-5" disabled={contactSaving} type="submit">{contactSaving ? 'Sparar…' : 'Spara kontakt'}</Button></form>}
         </Section>
 
         <Section title="Betalningar">

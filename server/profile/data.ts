@@ -95,13 +95,15 @@ function normalizeUser(row: Row | null) {
 }
 
 function normalizeContact(row: Row) {
+    const name = String(first(row, ['name'], '')).trim()
+    const nameParts = name ? name.split(/\s+/) : []
     return {
         id: first(row, ['id', 'contact_id']),
-        firstName: first(row, ['first_name', 'firstname', 'given_name'], ''),
-        lastName: first(row, ['last_name', 'lastname', 'family_name'], ''),
+        firstName: first(row, ['first_name', 'firstname', 'given_name'], nameParts.shift() ?? ''),
+        lastName: first(row, ['last_name', 'lastname', 'family_name'], nameParts.join(' ')),
         email: first(row, ['email'], ''),
         phone: first(row, ['phone', 'phone_number'], ''),
-        address: first(row, ['address', 'street_address'], ''),
+        address: first(row, ['address', 'street_address', 'address_line_1'], ''),
         postalCode: first(row, ['postal_code', 'zip_code'], ''),
         city: first(row, ['city', 'town'], ''),
     }
@@ -114,6 +116,14 @@ async function pointBalance(userId: string | number) {
     if (!ownerColumn || !amountColumn) return 0
     const rows = await tableRows('point_transactions', { column: ownerColumn, value: userId })
     return rows.reduce((sum, row) => sum + numberValue(row[amountColumn]), 0)
+}
+
+async function requiredColumns(table: TableName) {
+    const result = await db.query(
+        'SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND IS_NULLABLE = \'NO\' AND COLUMN_DEFAULT IS NULL AND EXTRA NOT LIKE \'%auto_increment%\'',
+        [table],
+    )
+    return asRows(result).map((row) => String(row.COLUMN_NAME))
 }
 
 async function gifts(userId: string | number) {
@@ -197,21 +207,33 @@ export async function createContact(userId: string | number, input: Record<strin
     const idColumn = existingColumn(available, ['id', 'contact_id'])
     if (!ownerColumn || !idColumn) throw new Error('Contacts table is not configured for profile contacts')
     const fieldMap: Record<string, string[]> = {
-        firstName: ['first_name', 'firstname', 'given_name'], lastName: ['last_name', 'lastname', 'family_name'],
-        email: ['email'], phone: ['phone', 'phone_number'], address: ['address', 'street_address'],
+        email: ['email'], phone: ['phone', 'phone_number'], address: ['address', 'street_address', 'address_line_1'],
         postalCode: ['postal_code', 'zip_code'], city: ['city', 'town'],
     }
     const fields = [ownerColumn]
     const values: unknown[] = [userId]
+    const nameField = existingColumn(available, ['name'])
+    const firstNameField = existingColumn(available, ['first_name', 'firstname', 'given_name'])
+    const lastNameField = existingColumn(available, ['last_name', 'lastname', 'family_name'])
+    if (nameField) {
+        fields.push(nameField)
+        values.push(`${input.firstName?.trim() ?? ''} ${input.lastName?.trim() ?? ''}`.trim())
+    } else {
+        if (firstNameField) { fields.push(firstNameField); values.push(input.firstName?.trim() ?? '') }
+        if (lastNameField) { fields.push(lastNameField); values.push(input.lastName?.trim() ?? '') }
+    }
     for (const [key, candidates] of Object.entries(fieldMap)) {
         const field = existingColumn(available, candidates)
         if (field && input[key]?.trim()) { fields.push(field); values.push(input[key].trim()) }
     }
-    if (fields.length < 2) throw new Error('A contact name is required')
+    const missingRequired = (await requiredColumns('contacts')).filter((column) => !fields.includes(column))
+    if (missingRequired.length) throw new Error(`Contacts table requires unsupported fields: ${missingRequired.join(', ')}`)
     const placeholders = fields.map(() => '?').join(', ')
-    await db.query(`INSERT INTO contacts (${fields.map(quoteIdentifier).join(', ')}) VALUES (${placeholders})`, values)
-    const rows = await tableRows('contacts', { column: ownerColumn, value: userId })
-    return normalizeContact(rows.at(-1) ?? {})
+    const result = await db.query(`INSERT INTO contacts (${fields.map(quoteIdentifier).join(', ')}) VALUES (${placeholders})`, values) as { insertId?: unknown }
+    const rows = result.insertId !== undefined
+        ? await tableRows('contacts', { column: idColumn, value: result.insertId })
+        : await tableRows('contacts', { column: ownerColumn, value: userId })
+    return normalizeContact(rows[0] ?? {})
 }
 
 export async function updateContact(userId: string | number, contactId: string, input: Record<string, string>) {
@@ -220,12 +242,21 @@ export async function updateContact(userId: string | number, contactId: string, 
     const idColumn = existingColumn(available, ['id', 'contact_id'])
     if (!ownerColumn || !idColumn) throw new Error('Contacts table is not configured for profile contacts')
     const fieldMap: Record<string, string[]> = {
-        firstName: ['first_name', 'firstname', 'given_name'], lastName: ['last_name', 'lastname', 'family_name'],
-        email: ['email'], phone: ['phone', 'phone_number'], address: ['address', 'street_address'],
+        email: ['email'], phone: ['phone', 'phone_number'], address: ['address', 'street_address', 'address_line_1'],
         postalCode: ['postal_code', 'zip_code'], city: ['city', 'town'],
     }
     const changes: string[] = []
     const values: unknown[] = []
+    const nameField = existingColumn(available, ['name'])
+    const firstNameField = existingColumn(available, ['first_name', 'firstname', 'given_name'])
+    const lastNameField = existingColumn(available, ['last_name', 'lastname', 'family_name'])
+    if (nameField && (input.firstName !== undefined || input.lastName !== undefined)) {
+        changes.push(`${quoteIdentifier(nameField)} = ?`)
+        values.push(`${input.firstName?.trim() ?? ''} ${input.lastName?.trim() ?? ''}`.trim())
+    } else {
+        if (firstNameField && input.firstName !== undefined) { changes.push(`${quoteIdentifier(firstNameField)} = ?`); values.push(input.firstName.trim()) }
+        if (lastNameField && input.lastName !== undefined) { changes.push(`${quoteIdentifier(lastNameField)} = ?`); values.push(input.lastName.trim()) }
+    }
     for (const [key, candidates] of Object.entries(fieldMap)) {
         const field = existingColumn(available, candidates)
         if (field && input[key] !== undefined) { changes.push(`${quoteIdentifier(field)} = ?`); values.push(input[key].trim()) }

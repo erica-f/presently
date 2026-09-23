@@ -10,19 +10,27 @@ export type ContactInput = {
     city?: string
 }
 
+export function normalizePhone(value: string) {
+    return value.trim().replace(/[\s().-]/g, '')
+}
+
+function isValidSwedishPhone(value: string) {
+    return /^\+46\d{7,10}$/.test(value) || /^0\d{8,10}$/.test(value)
+}
+
 export function validateContactInput(input: ContactInput, options: { requireName?: boolean } = {}) {
     const errors: Record<string, string> = {}
     const firstName = input.firstName?.trim() ?? ''
     const lastName = input.lastName?.trim() ?? ''
     const email = input.email?.trim() ?? ''
-    const phone = input.phone?.trim() ?? ''
+    const phone = normalizePhone(input.phone ?? '')
 
     if (options.requireName !== false && !firstName) errors.firstName = 'Förnamn krävs.'
     else if (firstName.length > 80) errors.firstName = 'Förnamn får vara högst 80 tecken.'
     if (options.requireName !== false && !lastName) errors.lastName = 'Efternamn krävs.'
     else if (lastName.length > 80) errors.lastName = 'Efternamn får vara högst 80 tecken.'
     if (email && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 160)) errors.email = 'Ange en giltig e-postadress.'
-    if (phone && !/^[+0-9 ()-]{7,30}$/.test(phone)) errors.phone = 'Ange ett giltigt telefonnummer.'
+    if (phone && !isValidSwedishPhone(phone)) errors.phone = 'Ange ett svenskt telefonnummer som börjar med +46 eller 0.'
     for (const [field, value] of Object.entries(input)) {
         if (typeof value === 'string' && value.length > 160 && !errors[field]) errors[field] = 'Fältet får vara högst 160 tecken.'
     }

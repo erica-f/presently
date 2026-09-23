@@ -3,7 +3,7 @@ import {
     createContact, deleteContact, getContactLimit, getProfile, getProfileContacts,
     getProfileGifts, getProfileOverview, getProfilePayments, updateContact,
 } from './data.js'
-import { canAddContact, validateContactInput } from './logic.js'
+import { canAddContact, normalizePhone, validateContactInput } from './logic.js'
 
 type SessionWithUser = { userId?: unknown }
 
@@ -24,15 +24,17 @@ function userId(res: Response) { return res.locals.profileUserId as string | num
 function cleanContactInput(body: unknown): Record<string, string> {
     if (!body || typeof body !== 'object') return {}
     const input = body as Record<string, unknown>
-    return Object.fromEntries(Object.entries(input).filter(([, value]) => typeof value === 'string')) as Record<string, string>
+    const cleaned = Object.fromEntries(Object.entries(input).filter(([, value]) => typeof value === 'string')) as Record<string, string>
+    if (cleaned.phone !== undefined) cleaned.phone = normalizePhone(cleaned.phone)
+    return cleaned
 }
 
-async function handle(res: Response, action: () => Promise<unknown>) {
+async function handle(res: Response, action: () => Promise<unknown>, failureMessage = 'Profiluppgifterna kunde inte laddas just nu.') {
     try {
         res.json(await action())
     } catch (error) {
         console.error('Profile request failed:', error)
-        res.status(500).json({ error: 'Profile data is temporarily unavailable' })
+        res.status(500).json({ error: failureMessage })
     }
 }
 
@@ -59,7 +61,7 @@ profileRouter.post('/contacts', async (req, res) => {
             return { error: 'Ditt medlemskap har nått gränsen för sparade kontakter' }
         }
         return createContact(userId(res), input)
-    })
+    }, 'Kontakten kunde inte sparas just nu.')
 })
 
 profileRouter.patch('/contacts/:id', async (req, res) => {
@@ -77,7 +79,7 @@ profileRouter.patch('/contacts/:id', async (req, res) => {
         const contact = await updateContact(userId(res), req.params.id, input)
         if (!contact) { res.status(404); return { error: 'Kontakten hittades inte' } }
         return contact
-    })
+    }, 'Kontakten kunde inte sparas just nu.')
 })
 
 profileRouter.delete('/contacts/:id', async (req, res) => {
@@ -85,7 +87,7 @@ profileRouter.delete('/contacts/:id', async (req, res) => {
         const deleted = await deleteContact(userId(res), req.params.id)
         if (!deleted) { res.status(404); return { error: 'Kontakten hittades inte' } }
         return { success: true }
-    })
+    }, 'Kontakten kunde inte tas bort just nu.')
 })
 
 export default profileRouter
