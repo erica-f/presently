@@ -13,7 +13,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
         if (gift.minimum_membership_plan_level <= userDetails.membership_id) {
             setAvailable(true);
         }
-    }, []);
+    }, [gift.minimum_membership_plan_level, userDetails.membership_id]);
 
     return (
         <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
@@ -99,7 +99,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
             <div className="p-5 pt-0">
                 {available ?
                     pointsLeft >= 0 ?
-                        <Button className="w-full">
+                        <Button className="w-full cursor-pointer">
                             <span>Välj denna gåva</span>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -113,7 +113,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
                             <span>Otillräckligt saldo (Saknas {gift.point_cost - userDetails.current_points} p)</span>
                         </Button>
                     :
-                    <Button variant="secondary" className="w-full" >
+                    <Button variant="secondary" className="w-full cursor-pointer" >
                         <span>{productMembership ? 'Uppgradera till ' + productMembership.name : 'Uppgradera ditt medlemskap'}</span>
                         <svg className="w-4 h-4 text-[#bb9b56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
