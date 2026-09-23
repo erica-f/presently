@@ -77,7 +77,7 @@ const Gifts = () => {
       } else {
         allgifts.map(gift => {
           if (gift.category_id == item || item == 0) {
-            if (gift.minimum_membership_plan_id == level || level == 0) {
+            if (gift.minimum_membership_plan_level == level || level == 0) {
               selectedGifts.push(gift);
             }
           }
@@ -87,7 +87,7 @@ const Gifts = () => {
     } else {
       allgifts.map(gift => {
         if (gift.category_id == selectedCat || selectedCat == 0) {
-          if (gift.minimum_membership_plan_id == item || item == 0) {
+          if (gift.minimum_membership_plan_level == item || item == 0) {
             selectedGifts.push(gift);
           }
         }
