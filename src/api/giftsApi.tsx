@@ -1,33 +1,25 @@
 
-export const getGiftsList = async () => {
+export const getList = async (path: string) => {
     try {
-        let url = `/api/gifts`;
+        let url = `/api/${path}`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            credentials: 'include',
         });
         let data = await response.json();
+        if (!response.ok) {
+            throw new Error(
+                data?.message ?? `Kunde inte hämta ${path}`
+            );
+        }
         return data;
-    } catch (error) {
-        console.log("something went wrong: " + error);
-    }
-};
 
-
-export const getCategoriesList = async () => {
-    try {
-        let url = `/api/categories`;
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        let data = await response.json();
-        return data;
     } catch (error) {
-        console.log("something went wrong: " + error);
+        throw new Error(
+            `Kunde inte hämta ${path}`
+        );
     }
 };
