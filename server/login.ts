@@ -4,8 +4,8 @@ import { db } from './db.js';
 const loginRouter = express.Router();
 
 loginRouter.post("/", async (req: Request, res: Response) => {
-    let email = req.body.email;
-    let password = req.body.password;
+    const email = req.body.email;
+    const password = req.body.password;
     console.log(req.session);
     try {
         const [user] = await db.query(`SELECT id, email, password_hash FROM users WHERE email = '${email}'`);
@@ -16,6 +16,7 @@ loginRouter.post("/", async (req: Request, res: Response) => {
             res.json({ "success": false })
         }
     } catch (error) {
+        console.log('Login failed:', error);
         res.status(500).json({ success: false, message: "Kunde inte logga in" });
     }
 })

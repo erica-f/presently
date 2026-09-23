@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router'
 import UserContext from '../contexts/AuthContext';
 import { Button } from '../components/Button'
 
-const login = () => {
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [type, setType] = useState('password');
@@ -222,4 +222,4 @@ const login = () => {
     )
 }
 
-export default login
+export default Login
