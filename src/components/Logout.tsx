@@ -15,7 +15,7 @@ const Logout = () => {
                 credentials: 'include',
                 body: JSON.stringify({})
             });
-            setUser(null);
+            setUser('');
         } catch (error) {
             console.log("Couldn't log out: " + error);
         }

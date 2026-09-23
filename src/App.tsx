@@ -8,7 +8,7 @@ import LandingPage from './pages/LandingPage'
 import Gifts from './pages/Gifts'
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState('');
 
   return (
     <div className="min-h-screen flex flex-col">

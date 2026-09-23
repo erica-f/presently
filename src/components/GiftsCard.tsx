@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { confirmExistence } from '../utils/confirmType'
 import type { CardDetails} from '../types/gifts'
 import { Button } from '../components/Button'
@@ -6,14 +5,9 @@ import { Button } from '../components/Button'
 
 const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) => {
     const pointsLeft = userDetails.current_points - gift.point_cost;
-    const [available, setAvailable] = useState(false);
+    const available = gift.minimum_membership_plan_level <= userDetails.membership_id ? true : false;
     const productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_level));
     const userMembership = confirmExistence(memberships.find(item => item.level == userDetails.membership_id));
-    useEffect(() => {
-        if (gift.minimum_membership_plan_level <= userDetails.membership_id) {
-            setAvailable(true);
-        }
-    }, [gift.minimum_membership_plan_level, userDetails.membership_id]);
 
     return (
         <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>

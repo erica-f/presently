@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef, useContext } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
-// import UserContext from '../contexts/AuthContext';
 import GiftsCard from '../components/GiftsCard'
 import { confirmExistence } from '../utils/confirmType'
 import type { Membership, UserDetail, GiftInfo, Categories } from '../types/gifts'
@@ -8,7 +7,6 @@ import { getList } from '../api/giftsApi'
 import { Button } from '../components/Button'
 
 const Gifts = () => {
-  // const { user } = useContext(UserContext);
   const [error, setError] = useState('');
   const [gifts, setGifts] = useState<GiftInfo[]>([]);
   const [allgifts, setAllGifts] = useState<GiftInfo[]>([]);

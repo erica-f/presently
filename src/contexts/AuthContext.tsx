@@ -1,8 +1,8 @@
 import { createContext } from 'react'
 type AuthContextType = {
-    user: any;
-    setUser: (user: any) => void;
+    user: string;
+    setUser: (user: string) => void;
 };
-const AuthContext = createContext<AuthContextType>({user: null, setUser: () => {}});
+const AuthContext = createContext<AuthContextType>({user: '', setUser: () => {}});
 
 export default AuthContext;

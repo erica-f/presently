@@ -17,9 +17,8 @@ export const getList = async (path: string) => {
         }
         return data;
     } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error));
         throw new Error(
-            `Kunde inte hämta ${path}`, { cause: err }
+            `Kunde inte hämta ${path}`, { cause: error }
         );
     }
 };
