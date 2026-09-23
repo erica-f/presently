@@ -111,7 +111,7 @@ const Gifts = () => {
   // </main>
 
   return (
-    <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+    <main className="w-full max-w-7xl mx-auto mb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
       <section className="mb-10 bg-white border border-[#e4ede7] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
         <div className="absolute -right-8 -top-12 w-48 h-48 bg-[#effcf9] rounded-full blur-2xl pointer-events-none"></div>
 
@@ -172,14 +172,14 @@ const Gifts = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {scrolled > 0 && <button className="py-2 px-1" onClick={() => scrollCategories('left')}><ChevronLeft className="size-4" strokeWidth={1.8} /></button>}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0" ref={categoryScrollRef} onScroll={handleCategoryScroll}>
-            <button className="filter-chip-active px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2 bg-white border border-[#e4ede7]" onClick={() => { setSelectedCat(0); filterGifts(0, 'category') }}>
+            <Button variant={selectedCat == 0 ? 'primary' : 'secondary'} className="whitespace-nowrap cursor-pointer" onClick={() => { setSelectedCat(0); filterGifts(0, 'category') }}>
               <span>Alla gåvor</span>
               <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">{allgifts.length}</span>
-            </button>
+            </Button>
             {categories.map((category) => (
-              <button className="filter-chip-inactive px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all bg-white border border-[#e4ede7]" id={'cat' + category.id.toString()} onClick={() => { setSelectedCat(category.id); filterGifts(category.id, 'category') }} key={category.id}>
+              <Button variant={selectedCat == category.id ? 'primary' : 'secondary'} className="whitespace-nowrap cursor-pointer" id={'cat' + category.id.toString()} onClick={() => { setSelectedCat(category.id); filterGifts(category.id, 'category') }} key={category.id}>
                 <span>{category.label}</span>
-              </button>
+              </Button>
             ))
             }
           </div>
@@ -207,17 +207,23 @@ const Gifts = () => {
         }
       </section>
       <section className="mb-10 mt-10">
-        <div>
+        <div className="flex">
+          <Button icon={<ChevronLeft />} onClick={() => currentPage >= 2 && setCurrentPage(currentPage - 1)}>
+            Föregående
+          </Button>
           {pages.map(page => (
             <Button
               variant={currentPage == page + 1 ? 'primary' : 'secondary'}
-              className="ml-1"
+              className="ml-1 cursor-pointer"
               onClick={() => setCurrentPage(page + 1)}
               key={page + 1}
             >
               {page + 1}
             </Button>
           ))}
+          <Button icon={<ChevronRight />} iconPosition='right' onClick={() => currentPage <= pages.length - 1 && setCurrentPage(currentPage + 1)}>
+            Nästa
+          </Button>
         </div>
       </section>
       {userDetails.membership_id < 3 &&
