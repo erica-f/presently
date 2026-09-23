@@ -1,7 +1,7 @@
 
 export const getList = async (path: string) => {
     try {
-        let url = `/api/${path}`;
+        const url = `/api/${path}`;
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -9,7 +9,7 @@ export const getList = async (path: string) => {
             },
             credentials: 'include',
         });
-        let data = await response.json();
+        const data = await response.json();
         if (!response.ok) {
             throw new Error(
                 data?.message ?? `Kunde inte hämta ${path}`

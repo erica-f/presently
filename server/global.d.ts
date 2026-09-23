@@ -1,3 +1,0 @@
-interface BigInt {
-    toJSON: () => number
-}

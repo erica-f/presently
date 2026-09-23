@@ -5,10 +5,10 @@ import { Button } from '../components/Button'
 
 
 const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) => {
-    let pointsLeft = userDetails.current_points - gift.point_cost;
-    let [available, setAvailable] = useState(false);
-    let productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_level));
-    let userMembership = confirmExistence(memberships.find(item => item.level == userDetails.membership_id));
+    const pointsLeft = userDetails.current_points - gift.point_cost;
+    const [available, setAvailable] = useState(false);
+    const productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_level));
+    const userMembership = confirmExistence(memberships.find(item => item.level == userDetails.membership_id));
     useEffect(() => {
         if (gift.minimum_membership_plan_level <= userDetails.membership_id) {
             setAvailable(true);

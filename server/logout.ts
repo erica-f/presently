@@ -1,6 +1,6 @@
 import express, {type Request, type Response } from 'express';
 
-let logoutRouter = express.Router();
+const logoutRouter = express.Router();
 
 logoutRouter.post("/", (_req: Request, res: Response) => {
     // (req.session as any).userId = null;

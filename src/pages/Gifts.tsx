@@ -8,23 +8,23 @@ import { getList } from '../api/giftsApi'
 import { Button } from '../components/Button'
 
 const Gifts = () => {
-  let { user } = useContext(UserContext);
-  let [error, setError] = useState('');
-  let [gifts, setGifts] = useState<GiftInfo[]>([]);
-  let [allgifts, setAllGifts] = useState<GiftInfo[]>([]);
-  let [categories, setCategories] = useState<Categories[]>([]);
-  let [memberships, setMemberships] = useState<Membership[]>([]);
-  let [level, setLevel] = useState<number | string>(0);
-  let [selectedCat, setSelectedCat] = useState<number | string>(0);
-  let [loading, setLoading] = useState(true);
+  const { user } = useContext(UserContext);
+  const [error, setError] = useState('');
+  const [gifts, setGifts] = useState<GiftInfo[]>([]);
+  const [allgifts, setAllGifts] = useState<GiftInfo[]>([]);
+  const [categories, setCategories] = useState<Categories[]>([]);
+  const [memberships, setMemberships] = useState<Membership[]>([]);
+  const [level, setLevel] = useState<number | string>(0);
+  const [selectedCat, setSelectedCat] = useState<number | string>(0);
+  const [loading, setLoading] = useState(true);
   //divide products in pages
-  let [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const numberOfPages = Math.ceil(gifts.length / 24);
-  let currentItems = gifts.slice((currentPage - 1) * 24, currentPage * 24);
+  const currentItems = gifts.slice((currentPage - 1) * 24, currentPage * 24);
   const pages = [...Array(numberOfPages).keys()];
 
   //Scrolling categories
-  let [scrolled, setScrolled] = useState(0);
+  const [scrolled, setScrolled] = useState(0);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
 
   const scrollCategories = (direction: 'left' | 'right') => {
@@ -64,11 +64,11 @@ const Gifts = () => {
     current_points: 200,
   }
 
-  let userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userDetails.membership_id)) : { id: 0, name: '', level: 0 };
+  const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userDetails.membership_id)) : { id: 0, name: '', level: 0 };
 
   //Filter product by category or membership 
   const filterGifts = (item: number | string, type: string) => {
-    let selectedGifts: GiftInfo[] = [];
+    const selectedGifts: GiftInfo[] = [];
 
     if (type == 'category') {
       if (item == 0) {

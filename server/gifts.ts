@@ -1,11 +1,11 @@
 import express, { type Request, type Response } from 'express';
 import { db } from './db.js';
 
-let gifts = express.Router();
+const gifts = express.Router();
 
 gifts.get("/", async (_req: Request, res: Response) => {
     try {
-        let connect = await db.query(`SELECT * FROM products WHERE is_active = 1`);
+        const connect = await db.query(`SELECT * FROM products WHERE is_active = 1`);
         res.json(connect);
     } catch (error) {
         console.log("error:" + error);

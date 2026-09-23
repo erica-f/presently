@@ -3,7 +3,7 @@ import UserContext from '../contexts/AuthContext';
 import { Button } from './Button';
 
 const Logout = () => {
-    let { setUser } = useContext(UserContext);
+    const { setUser } = useContext(UserContext);
     async function logout(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         e.preventDefault();
         try {

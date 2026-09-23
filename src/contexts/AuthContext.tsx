@@ -1,5 +1,5 @@
 import { createContext } from 'react'
 
-let AuthContext = createContext<any>(undefined);
+const AuthContext = createContext<any>(undefined);
 
 export default AuthContext;
