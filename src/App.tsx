@@ -6,6 +6,7 @@ import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import LandingPage from './pages/LandingPage'
 import Gifts from './pages/Gifts'
+import Profile from './pages/Profile'
 
 function App() {
   const [user, setUser] = useState('');
@@ -20,6 +21,7 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/gifts" element={<Gifts />} />
+              <Route path="/profile" element={<Profile />} />
             </Routes>
           </BrowserRouter>
         </AuthContext>

@@ -9,6 +9,7 @@ import logoutRouter from './logout.js';
 import gifts from './gifts.js';
 import categories from './categories.js';
 import memberships from './memberships.js';
+import profileRouter from './profile/index.js';
 
 dotenv.config();
 setupBigIntSerialization();
@@ -36,6 +37,7 @@ app.use("/api/logout", logoutRouter);
 app.use("/api/gifts", gifts);
 app.use("/api/categories", categories);
 app.use("/api/memberships", memberships);
+app.use("/api/profile", profileRouter);
 
 app.get('/api/health', async (_req: Request, res: Response) => {
     try {
