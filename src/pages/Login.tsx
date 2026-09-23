@@ -1,13 +1,13 @@
 import { useState, useContext } from 'react'
 import { useNavigate } from 'react-router'
-import UserContext from '../contexts/AuthContext';
+import AuthContext from '../contexts/AuthContext';
 import { Button } from '../components/Button'
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [type, setType] = useState('password');
-    const { user, setUser } = useContext(UserContext);
+    const { user, setUser } = useContext(AuthContext);
     const navigate = useNavigate();
     if (user) {
         navigate("/");
