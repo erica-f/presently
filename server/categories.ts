@@ -5,7 +5,7 @@ let categories = express.Router();
 
 categories.get("/", async (_req: Request, res: Response) => {
     try {
-        let connect = await db.query(`SELECT * FROM categories AND is_active = 1`);
+        let connect = await db.query(`SELECT * FROM categories`);
         res.json(connect);
     } catch (error) {
         console.log("error:" + error);
