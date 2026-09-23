@@ -18,11 +18,11 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
     return (
         <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
             <div>
-                <div className="relative aspect-[4/3] bg-[#f5f1eb] overflow-hidden">
+                <div className="relative aspect-[4/3] bg-[#f5f1eb] overflow-hidden flex">
                     <img
                         src={gift.thumbnail_image_url}
                         alt={gift.name}
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        className="w-50 h-50 object-center object-contain m-auto group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#193927]/80 text-white backdrop-blur-md">
@@ -37,7 +37,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
 
                 <div className="p-5">
                     <div className="flex items-center justify-between text-xs text-[#708278] mb-1.5">
-                        <span>{category.name}</span>
+                        <span>{category.label}</span>
                     </div>
                     <h2 className="text-lg font-serif font-semibold text-[#193927] group-hover:text-[#244d36] transition-colors line-clamp-1">
                         {gift.name}
