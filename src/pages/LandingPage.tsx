@@ -1,75 +1,52 @@
+import { useEffect, useState } from 'react'
 import { ArrowRight, Check } from 'lucide-react'
 import { Button } from '../components/Button'
+import { getList } from '../api/giftsApi'
+import type { Categories, GiftInfo, Membership as GiftMembership } from '../types/gifts'
+import { selectRandomItems } from '../utils/selectRandomItems'
 
 type Membership = {
+    id: number
     name: 'Simple' | 'Plus' | 'Signature'
     points: number
     description: string
     benefits: string[]
 }
 
-type Product = {
-    id: string
+type FeaturedProduct = {
+    id: number
     name: string
-    category: string
-    points: number
-    tier: 'Simple eller högre' | 'Plus eller högre' | 'Endast Signature'
-    imageUrl: string
     description: string
+    points: number
+    category: string
+    membership: string
+    imageUrl: string
 }
 
 // TODO: Replace with API when implemented
 const memberships: Membership[] = [
     {
+        id: 1,
         name: 'Simple',
         points: 100,
-        description: 'För mindre vardagsgåvor, kaffe, te och utvalda delikatesser.',
-        benefits: ['100 poäng per månad', 'Tillgång till basurvalet', 'Fysiskt hälsningskort ingår'],
+        description: 'Ett basutbud med framför allt matvaror, köksredskap och mindre vardagsprodukter.',
+        benefits: ['100 poäng / månad', 'Gåvor markerade level 1', 'Välj mottagare och skicka'],
     },
     {
+        id: 2,
         name: 'Plus',
         points: 300,
-        description: 'Regelbunden uppvaktning med botanisk hudvård, doftljus och svensk formgivning.',
-        benefits: ['300 poäng per månad', 'Tillgång till hela standardsortimentet', 'Förtur till säsongssläpp'],
+        description: 'Ett bredare sortiment med kläder, skor, accessoarer, parfym, inredning och fler köksprodukter.',
+        benefits: ['300 poäng / månad', 'Gåvor markerade level 1 och 2', 'Spara upp till 3 favoritkontakter'],
     },
     {
+        id: 3,
         name: 'Signature',
         points: 500,
-        description: 'Exklusiva set, munblåst glas och hantverk för speciella tillfällen och jubileum.',
-        benefits: ['500 poäng per månad', 'Tillgång till alla premiumnivåer', 'Personlig gåvobud och signering'],
+        description: 'Premiumutbud med bland annat smartphones, laptops, möbler, fordon och exklusiva klockor.',
+        benefits: ['500 poäng / månad', 'Gåvor markerade level 1, 2 och 3', 'Spara obegränsat antal favoritkontakter'],
     },
 ]
-// TODO: Replace with API when implemented
-const exampleProducts: Product[] = [
-    {
-        id: 'coffee-chocolate',
-        name: 'Åre Rost & Havssaltchoklad',
-        category: 'Delikatess',
-        points: 100,
-        tier: 'Simple eller högre',
-        imageUrl: 'https://lh3.googleusercontent.com/aida/AEtjO1XrnVppZM3wxo89zV_GRAj4Q-YENFcx8QGGMIEN6x29SsZlBY6ag6P0OJGj1T1h6eP1sYP5uHOl_v0yVSa547VLd4iYVLr78fnLfeOVe_5IGpEWCUIJs-X4ExwDhfnDaoVkfAgop4zaFP_RkV4UFTDWlwB-RFO9vQM2gAhSNz0DXDrg3xcLoWZc89UteUiruY4843EHu3l42IImeXWeAPRmBmomc0LgD3VSCeg5whWH5ZjVUX34J3inYw',
-        description: 'Hantverksrostat kaffe tillsammans med prisbelönt svensk havssaltchoklad.',
-    },
-    {
-        id: 'botanica',
-        name: 'Botanica Handduo',
-        category: 'Vård & Hem',
-        points: 300,
-        tier: 'Plus eller högre',
-        imageUrl: 'https://lh3.googleusercontent.com/aida/AEtjO1XrPL7pmWjzWeKq9O6Jp77BIaQ8o0bgZV7WQeTB1EZXbPaPiRrnPeEhX7TLX6U4HloeW5kpbylB1JTngQzPSsh7gLvEW35fIGFMz1PftXxmGsvDH5QX3S01YudFx4-Z3pNFbDpEqbE9UudOy9Z32F0TlgK1E5Lc650NpDRP3XXnTc5G01BcZMbeviRaN7ECvYL8OSSM-h0yc32TCHC7lkkbNFECNSxzv4kzdwrYYWdJJ7IPdAXTnlcAWfM',
-        description: 'Ekologisk handtvål och vårdande lotion med doft av tallbarr och bergamott.',
-    },
-    {
-        id: 'glass-vase',
-        name: 'Munblåst Glasvas & Mässing',
-        category: 'Skandinavisk Form',
-        points: 500,
-        tier: 'Endast Signature',
-        imageUrl: 'https://lh3.googleusercontent.com/aida/AEtjO1XLKvzBlITWbWQkO0Q2CU0rxpYMUgv2kXNwqDuhgd7KYYC8c8_Q8ZQtxcwJGEH6tklR3P20M6z2-txg4gOBduNn698BdtPEToWUIID37-nncTLkbLfFwSk0VMyEHCAQTZ7P6khYl7Y3XL_XCHBK2QqyFnxOzI4XiSxjeUPwpBUi4d-y0C6MnwUMJTaRrhUUCrVB4KVZ5MBUWfJMrCgekAmMcbxuma4v0kL3IyN8H5a3iYt4sYQRd9cqoeA',
-        description: 'Handblåst tonat rökglas tillsammans med gedigen ljusstake i borstad mässing.',
-    },
-]
-
 const steps = [
     {
         number: '01',
@@ -89,6 +66,63 @@ const steps = [
 ]
 
 function LandingPage() {
+    const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
+    const [featuredGiftsLoading, setFeaturedGiftsLoading] = useState(true)
+    const [featuredGiftsError, setFeaturedGiftsError] = useState(false)
+
+    useEffect(() => {
+        let isCurrent = true
+
+        const loadFeaturedGifts = async () => {
+            try {
+                const [giftsData, categoriesData, membershipsData] = await Promise.all([
+                    getList('gifts') as Promise<GiftInfo[]>,
+                    getList('categories') as Promise<Categories[]>,
+                    getList('memberships') as Promise<GiftMembership[]>,
+                ])
+                const products = giftsData
+                    .filter((gift) => gift.thumbnail_image_url.trim() !== '')
+                    .map((gift) => {
+                        const category = categoriesData.find((item) => item.id === gift.category_id)
+                        const membership = membershipsData.find((item) => item.level === gift.minimum_membership_plan_level)
+
+                        if (!category || !membership) {
+                            return null
+                        }
+
+                        return {
+                            id: gift.id,
+                            name: gift.name,
+                            description: gift.description,
+                            points: gift.point_cost,
+                            category: category.label,
+                            membership: membership.name,
+                            imageUrl: gift.thumbnail_image_url.startsWith('/') ? gift.thumbnail_image_url : `/${gift.thumbnail_image_url}`,
+                        }
+                    })
+                    .filter((product): product is FeaturedProduct => product !== null)
+
+                if (isCurrent) {
+                    setFeaturedProducts(selectRandomItems(products))
+                }
+            } catch {
+                if (isCurrent) {
+                    setFeaturedGiftsError(true)
+                }
+            } finally {
+                if (isCurrent) {
+                    setFeaturedGiftsLoading(false)
+                }
+            }
+        }
+
+        void loadFeaturedGifts()
+
+        return () => {
+            isCurrent = false
+        }
+    }, [])
+
     return (
         <main className="w-full">
             <section aria-labelledby="hero-title" className="border-b border-border py-10 md:py-16">
@@ -111,9 +145,9 @@ function LandingPage() {
                     </div>
                     <div className="overflow-hidden rounded-card border border-border bg-surface md:col-span-5">
                         <img
-                            alt="En inslagen Presently-gåva med ljus och kopp på ett bord"
+                            alt="Inslagna presenter, tända ljus och tekoppar på ett dukat bord"
                             className="block h-60 w-full object-cover md:h-80"
-                            src="https://lh3.googleusercontent.com/aida/AEtjO1UyQFkbqinEcUu4Wc8eQZNUPVwPmbRcw1RTgukK-S6Z-Va33ex87whv85L7YOf25Zmn3lTwgO_FxGe0bXA2rrj7w76ldqmL45iO56tji5JwsPHlzfv9LIkQN818Qi5_oTUVsy2TWWE8uXM0fA48OcUk71ZKUzFVN8A5noPu7JC-fliZs0AadYFzAUn98TLBMW5wnBqJ5zxATan3AQNhPBMw8P0z3IwNZzDaRmvR2ouY9nGfh6ylUxJRAho"
+                            src="/images/hero-gift.webp"
                         />
                     </div>
                 </div>
@@ -164,7 +198,7 @@ function LandingPage() {
                                     </ul>
                                 </div>
                                 <Button
-                                    href="#kom-igang"
+                                    href={`/checkout/${membership.id}`}
                                     variant={membership.name === 'Plus' ? 'primary' : 'secondary'}
                                     className="w-full"
                                 >
@@ -178,30 +212,50 @@ function LandingPage() {
 
             <section aria-labelledby="gifts-title" className="scroll-mt-24 border-b border-border py-10 md:py-16" id="gavor">
                 <div className="mx-auto w-[calc(100%-2rem)] max-w-4xl sm:w-[calc(100%-3rem)]">
-                    <div className="mb-10 max-w-xl">
-                        <h2 id="gifts-title" className="text-2xl tracking-tight text-foreground font-bold">Utvalda gåvoexempel</h2>
-                        <p className="mt-1 text-sm text-muted-foreground">Ett kurerat sortiment från mindre skandinaviska formgivare och producenter.</p>
+                    <div className="mb-10 flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="max-w-xl">
+                            <h2 id="gifts-title" className="text-2xl tracking-tight text-foreground font-bold">Upptäck våra gåvor</h2>
+                            <p className="mt-1 text-sm text-muted-foreground">Upptäck gåvor för olika tillfällen och nivåer – välj något som passar dina poäng.</p>
+                        </div>
+                        <a className="shrink-0 whitespace-nowrap text-sm font-semibold text-primary underline-offset-4 hover:underline sm:mt-1" href="/gifts">Se alla gåvor</a>
                     </div>
-                    <div className="grid gap-6 md:grid-cols-3">
-                        {exampleProducts.map((product) => (
-                            <article className="flex flex-col justify-between overflow-hidden rounded-control border border-border bg-surface" key={product.id}>
-                                <img className="block h-48 w-full border-b border-border object-cover" src={product.imageUrl} alt={product.name} loading="lazy" />
-                                <div className="flex flex-1 flex-col justify-between">
-                                    <div className="p-5">
-                                        <div className="mb-2 flex items-center justify-between gap-2">
-                                            <span className="text-[11px] font-semibold uppercase tracking-wide text-accent">{product.category}</span>
-                                            <span className="text-xs font-bold text-primary">{product.points} p</span>
+                    {featuredGiftsLoading && <p className="text-sm text-muted-foreground">Laddar gåvor...</p>}
+                    {!featuredGiftsLoading && featuredGiftsError && <p className="text-sm text-muted-foreground">Gåvorna kunde inte laddas just nu.</p>}
+                    {!featuredGiftsLoading && !featuredGiftsError && featuredProducts.length === 0 && <p className="text-sm text-muted-foreground">Det finns inga gåvor att visa just nu.</p>}
+                    {!featuredGiftsLoading && !featuredGiftsError && featuredProducts.length > 0 && (
+                        <div className="grid gap-6 md:grid-cols-3">
+                            {featuredProducts.map((product) => (
+                                <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e5ede8] bg-white shadow-sm transition-all duration-300 hover:shadow-md" key={product.id}>
+                                    <div>
+                                        <div className="relative flex aspect-[4/3] overflow-hidden bg-[#f5f1eb]">
+                                            <img
+                                                src={product.imageUrl}
+                                                alt={product.name}
+                                                className="m-auto h-50 w-50 object-contain object-center transition-transform duration-500 group-hover:scale-105"
+                                                loading="lazy"
+                                            />
+                                            <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+                                                <span className="inline-flex items-center rounded-full bg-[#193927]/80 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-md">
+                                                    Presently {product.membership}
+                                                </span>
+                                            </div>
+                                            <div className="absolute bottom-3 right-3 rounded-xl border border-[#e5ede8] bg-white/95 px-3 py-1 shadow-sm backdrop-blur-sm">
+                                                <span className="text-base font-bold text-[#193927]">{product.points}</span>
+                                                <span className="ml-0.5 text-xs font-semibold text-[#bb9b56]">p</span>
+                                            </div>
                                         </div>
-                                        <h3 className="mb-1 text-base text-foreground font-bold">{product.name}</h3>
-                                        <p className="text-xs leading-relaxed text-muted-foreground">{product.description}</p>
+                                        <div className="p-5">
+                                            <div className="mb-1.5 flex items-center justify-between text-xs text-[#708278]">
+                                                <span>{product.category}</span>
+                                            </div>
+                                            <h3 className="line-clamp-1 font-serif text-lg font-semibold text-[#193927] transition-colors group-hover:text-[#244d36]">{product.name}</h3>
+                                            <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-[#52655c]">{product.description}</p>
+                                        </div>
                                     </div>
-                                    <div className="px-5 pb-5 pt-1">
-                                        <span className="inline-block rounded bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">{product.tier}</span>
-                                    </div>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
