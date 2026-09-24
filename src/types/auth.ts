@@ -3,4 +3,5 @@ export interface AuthContextType {
     loading: boolean,
     login(): void,
     logout(): void,
+    flagLoggedOut(): void
 }

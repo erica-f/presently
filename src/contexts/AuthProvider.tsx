@@ -10,11 +10,22 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoggedIn(true);
     }
     const logout = async () => {
-        await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+        setLoading(true);
+        const response = await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+        if (response.status == 500) {
+            console.log("Unable to log out: " + response.status);
+            alert('Utloggning misslyckades.')
+        } else if (response.status == 401) {
+            alert('Ingen aktiv inloggning hittad');
+        } else {
+            setIsLoggedIn(false);
+        }
         setLoading(false);
+    }
+    const flagLoggedOut = () => {
         setIsLoggedIn(false);
     }
-
+    console.log(isLoggedIn);
     useEffect(() => {
         const checkStatus = async () => {
             try {
@@ -31,7 +42,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ loading, isLoggedIn, login, logout }}>
+        <AuthContext.Provider value={{ loading, isLoggedIn, login, logout, flagLoggedOut }}>
             {children}
         </AuthContext.Provider>
     )
