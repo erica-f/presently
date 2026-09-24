@@ -25,7 +25,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const flagLoggedOut = () => {
         setIsLoggedIn(false);
     }
-    console.log(isLoggedIn);
     useEffect(() => {
         const checkStatus = async () => {
             try {

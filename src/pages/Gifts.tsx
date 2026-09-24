@@ -48,7 +48,6 @@ const Gifts = () => {
         setCategories(categoryList);
         setMemberships(membershipList);
       } catch (err) {
-        console.log(err);
         if (err instanceof GiftsApiError && err.status === 401) {
           handleUnauthorized();
           return
@@ -59,7 +58,7 @@ const Gifts = () => {
       }
     }
     fetchData();
-  }, [])
+  }, [handleUnauthorized])
 
   // Temp data, will be replaced by data fetched from API
   const userDetails: UserDetail = {
