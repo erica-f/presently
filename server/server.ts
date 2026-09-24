@@ -10,6 +10,7 @@ import gifts from './gifts.js';
 import categories from './categories.js';
 import memberships from './memberships.js';
 import profileRouter from './profile/index.js';
+import sessionRouter from './session.js';
 
 dotenv.config();
 setupBigIntSerialization();
@@ -38,6 +39,7 @@ app.use("/api/gifts", gifts);
 app.use("/api/categories", categories);
 app.use("/api/memberships", memberships);
 app.use("/api/profile", profileRouter);
+app.use("/api/session", sessionRouter);
 
 app.get('/api/health', async (_req: Request, res: Response) => {
     try {
@@ -56,5 +58,7 @@ app.get("/api/", (_req: Request, res: Response) => {
 app.get(/^(.*)$/, (_req: Request, res: Response) => {
     res.send("Hello from Vercel");
 });
+
+
 
 export default app;
