@@ -6,24 +6,22 @@ import LandingPage from './pages/LandingPage'
 import Gifts from './pages/Gifts'
 import Profile from './pages/Profile'
 import ProtectedRoute from './utils/ProtectedRoute'
-import { useAuth } from './contexts/AuthContext'
+import Logout from './components/Logout'
 
 function App() {
-  const auth = useAuth();
-
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteHeader />
-      <button onClick={auth.logout}>Log out</button>
       <BrowserRouter>
+        <SiteHeader />
+        <Logout />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/gifts" element={<ProtectedRoute><Gifts /></ProtectedRoute>} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
+        <SiteFooter />
       </BrowserRouter>
-      <SiteFooter />
     </div>
   )
 
