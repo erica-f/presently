@@ -3,10 +3,12 @@ import { ChevronRight, ChevronLeft } from 'lucide-react'
 import GiftsCard from '../components/GiftsCard'
 import { confirmExistence } from '../utils/confirmType'
 import type { Membership, UserDetail, GiftInfo, Categories } from '../types/gifts'
-import { getList } from '../api/giftsApi'
+import { getList, GiftsApiError } from '../api/giftsApi'
 import { Button } from '../components/Button'
+import useLoginStatus from "../hooks/useLoginStatus";
 
 const Gifts = () => {
+  const handleUnauthorized = useLoginStatus();
   const [error, setError] = useState('');
   const [gifts, setGifts] = useState<GiftInfo[]>([]);
   const [allgifts, setAllGifts] = useState<GiftInfo[]>([]);
@@ -45,8 +47,13 @@ const Gifts = () => {
         setAllGifts(list);
         setCategories(categoryList);
         setMemberships(membershipList);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Kunde inte ladda gåvor');
+      } catch (err) {
+        console.log(err);
+        if (err instanceof GiftsApiError && err.status === 401) {
+          handleUnauthorized();
+          return
+        }
+        setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda gåvor');
       } finally {
         setLoading(false);
       }
@@ -94,6 +101,7 @@ const Gifts = () => {
     }
     setCurrentPage(1);
   }
+
   if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
     <p className="text-muted-foreground" role="status">Laddar gåvor…</p>
   </main>
@@ -103,10 +111,6 @@ const Gifts = () => {
       <p className="mt-2 text-muted-foreground">{error}</p>
     </div>
   </main>
-  // if (!user) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
-  //   <h1 className="text-2xl text-foreground">Du måste vara inloggad för att kunna se vårt utbud av gåvor</h1>
-  //   <a href="/login">Vänligen logga in och försök igen</a>
-  // </main>
 
   return (
     <main className="w-full max-w-7xl mx-auto mb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">

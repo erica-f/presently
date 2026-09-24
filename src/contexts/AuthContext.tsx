@@ -6,4 +6,5 @@ export const AuthContext = createContext<AuthContextType>({
     loading: true,
     login: () => { },
     logout: () => { },
+    flagLoggedOut: () => { }
 });
