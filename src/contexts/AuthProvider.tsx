@@ -5,17 +5,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const checkStatus = async () => {
-        try {
-            const res = await fetch('/api/session', { credentials: 'include' });
-            const data = await res.json();
-            setIsLoggedIn(data.loggedIn ?? false);
-        } catch {
-            setIsLoggedIn(false);
-        } finally {
-            setLoading(false);
-        }
-    };
     const login = () => {
         setLoading(false);
         setIsLoggedIn(true);
@@ -25,13 +14,24 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
         setIsLoggedIn(false);
     }
-    
+
     useEffect(() => {
+        const checkStatus = async () => {
+            try {
+                const res = await fetch('/api/session', { credentials: 'include' });
+                const data = await res.json();
+                setIsLoggedIn(data.loggedIn ?? false);
+            } catch {
+                setIsLoggedIn(false);
+            } finally {
+                setLoading(false);
+            }
+        };
         checkStatus();
     }, []);
 
     return (
-        <AuthContext.Provider value={{ loading, isLoggedIn, login, logout, checkStatus }}>
+        <AuthContext.Provider value={{ loading, isLoggedIn, login, logout }}>
             {children}
         </AuthContext.Provider>
     )
