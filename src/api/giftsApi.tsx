@@ -1,3 +1,4 @@
+import type { GiftInfo } from '../types/gifts'
 
 export const getList = async (path: string) => {
     try {
@@ -21,4 +22,19 @@ export const getList = async (path: string) => {
             `Kunde inte hämta ${path}`, { cause: error }
         );
     }
+};
+
+export const getGift = async (id: number): Promise<GiftInfo> => {
+    const response = await fetch(`/api/gifts/${id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    });
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data?.message ?? 'Kunde inte hämta gåvan');
+
+    return data;
 };
