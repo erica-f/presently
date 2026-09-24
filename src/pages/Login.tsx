@@ -1,14 +1,14 @@
 import { useState, useContext } from 'react'
 import { useNavigate } from 'react-router'
-import UserContext from '../contexts/AuthContext';
+import AuthContext from '../contexts/AuthContext';
 import { Button } from '../components/Button'
 
-const login = () => {
-    let [email, setEmail] = useState('');
-    let [password, setPassword] = useState('');
-    let [type, setType] = useState('password');
-    let { user, setUser } = useContext(UserContext);
-    let navigate = useNavigate();
+const Login = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [type, setType] = useState('password');
+    const { user, setUser } = useContext(AuthContext);
+    const navigate = useNavigate();
     if (user) {
         navigate("/");
     }
@@ -21,11 +21,11 @@ const login = () => {
     }
     async function login() {
         try {
-            let login = {
+            const login = {
                 email: email,
                 password: password
             }
-            let url = `/api/login`;
+            const url = `/api/login`;
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
@@ -34,7 +34,7 @@ const login = () => {
                 credentials: 'include',
                 body: JSON.stringify(login)
             });
-            let data = await response.json();
+            const data = await response.json();
             if (data.success) {
                 if (email == 'test@test.com') {
                     setUser(email);
@@ -222,4 +222,4 @@ const login = () => {
     )
 }
 
-export default login
+export default Login

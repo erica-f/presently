@@ -6,6 +6,9 @@ import setupBigIntSerialization from './utils/bigIntSerialization.js';
 import { db, options } from './db.js';
 import loginRouter from './login.js';
 import logoutRouter from './logout.js';
+import gifts from './gifts.js';
+import categories from './categories.js';
+import memberships from './memberships.js';
 import profileRouter from './profile/index.js';
 
 dotenv.config();
@@ -31,6 +34,9 @@ app.use(expressSession({
 
 app.use("/api/login", loginRouter);
 app.use("/api/logout", logoutRouter);
+app.use("/api/gifts", gifts);
+app.use("/api/categories", categories);
+app.use("/api/memberships", memberships);
 app.use("/api/profile", profileRouter);
 
 app.get('/api/health', async (_req: Request, res: Response) => {
