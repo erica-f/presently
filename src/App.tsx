@@ -18,7 +18,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/gifts" element={<ProtectedRoute><Gifts /></ProtectedRoute>} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/profile/:section" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
         <SiteFooter />
       </BrowserRouter>
