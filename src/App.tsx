@@ -1,31 +1,27 @@
-import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import AuthContext from './contexts/AuthContext'
 import Login from './pages/Login'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import LandingPage from './pages/LandingPage'
 import Gifts from './pages/Gifts'
 import Profile from './pages/Profile'
+import ProtectedRoute from './utils/ProtectedRoute'
+import Logout from './components/Logout'
 
 function App() {
-  const [user, setUser] = useState('');
-
   return (
     <div className="min-h-screen flex flex-col">
+      <BrowserRouter>
         <SiteHeader />
-        
-        <AuthContext value={{ user, setUser }} >
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/gifts" element={<Gifts />} />
-              <Route path="/profile" element={<Profile />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthContext>
+        <Logout />
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/gifts" element={<ProtectedRoute><Gifts /></ProtectedRoute>} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
         <SiteFooter />
+      </BrowserRouter>
     </div>
   )
 

@@ -1,9 +1,12 @@
-import express, { type Request, type Response } from 'express';
+import express from 'express';
 import { db } from './db.js';
 
 const memberships = express.Router();
 
-memberships.get("/", async (_req: Request, res: Response) => {
+memberships.get("/", async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ message: 'Not logged in' });
+    }
     try {
         const connect = await db.query(`SELECT * FROM membership_plans WHERE is_active = 1`);
         res.json(connect);
