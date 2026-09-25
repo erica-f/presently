@@ -1,5 +1,5 @@
 import express, { type NextFunction, type Request, type Response } from 'express'
-import { checkout, getBillingOverview, getPaymentConfirmation, getPlanByRoute, getPlans } from './membershipBilling.js'
+import { checkout, getBillingOverview, getPaymentConfirmation, getPlanByRoute, getPlans, MembershipCheckoutError } from './membershipBilling.js'
 
 const router = express.Router()
 
@@ -20,7 +20,7 @@ router.post('/checkout/:plan', async (req, res) => {
     const planNumber = Number(req.params.plan); const plan = Number.isInteger(planNumber) ? await getPlanByRoute(planNumber) : null
     if (!plan) { res.status(400).json({ error: 'Ogiltigt medlemskap.' }); return }
     const cardLast4 = typeof req.body?.cardLast4 === 'string' ? req.body.cardLast4.slice(-4) : undefined
-    try { res.json(await checkout(res.locals.membershipUserId, plan, cardLast4)) } catch (error) { console.error('Membership checkout failed:', error); res.status(500).json({ error: 'Betalningen kunde inte slutföras.' }) }
+    try { res.json(await checkout(res.locals.membershipUserId, plan, cardLast4)) } catch (error) { if (error instanceof MembershipCheckoutError) { res.status(error.statusCode).json({ error: error.message }); return } console.error('Membership checkout failed:', error); res.status(500).json({ error: 'Betalningen kunde inte slutföras.' }) }
 })
 router.get('/overview', async (_req, res) => { try { res.json(await getBillingOverview(res.locals.membershipUserId)) } catch { res.status(500).json({ error: 'Medlemskapet kunde inte laddas.' }) } })
 router.get('/receipts', async (_req, res) => { try { res.json((await getBillingOverview(res.locals.membershipUserId)).payments) } catch { res.status(500).json({ error: 'Kvittona kunde inte laddas.' }) } })

@@ -5,6 +5,10 @@ type Row = Record<string, unknown>
 type UserId = string | number
 type BillingPeriod = { start: Date; end: Date }
 
+export class MembershipCheckoutError extends Error {
+    readonly statusCode = 409
+}
+
 const rows = (value: unknown): Row[] => Array.isArray(value) ? value.filter((row): row is Row => Boolean(row && typeof row === 'object')) : []
 const first = (row: Row | undefined, names: string[], fallback: unknown = null) => {
     if (!row) return fallback
@@ -83,13 +87,11 @@ export async function checkout(userId: UserId, plan: ReturnType<typeof planFromR
         await connection.query('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId])
         const subscription = await subscriptionForUser(userId, connection)
         const currentPlanId = first(subscription.row ?? undefined, ['membership_plan_id'])
-        const currentPlanRow = currentPlanId === null ? null : rows(await connection.query('SELECT id, name, level, monthly_points, max_saved_contacts, price FROM membership_plans WHERE id = ? LIMIT 1', [currentPlanId]))[0] ?? null
+        const isActive = first(subscription.row ?? undefined, ['status']) === 'active'
+        const currentPlanRow = currentPlanId === null || !isActive ? null : rows(await connection.query('SELECT id, name, level, monthly_points, max_saved_contacts, price FROM membership_plans WHERE id = ? LIMIT 1', [currentPlanId]))[0] ?? null
         const currentPlan = currentPlanRow ? planFromRow(currentPlanRow) : null
-        const paymentType = currentPlan ? 'plan_change' : 'new_membership'
-        if (currentPlan && String(currentPlan.id) === String(plan.id)) {
-            const completedPayment = rows(await connection.query('SELECT id FROM payments WHERE user_id = ? AND membership_plan_id = ? AND payment_type = ? AND status = \'completed\' ORDER BY id DESC LIMIT 1', [userId, plan.id, paymentType]))[0]
-            if (completedPayment) { await connection.commit(); return { success: true, paymentStatus: 'completed', subscriptionId: subscription.id, plan, paymentId: completedPayment.id } }
-        }
+        if (currentPlan) throw new MembershipCheckoutError('Du har redan ett aktivt medlemskap.')
+        const paymentType = 'new_membership' as const
         const payment = await createPendingPayment(connection, userId, plan, paymentType)
         if (cardLast4 === '0000') { await updatePayment(connection, payment.id, 'failed'); await connection.commit(); return { success: false, paymentStatus: 'failed' } }
         await updatePayment(connection, payment.id, 'completed')
