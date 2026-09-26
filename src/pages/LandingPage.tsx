@@ -4,6 +4,7 @@ import { Button } from '../components/Button'
 import { getFeaturedGifts } from '../api/giftsApi'
 import type { FeaturedGift } from '../types/gifts'
 import { membershipApi, type MembershipPlan } from '../lib/membershipApi'
+import { useAuth } from '../contexts/useAuth'
 
 type Membership = {
     id: number
@@ -52,9 +53,11 @@ const steps = [
 ]
 
 function LandingPage() {
+    const { isLoggedIn } = useAuth()
     const [availableMemberships, setAvailableMemberships] = useState<Membership[]>([])
     const [membershipLoading, setMembershipLoading] = useState(true)
     const [membershipError, setMembershipError] = useState(false)
+    const [hasActiveMembership, setHasActiveMembership] = useState(false)
     const [featuredProducts, setFeaturedProducts] = useState<FeaturedGift[]>([])
     const [featuredGiftsLoading, setFeaturedGiftsLoading] = useState(true)
     const [featuredGiftsError, setFeaturedGiftsError] = useState(false)
@@ -85,6 +88,25 @@ function LandingPage() {
             isCurrent = false
         }
     }, [])
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            return
+        }
+
+        let isCurrent = true
+        membershipApi.overview().then((overview) => {
+            if (isCurrent) {
+                setHasActiveMembership(overview.subscription?.status === 'active' && overview.plan !== null)
+            }
+        }).catch(() => {
+            if (isCurrent) setHasActiveMembership(false)
+        })
+
+        return () => {
+            isCurrent = false
+        }
+    }, [isLoggedIn])
 
     useEffect(() => {
         let isCurrent = true
@@ -188,11 +210,11 @@ function LandingPage() {
                                     </ul>
                                 </div>
                                 <Button
-                                    href={`/checkout/${membership.id}`}
+                                    href={isLoggedIn && hasActiveMembership ? '/profile' : `/checkout/${membership.id}`}
                                     variant={membership.name === 'Plus' ? 'primary' : 'secondary'}
                                     className="w-full"
                                 >
-                                    Välj {membership.name}
+                                    {isLoggedIn && hasActiveMembership ? 'Hantera medlemskap' : `Välj ${membership.name}`}
                                 </Button>
                             </article>
                         ))}
