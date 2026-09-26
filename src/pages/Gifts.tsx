@@ -64,8 +64,8 @@ const Gifts = () => {
   const userDetails: UserDetail = {
     first_name: 'Test',
     user_id: 1,
-    membership_id: 2,
-    current_points: 200,
+    membership_id: 3,
+    current_points: 700,
   }
 
   const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userDetails.membership_id)) : { id: 0, name: '', level: 0 };
@@ -154,7 +154,7 @@ const Gifts = () => {
               <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
-            </a>
+            </a>                                                        
           }
         </div>
       </section>
@@ -228,7 +228,6 @@ const Gifts = () => {
         </div>
       </section>
       {userDetails.membership_id < 3 &&
-
         <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-lg" id="signature-info">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#bb9b56]/10 transform skew-x-12 pointer-events-none"></div>
 

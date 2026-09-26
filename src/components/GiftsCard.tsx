@@ -17,7 +17,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
                 pathname: `/gifts/customize/:${gift.id}`
             },
             {
-                state: { gift: gift }
+                state: { gift: gift, user: userDetails }
             }
         )
     }
