@@ -9,6 +9,7 @@ import ProtectedRoute from './utils/ProtectedRoute'
 import Logout from './components/Logout'
 import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
+import CustomizeGift from './pages/CustomizeGift'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/checkout/success/:paymentId" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
           <Route path="/checkout/:plan" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
           <Route path="/gifts" element={<ProtectedRoute><Gifts /></ProtectedRoute>} />
+          <Route path="/gifts/customize/:giftId" element={<ProtectedRoute><CustomizeGift /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/profile/:section" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>

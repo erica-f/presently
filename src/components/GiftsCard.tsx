@@ -1,5 +1,6 @@
+import { useNavigate } from 'react-router-dom'
 import { confirmExistence } from '../utils/confirmType'
-import type { CardDetails} from '../types/gifts'
+import type { CardDetails } from '../types/gifts'
 import { Button } from '../components/Button'
 
 
@@ -8,6 +9,21 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
     const available = gift.minimum_membership_plan_level <= userDetails.membership_id ? true : false;
     const productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_level));
     const userMembership = confirmExistence(memberships.find(item => item.level == userDetails.membership_id));
+    const navigate = useNavigate();
+    const goToCustomize = () => {
+
+        navigate(
+            {
+                pathname: `/gifts/customize/:${gift.id}`
+            },
+            {
+                state: { gift: gift }
+            }
+        )
+    }
+    const addToCart = () => {
+        console.log("add to cart");
+    }
 
     return (
         <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
@@ -19,9 +35,9 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
                         className="w-50 h-50 object-center object-contain m-auto group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#193927]/80 text-white backdrop-blur-md">
-                                Presently {productMembership.name}
-                            </span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#193927]/80 text-white backdrop-blur-md">
+                            Presently {productMembership.name}
+                        </span>
                     </div>
                     <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-xl shadow-sm border border-[#e5ede8]">
                         <span className="text-base font-bold text-[#193927]">{gift.point_cost}</span>
@@ -93,7 +109,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
             <div className="p-5 pt-0">
                 {available ?
                     pointsLeft >= 0 ?
-                        <Button className="w-full cursor-pointer">
+                        <Button className="w-full cursor-pointer" onClick={() => productMembership.level === 3 ? goToCustomize() : addToCart()}>
                             <span>Välj denna gåva</span>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
