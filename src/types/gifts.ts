@@ -22,6 +22,16 @@ export type GiftInfo = {
     thumbnail_image_url: string
     category_id: number
 }
+export type FeaturedGift = {
+    id: number
+    name: string
+    description: string
+    points: number
+    category: string
+    membership: string
+    membershipLevel: number
+    imageUrl: string
+}
 export type Categories = {
     id: number
     name: string

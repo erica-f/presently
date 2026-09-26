@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, Check } from 'lucide-react'
 import { Button } from '../components/Button'
-import { getList } from '../api/giftsApi'
-import type { Categories, GiftInfo, Membership as GiftMembership } from '../types/gifts'
-import { selectRandomItems } from '../utils/selectRandomItems'
-import { checkoutApi, type Plan } from '../lib/checkoutApi'
+import { getFeaturedGifts } from '../api/giftsApi'
+import type { FeaturedGift } from '../types/gifts'
+import { membershipApi, type MembershipPlan } from '../lib/membershipApi'
+import { useAuth } from '../contexts/useAuth'
 
 type Membership = {
     id: number
@@ -13,16 +13,6 @@ type Membership = {
     description: string
     benefits: string[]
     price?: number
-}
-
-type FeaturedProduct = {
-    id: number
-    name: string
-    description: string
-    points: number
-    category: string
-    membership: string
-    imageUrl: string
 }
 
 // TODO: Replace with API when implemented
@@ -68,8 +58,9 @@ const steps = [
 ]
 
 function LandingPage() {
+    const { isLoggedIn } = useAuth()
     const [availableMemberships, setAvailableMemberships] = useState(memberships)
-    const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
+    const [featuredProducts, setFeaturedProducts] = useState<FeaturedGift[]>([])
     const [featuredGiftsLoading, setFeaturedGiftsLoading] = useState(true)
     const [featuredGiftsError, setFeaturedGiftsError] = useState(false)
 
@@ -78,35 +69,9 @@ function LandingPage() {
 
         const loadFeaturedGifts = async () => {
             try {
-                const [giftsData, categoriesData, membershipsData] = await Promise.all([
-                    getList('gifts') as Promise<GiftInfo[]>,
-                    getList('categories') as Promise<Categories[]>,
-                    getList('memberships') as Promise<GiftMembership[]>,
-                ])
-                const products = giftsData
-                    .filter((gift) => gift.thumbnail_image_url.trim() !== '')
-                    .map((gift) => {
-                        const category = categoriesData.find((item) => item.id === gift.category_id)
-                        const membership = membershipsData.find((item) => item.level === gift.minimum_membership_plan_level)
-
-                        if (!category || !membership) {
-                            return null
-                        }
-
-                        return {
-                            id: gift.id,
-                            name: gift.name,
-                            description: gift.description,
-                            points: gift.point_cost,
-                            category: category.label,
-                            membership: membership.name,
-                            imageUrl: gift.thumbnail_image_url.startsWith('/') ? gift.thumbnail_image_url : `/${gift.thumbnail_image_url}`,
-                        }
-                    })
-                    .filter((product): product is FeaturedProduct => product !== null)
-
+                const products = await getFeaturedGifts()
                 if (isCurrent) {
-                    setFeaturedProducts(selectRandomItems(products))
+                    setFeaturedProducts(products)
                 }
             } catch {
                 if (isCurrent) {
@@ -127,13 +92,22 @@ function LandingPage() {
     }, [])
 
     useEffect(() => {
-        checkoutApi.plans().then((plans: Plan[]) => {
+        if (!isLoggedIn) return
+
+        let isCurrent = true
+        membershipApi.plans().then((plans: MembershipPlan[]) => {
+            if (!isCurrent) return
             setAvailableMemberships((current) => current.map((membership) => {
                 const plan = plans.find((candidate) => candidate.name === membership.name)
-                return plan ? { ...membership, id: plan.id, points: plan.monthlyPoints, price: plan.price } : membership
+                const planId = plan ? Number(plan.id) : NaN
+                return plan && Number.isInteger(planId) ? { ...membership, id: planId, points: plan.monthlyPoints, price: plan.monthlyPrice } : membership
             }))
         }).catch(() => undefined)
-    }, [])
+
+        return () => {
+            isCurrent = false
+        }
+    }, [isLoggedIn])
 
     return (
         <main className="w-full">

@@ -11,6 +11,7 @@ async function request<T>(path: string, options?: RequestInit) {
 }
 
 export const membershipApi = {
+    plans: () => request<MembershipPlan[]>('/plans'),
     checkout: (plan: number) => request<{ plan: MembershipPlan; billing: BillingOverview }>(`/checkout/${plan}`),
     complete: (plan: number, cardLast4: string) => request<{ success: boolean; paymentStatus: string; subscriptionId?: unknown; paymentId?: unknown }>(`/checkout/${plan}`, { method: 'POST', body: JSON.stringify({ cardLast4 }) }),
     confirmation: (paymentId: string) => request<PaymentConfirmation>(`/confirmation/${encodeURIComponent(paymentId)}`),
