@@ -4,6 +4,7 @@ import { Button } from '../components/Button'
 import { getList } from '../api/giftsApi'
 import type { Categories, GiftInfo, Membership as GiftMembership } from '../types/gifts'
 import { selectRandomItems } from '../utils/selectRandomItems'
+import { checkoutApi, type Plan } from '../lib/checkoutApi'
 
 type Membership = {
     id: number
@@ -11,6 +12,7 @@ type Membership = {
     points: number
     description: string
     benefits: string[]
+    price?: number
 }
 
 type FeaturedProduct = {
@@ -66,6 +68,7 @@ const steps = [
 ]
 
 function LandingPage() {
+    const [availableMemberships, setAvailableMemberships] = useState(memberships)
     const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>([])
     const [featuredGiftsLoading, setFeaturedGiftsLoading] = useState(true)
     const [featuredGiftsError, setFeaturedGiftsError] = useState(false)
@@ -123,6 +126,15 @@ function LandingPage() {
         }
     }, [])
 
+    useEffect(() => {
+        checkoutApi.plans().then((plans: Plan[]) => {
+            setAvailableMemberships((current) => current.map((membership) => {
+                const plan = plans.find((candidate) => candidate.name === membership.name)
+                return plan ? { ...membership, id: plan.id, points: plan.monthlyPoints, price: plan.price } : membership
+            }))
+        }).catch(() => undefined)
+    }, [])
+
     return (
         <main className="w-full">
             <section aria-labelledby="hero-title" className="border-b border-border py-10 md:py-16">
@@ -178,7 +190,7 @@ function LandingPage() {
                         <p className="mt-1 text-sm text-muted-foreground">Alltid fri frakt, fin inslagning och personligt kort inkluderat i varje utskick.</p>
                     </div>
                     <div className="grid items-stretch gap-6 md:grid-cols-3">
-                        {memberships.map((membership) => (
+                        {availableMemberships.map((membership) => (
                             <article className={`flex flex-col justify-between overflow-hidden rounded-control border border-border bg-surface p-6 ${membership.name === 'Plus' ? 'border-primary' : ''}`} key={membership.name}>
                                 <div>
                                     <div className="flex items-center justify-between gap-2 border-b border-border pb-3">
@@ -188,7 +200,7 @@ function LandingPage() {
                                                 <span className="rounded bg-secondary px-2 py-0.5 text-[10px] font-bold text-secondary-foreground">Populärast</span>
                                             )}
                                         </div>
-                                        <span className="whitespace-nowrap text-sm font-semibold text-primary">{membership.points} p / mån</span>
+                                        <span className="whitespace-nowrap text-right text-sm font-semibold text-primary">{membership.points} p / mån{membership.price ? <span className="block text-[11px] font-normal text-muted-foreground">{membership.price.toLocaleString('sv-SE')} SEK / mån</span> : null}</span>
                                     </div>
                                     <p className="my-4 text-xs leading-relaxed text-muted-foreground">{membership.description}</p>
                                     <ul className="mb-6 space-y-2 text-xs text-muted-foreground">
