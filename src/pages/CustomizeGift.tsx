@@ -1,9 +1,13 @@
 import { useLocation } from "react-router-dom"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Star, Moon, Heart, Infinity } from 'lucide-react'
 import { confirmExistence } from '../utils/confirmType'
+import { getUser, UserApiError } from '../api/userApi'
+import useLoginStatus from '../hooks/useLoginStatus'
 
 const customizeGift = () => {
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const [selectedImprint, setSelectedImprint] = useState('initials');
     const [imprintText, setImprintText] = useState('');
     const [imprintDate, setImprintDate] = useState('');
@@ -15,8 +19,41 @@ const customizeGift = () => {
     const [signsUsed, setSignsUsed] = useState(0);
     const location = useLocation().state;
     const gift = location.gift;
+    const handleUnauthorized = useLoginStatus();
+    const [userDetails, setUserDetails] = useState({ first_name: '', last_name: '' });
+    const [nameToUse, setNameToUse] = useState(userDetails ? userDetails.first_name : '');
+    const [isVisible, setIsVisible] = useState(false);
 
-    console.log(gift.thumbnail_image_url);
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const [list] = await getUser();
+                setUserDetails(list);
+            } catch (err) {
+                if (err instanceof UserApiError && err.status === 401) {
+                    handleUnauthorized();
+                    return
+                }
+                setError(err instanceof UserApiError ? err.message : 'Kunde inte hämta användaruppgifter');
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchData();
+    }, [handleUnauthorized])
+
+
+    if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
+        <p className="text-muted-foreground" role="status">Laddar gåvor…</p>
+    </main>
+    if (error) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
+        <div className="border border-danger/30 bg-surface p-6">
+            <h1 className="text-2xl text-foreground">Kunde inte ladda sidan</h1>
+            <p className="mt-2 text-muted-foreground">{error}</p>
+        </div>
+    </main>
 
     return (
         <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
@@ -67,8 +104,8 @@ const customizeGift = () => {
                                 </p>
                             </div>
                             <div className="w-9 h-9 rounded-full bg-[#f4efe6] text-[#b89047] flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
                             </div>
                         </div>
@@ -155,8 +192,8 @@ const customizeGift = () => {
                                 </p>
                             </div>
                             <div className="w-9 h-9 rounded-full bg-[#f4efe6] text-[#244d36] flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                             </div>
                         </div>
@@ -190,8 +227,11 @@ const customizeGift = () => {
                             />
 
                             <div className="flex items-center justify-between pt-1 text-xs text-[#68736c]">
-                                <span>Avsändare som trycks på kortet: <strong className="text-[#1a3b2b] font-medium">Sofia</strong></span>
-                                <button type="button" className="text-[#244d36] hover:underline">Ändra namn</button>
+                                <span>Avsändare som trycks på kortet: <strong className="text-[#1a3b2b] font-medium">{nameToUse}</strong></span>
+                                <button type="button" className="text-[#244d36] hover:underline" onClick={() => setIsVisible(!isVisible)}>Ändra namn</button>
+                            </div>
+                            <div className={isVisible ? 'flex items-end justify-end' : 'invisible flex justify-end' } >
+                                <input type="text" value={nameToUse} onChange={e => setNameToUse(e.target.value)} className="p-2 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent font-serif"/>
                             </div>
                         </div>
                     </section>
@@ -199,8 +239,8 @@ const customizeGift = () => {
                     <div className="pt-4 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
                         <button type="button" className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#244d36] hover:bg-[#1a3b2b] text-white text-sm font-semibold shadow-sm transition flex items-center justify-center gap-2">
                             <span>Lägg till i kundvagn</span>
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
                         </button>
                     </div>
@@ -219,7 +259,7 @@ const customizeGift = () => {
 
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                 <div className="bg-black/30 backdrop-blur-xs text-white px-3 py-1.5 rounded-lg text-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition">
-                                    Gravyr simulerad: {selectedImprint == 'initals' ? imprintText + imprintDate : selectedImprint == 'name-only' ? imprintText : confirmExistence(symbolsList.find(symbol => symbol.key == imprintSymbol)).name}
+                                    Gravyr simulerad: {selectedImprint == 'initials' ? imprintText + imprintDate : selectedImprint == 'name-only' ? imprintText : confirmExistence(symbolsList.find(symbol => symbol.key == imprintSymbol)).name}
                                 </div>
                             </div>
 
@@ -238,15 +278,15 @@ const customizeGift = () => {
                                 {personalMessage}
                             </p>
                             <div className="mt-4 text-right pr-2">
-                                <span className="font-serif text-xs text-[#244d36] font-semibold">— Varma hälsningar, Sofia</span>
+                                <span className="font-serif text-xs text-[#244d36] font-semibold">— Varma hälsningar, {nameToUse}</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="p-5 rounded-2xl bg-[#effcf9] border border-[#d2ebe5] space-y-3">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-[#244d36] flex items-center gap-1.5">
-                            <svg className="w-4 h-4 text-[#244d36]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            <svg className="w-4 h-4 text-[#244d36]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                             Presently Signature Garanti
                         </h4>
