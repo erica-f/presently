@@ -22,7 +22,8 @@ function App() {
           <Route path="/checkout/success/:paymentId" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
           <Route path="/checkout/:plan" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
           <Route path="/gifts" element={<ProtectedRoute><Gifts /></ProtectedRoute>} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/profile/:section" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
         <SiteFooter />
       </BrowserRouter>
