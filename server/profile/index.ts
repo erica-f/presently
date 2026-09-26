@@ -1,25 +1,14 @@
-import express, { type NextFunction, type Request, type Response } from 'express'
+import express, { type Response } from 'express'
 import {
     createContact, deleteContact, getContactLimit, getProfile, getProfileContacts,
     getProfileGifts, getProfileOverview, getProfilePayments, updateContact,
 } from './data.js'
 import { canAddContact, normalizePhone, validateContactInput } from './logic.js'
-
-type SessionWithUser = { userId?: unknown }
+import { authenticated } from '../middleware/authenticated.js'
 
 const profileRouter = express.Router()
 
-function authenticated(req: Request, res: Response, next: NextFunction) {
-    const userId = (req.session as unknown as SessionWithUser).userId
-    if (typeof userId !== 'string' && typeof userId !== 'number') {
-        res.status(401).json({ error: 'Authentication required' })
-        return
-    }
-    res.locals.profileUserId = userId
-    next()
-}
-
-function userId(res: Response) { return res.locals.profileUserId as string | number }
+function userId(res: Response) { return res.locals.userId }
 
 function cleanContactInput(body: unknown): Record<string, string> {
     if (!body || typeof body !== 'object') return {}
