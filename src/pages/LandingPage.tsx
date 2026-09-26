@@ -4,7 +4,6 @@ import { Button } from '../components/Button'
 import { getFeaturedGifts } from '../api/giftsApi'
 import type { FeaturedGift } from '../types/gifts'
 import { membershipApi, type MembershipPlan } from '../lib/membershipApi'
-import { useAuth } from '../contexts/useAuth'
 
 type Membership = {
     id: number
@@ -12,29 +11,24 @@ type Membership = {
     points: number
     description: string
     benefits: string[]
-    price?: number
+    price: number
 }
 
-// TODO: Replace with API when implemented
-const memberships: Membership[] = [
+type MembershipCopy = Pick<Membership, 'name' | 'description' | 'benefits'>
+
+const membershipCopy: MembershipCopy[] = [
     {
-        id: 1,
         name: 'Simple',
-        points: 100,
         description: 'Ett basutbud med framför allt matvaror, köksredskap och mindre vardagsprodukter.',
         benefits: ['100 poäng / månad', 'Gåvor markerade level 1', 'Välj mottagare och skicka'],
     },
     {
-        id: 2,
         name: 'Plus',
-        points: 300,
         description: 'Ett bredare sortiment med kläder, skor, accessoarer, parfym, inredning och fler köksprodukter.',
         benefits: ['300 poäng / månad', 'Gåvor markerade level 1 och 2', 'Spara upp till 3 favoritkontakter'],
     },
     {
-        id: 3,
         name: 'Signature',
-        points: 500,
         description: 'Premiumutbud med bland annat smartphones, laptops, möbler, fordon och exklusiva klockor.',
         benefits: ['500 poäng / månad', 'Gåvor markerade level 1, 2 och 3', 'Spara obegränsat antal favoritkontakter'],
     },
@@ -58,8 +52,9 @@ const steps = [
 ]
 
 function LandingPage() {
-    const { isLoggedIn } = useAuth()
-    const [availableMemberships, setAvailableMemberships] = useState(memberships)
+    const [availableMemberships, setAvailableMemberships] = useState<Membership[]>([])
+    const [membershipLoading, setMembershipLoading] = useState(true)
+    const [membershipError, setMembershipError] = useState(false)
     const [featuredProducts, setFeaturedProducts] = useState<FeaturedGift[]>([])
     const [featuredGiftsLoading, setFeaturedGiftsLoading] = useState(true)
     const [featuredGiftsError, setFeaturedGiftsError] = useState(false)
@@ -92,22 +87,28 @@ function LandingPage() {
     }, [])
 
     useEffect(() => {
-        if (!isLoggedIn) return
-
         let isCurrent = true
-        membershipApi.plans().then((plans: MembershipPlan[]) => {
+        membershipApi.publicPlans().then((plans: MembershipPlan[]) => {
             if (!isCurrent) return
-            setAvailableMemberships((current) => current.map((membership) => {
-                const plan = plans.find((candidate) => candidate.name === membership.name)
-                const planId = plan ? Number(plan.id) : NaN
-                return plan && Number.isInteger(planId) ? { ...membership, id: planId, points: plan.monthlyPoints, price: plan.monthlyPrice } : membership
-            }))
-        }).catch(() => undefined)
+            const mergedMemberships = plans
+                .map((plan) => {
+                    const copy = membershipCopy.find((item) => item.name === plan.name)
+                    const id = Number(plan.id)
+                    if (!copy || !Number.isInteger(id)) return null
+                    return { ...copy, id, points: plan.monthlyPoints, price: plan.monthlyPrice }
+                })
+                .filter((membership): membership is Membership => membership !== null)
+            setAvailableMemberships(mergedMemberships)
+        }).catch(() => {
+            if (isCurrent) setMembershipError(true)
+        }).finally(() => {
+            if (isCurrent) setMembershipLoading(false)
+        })
 
         return () => {
             isCurrent = false
         }
-    }, [isLoggedIn])
+    }, [])
 
     return (
         <main className="w-full">
@@ -163,7 +164,10 @@ function LandingPage() {
                         <h2 id="membership-title" className="text-2xl tracking-tight text-foreground font-bold">Hitta din nivå av omtanke</h2>
                         <p className="mt-1 text-sm text-muted-foreground">Alltid fri frakt, fin inslagning och personligt kort inkluderat i varje utskick.</p>
                     </div>
-                    <div className="grid items-stretch gap-6 md:grid-cols-3">
+                    {membershipLoading && <p className="text-sm text-muted-foreground">Laddar medlemskap...</p>}
+                    {!membershipLoading && membershipError && <p className="text-sm text-muted-foreground">Medlemskapen kunde inte laddas just nu.</p>}
+                    {!membershipLoading && !membershipError && availableMemberships.length === 0 && <p className="text-sm text-muted-foreground">Det finns inga medlemskap att visa just nu.</p>}
+                    {!membershipLoading && !membershipError && availableMemberships.length > 0 && <div className="grid items-stretch gap-6 md:grid-cols-3">
                         {availableMemberships.map((membership) => (
                             <article className={`flex flex-col justify-between overflow-hidden rounded-control border border-border bg-surface p-6 ${membership.name === 'Plus' ? 'border-primary' : ''}`} key={membership.name}>
                                 <div>
@@ -192,7 +196,7 @@ function LandingPage() {
                                 </Button>
                             </article>
                         ))}
-                    </div>
+                    </div>}
                 </div>
             </section>
 
