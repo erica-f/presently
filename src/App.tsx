@@ -10,6 +10,8 @@ import Logout from './components/Logout'
 import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
 import CustomizeGift from './pages/CustomizeGift'
+import Cart from './pages/Cart'
+import CheckoutGifts from './pages/CheckoutGifts'
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
           <Route path="/checkout/:plan" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
           <Route path="/gifts" element={<ProtectedRoute><Gifts /></ProtectedRoute>} />
           <Route path="/gifts/customize/:giftId" element={<ProtectedRoute><CustomizeGift /></ProtectedRoute>} />
+          <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+          <Route path="/cart/checkout" element={<ProtectedRoute><CheckoutGifts /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/profile/:section" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
