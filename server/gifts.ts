@@ -32,7 +32,10 @@ gifts.get("/:id", async (req: Request, res: Response) => {
             return;
         }
 
-        res.json(product);
+        const imageRows = await db.query(`SELECT image_url FROM product_images WHERE product_id = ? ORDER BY sort_order ASC, id ASC`, [productId]);
+        const productImages = imageRows.map((image: Record<string, unknown>) => image.image_url).filter((imageUrl: unknown): imageUrl is string => typeof imageUrl === 'string' && imageUrl.length > 0);
+
+        res.json({ ...product, product_images: productImages });
     } catch (error) {
         console.log("error:" + error);
         res.status(500).json({ message: 'Unable to load product. Try again' });
