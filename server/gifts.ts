@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type Request, type Response } from 'express';
 import { db } from './db.js';
 
 const gifts = express.Router();
