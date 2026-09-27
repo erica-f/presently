@@ -1,6 +1,6 @@
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { Star, Moon, Heart, Infinity } from 'lucide-react'
+import { Star, Moon, Heart, Infinity, ArrowRight, ArrowLeft } from 'lucide-react'
 import { confirmExistence } from '../utils/confirmType'
 import { getUser, UserApiError } from '../api/userApi'
 import useLoginStatus from '../hooks/useLoginStatus'
@@ -19,11 +19,12 @@ const customizeGift = () => {
     const [signsUsed, setSignsUsed] = useState(0);
     const location = useLocation().state;
     const gift = location.gift;
+    const navigate = useNavigate();
     const handleUnauthorized = useLoginStatus();
     const [userDetails, setUserDetails] = useState({ first_name: '', last_name: '' });
     const [nameToUse, setNameToUse] = useState(userDetails ? userDetails.first_name : '');
     const [isVisible, setIsVisible] = useState(false);
-
+    console.log(gift);
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -31,6 +32,7 @@ const customizeGift = () => {
             try {
                 const [list] = await getUser();
                 setUserDetails(list);
+                setNameToUse(list.first_name);
             } catch (err) {
                 if (err instanceof UserApiError && err.status === 401) {
                     handleUnauthorized();
@@ -46,7 +48,7 @@ const customizeGift = () => {
 
 
     if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
-        <p className="text-muted-foreground" role="status">Laddar gåvor…</p>
+        <p className="text-muted-foreground" role="status">Laddar personifiering...</p>
     </main>
     if (error) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
         <div className="border border-danger/30 bg-surface p-6">
@@ -78,7 +80,7 @@ const customizeGift = () => {
 
                     <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#e6ded3] shadow-xs flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4 min-w-0">
-                            <img src={gift.thumbnail_image_url} alt={gift.name} className="w-16 h-16 rounded-xl object-cover border border-[#e6ded3] shrink-0" />
+                            <img src={`/` + gift.thumbnail_image_url} alt={gift.name} className="w-16 h-16 rounded-xl object-cover border border-[#e6ded3] shrink-0" />
                             <div className="truncate">
                                 <span className="text-[11px] font-semibold text-[#b89047] uppercase tracking-wider">Vald gåva • {gift.point_cost} p</span>
                                 <h2 className="text-base font-semibold text-[#1a3b2b] truncate">{gift.name}</h2>
@@ -89,104 +91,104 @@ const customizeGift = () => {
                             Ändra
                         </button>
                     </div>
-
-                    <section className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
-                        <div className="flex items-start justify-between gap-3 mb-5">
-                            <div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="text-base sm:text-lg font-serif text-[#1a3b2b]">1. Gravyr</h3>
-                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#f5eee1] text-[#b89047] border border-[#ebdcc1]">
-                                        Ingår i Signature för utvalda produkter
-                                    </span>
+                    {(gift.category_id === 10 || gift.category_id === 14 || gift.category_id === 24) &&
+                        <section className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
+                            <div className="flex items-start justify-between gap-3 mb-5">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <h3 className="text-base sm:text-lg font-serif text-[#1a3b2b]">Gravyr</h3>
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#f5eee1] text-[#b89047] border border-[#ebdcc1]">
+                                            Ingår i Signature för utvalda produkter
+                                        </span>
+                                    </div>
+                                    <p className="text-xs sm:text-sm text-[#68736c]">
+                                        Gravering sker i vår ateljé med valfri text eller utvalda symboler.
+                                    </p>
                                 </div>
-                                <p className="text-xs sm:text-sm text-[#68736c]">
-                                    Gravering sker i vår ateljé med valfri text eller utvalda symboler.
+                                <div className="w-9 h-9 rounded-full bg-[#f4efe6] text-[#b89047] flex items-center justify-center shrink-0">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-[#1a3b2b] uppercase tracking-wider mb-2">Välj gravyrlayout</label>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <label className={selectedImprint == 'initials' ? "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-3 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"}>
+                                            <input type="radio" name="initials" checked={selectedImprint == 'initials'} onChange={() => setSelectedImprint('initials')} className="appearance-none" />
+                                            <span className="text-xs font-semibold text-[#1a3b2b]">Initialer + Datum</span>
+                                            <span className="text-[11px] text-[#68736c] mt-0.5">E + S / 24.08</span>
+                                        </label>
+                                        <label className={selectedImprint == 'name-only' ? "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-3 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"}>
+                                            <input type="radio" name="name-only" checked={selectedImprint == 'name-only'} onChange={() => setSelectedImprint('name-only')} className="appearance-none" />
+                                            <span className="text-xs font-semibold text-[#1a3b2b]">Bara namn</span>
+                                            <span className="text-[11px] text-[#68736c] mt-0.5">Max 10 tkn</span>
+                                        </label>
+                                        <label className={selectedImprint == 'symbols' ? "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-3 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"}>
+                                            <input type="radio" name="symbol" checked={selectedImprint == 'symbols'} onChange={() => setSelectedImprint('symbols')} className="appearance-none" />
+                                            <span className="text-xs font-semibold text-[#1a3b2b]">Symbol</span>
+                                            <span className="text-[11px] text-[#68736c] mt-0.5">Hjärta</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {(selectedImprint == 'initials' || selectedImprint == 'name-only') &&
+                                        <div>
+                                            <label htmlFor="engraving_initials" className="block text-xs font-medium text-[#1a3b2b] mb-1.5">
+                                                Rad 1: Initialer eller text
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="engraving_initials"
+                                                value={imprintText}
+                                                onChange={e => setImprintText(e.target.value)}
+                                                maxLength={12}
+                                                className="w-full px-3.5 py-2.5 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent font-serif text-center"
+                                            />
+                                        </div>
+                                    }
+                                    {selectedImprint == 'initials' &&
+                                        <div>
+                                            <label htmlFor="engraving_date" className="block text-xs font-medium text-[#1a3b2b] mb-1.5">
+                                                Rad 2: Datum (valfritt)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="engraving_date"
+                                                value={imprintDate}
+                                                onChange={(e) => setImprintDate(e.target.value)}
+                                                maxLength={10}
+                                                className="w-full px-3.5 py-2.5 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent text-center"
+                                            />
+                                        </div>
+                                    }
+                                </div>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {selectedImprint == 'symbols' &&
+                                        <div className="grid grid-cols-4 gap-3">
+                                            {symbolsList.map((symbol) => (
+                                                <label className={imprintSymbol == `${symbol.key}` ? "relative flex flex-col items-center justify-center p-2 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-2 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"} key={symbol.key}>
+                                                    <input type="radio" name={symbol.key} checked={imprintSymbol == symbol.key} onChange={() => setImprintSymbol(symbol.key)} className="appearance-none" />
+                                                    <span className="text-xs font-semibold flex items-center gap-2">{symbol.icon} {symbol.name} </span>
+                                                </label>
+                                            ))
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <p className="text-[11px] text-[#68736c]">
+                                    ✓ Gravyr kontrolleras och centreras manuellt av guldsmed före paketering.
                                 </p>
                             </div>
-                            <div className="w-9 h-9 rounded-full bg-[#f4efe6] text-[#b89047] flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-[#1a3b2b] uppercase tracking-wider mb-2">Välj gravyrlayout</label>
-                                <div className="grid grid-cols-3 gap-3">
-                                    <label className={selectedImprint == 'initials' ? "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-3 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"}>
-                                        <input type="radio" name="initials" checked={selectedImprint == 'initials'} onChange={() => setSelectedImprint('initials')} className="appearance-none" />
-                                        <span className="text-xs font-semibold text-[#1a3b2b]">Initialer + Datum</span>
-                                        <span className="text-[11px] text-[#68736c] mt-0.5">E + S / 24.08</span>
-                                    </label>
-                                    <label className={selectedImprint == 'name-only' ? "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-3 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"}>
-                                        <input type="radio" name="name-only" checked={selectedImprint == 'name-only'} onChange={() => setSelectedImprint('name-only')} className="appearance-none" />
-                                        <span className="text-xs font-semibold text-[#1a3b2b]">Bara namn</span>
-                                        <span className="text-[11px] text-[#68736c] mt-0.5">Max 10 tkn</span>
-                                    </label>
-                                    <label className={selectedImprint == 'symbols' ? "relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-3 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"}>
-                                        <input type="radio" name="symbol" checked={selectedImprint == 'symbols'} onChange={() => setSelectedImprint('symbols')} className="appearance-none" />
-                                        <span className="text-xs font-semibold text-[#1a3b2b]">Symbol</span>
-                                        <span className="text-[11px] text-[#68736c] mt-0.5">Hjärta</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {(selectedImprint == 'initials' || selectedImprint == 'name-only') &&
-                                    <div>
-                                        <label htmlFor="engraving_initials" className="block text-xs font-medium text-[#1a3b2b] mb-1.5">
-                                            Rad 1: Initialer eller text
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="engraving_initials"
-                                            value={imprintText}
-                                            onChange={e => setImprintText(e.target.value)}
-                                            maxLength={12}
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent font-serif text-center"
-                                        />
-                                    </div>
-                                }
-                                {selectedImprint == 'initials' &&
-                                    <div>
-                                        <label htmlFor="engraving_date" className="block text-xs font-medium text-[#1a3b2b] mb-1.5">
-                                            Rad 2: Datum (valfritt)
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="engraving_date"
-                                            value={imprintDate}
-                                            onChange={(e) => setImprintDate(e.target.value)}
-                                            maxLength={10}
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent text-center"
-                                        />
-                                    </div>
-                                }
-                            </div>
-                            <div className="grid grid-cols-1 gap-3">
-                                {selectedImprint == 'symbols' &&
-                                    <div className="grid grid-cols-4 gap-3">
-                                        {symbolsList.map((symbol) => (
-                                            <label className={imprintSymbol == `${symbol.key}` ? "relative flex flex-col items-center justify-center p-2 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-2 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"} key={symbol.key}>
-                                                <input type="radio" name={symbol.key} checked={imprintSymbol == symbol.key} onChange={() => setImprintSymbol(symbol.key)} className="appearance-none" />
-                                                <span className="text-xs font-semibold flex items-center gap-2">{symbol.icon} {symbol.name} </span>
-                                            </label>
-                                        ))
-                                        }
-                                    </div>
-                                }
-                            </div>
-                            <p className="text-[11px] text-[#68736c]">
-                                ✓ Gravyr kontrolleras och centreras manuellt av guldsmed före paketering.
-                            </p>
-                        </div>
-                    </section>
-
+                        </section>
+                    }
                     <section className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
                         <div className="flex items-start justify-between gap-3 mb-4">
                             <div>
-                                <h3 className="text-base sm:text-lg font-serif text-[#1a3b2b] mb-1">2. Personlig hälsning</h3>
+                                <h3 className="text-base sm:text-lg font-serif text-[#1a3b2b] mb-1">Personlig hälsning</h3>
                                 <p className="text-xs sm:text-sm text-[#68736c]">
                                     Trycks på ett matt, präglat bomullskort och läggs i gåvoasken tillsammans med din gåva.
                                 </p>
@@ -230,18 +232,19 @@ const customizeGift = () => {
                                 <span>Avsändare som trycks på kortet: <strong className="text-[#1a3b2b] font-medium">{nameToUse}</strong></span>
                                 <button type="button" className="text-[#244d36] hover:underline" onClick={() => setIsVisible(!isVisible)}>Ändra namn</button>
                             </div>
-                            <div className={isVisible ? 'flex items-end justify-end' : 'invisible flex justify-end' } >
-                                <input type="text" value={nameToUse} onChange={e => setNameToUse(e.target.value)} className="p-2 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent font-serif"/>
+                            <div className={isVisible ? 'flex items-end justify-end' : 'invisible flex justify-end'} >
+                                <input type="text" value={nameToUse} onChange={e => setNameToUse(e.target.value)} className="p-2 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent font-serif" />
                             </div>
                         </div>
                     </section>
 
                     <div className="pt-4 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+                        <button type="button" className="w-full sm:w-auto px-8 py-3.5 rounded-xl border border-[#d6cbbe] hover:bg-[#f4efe6] text-[#1a3b2b] text-sm font-semibold transition text-center" onClick={() => navigate("/gifts")}>
+                            <span className="text-xs font-semibold flex items-center gap-2"><ArrowLeft /> Tillbaka till gåvor </span>
+                        </button>
                         <button type="button" className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#244d36] hover:bg-[#1a3b2b] text-white text-sm font-semibold shadow-sm transition flex items-center justify-center gap-2">
-                            <span>Lägg till i kundvagn</span>
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
+                            <span className="text-xs font-semibold flex items-center gap-2">Lägg till i kundvagn <ArrowRight /></span>
+
                         </button>
                     </div>
 
@@ -250,25 +253,29 @@ const customizeGift = () => {
                 <div className="lg:col-span-5 space-y-6">
 
                     <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
-                        <span className="text-[11px] font-semibold text-[#b89047] uppercase tracking-wider block mb-3">
-                            Simulerad förhandsvisning
-                        </span>
+                        {(gift.category_id === 10 || gift.category_id === 14 || gift.category_id === 24) &&
+                            <div>
 
-                        <div className="relative rounded-xl overflow-hidden aspect-square bg-[#f4efe6] border border-[#e6ded3] mb-4 group">
-                            <img src={gift.thumbnail_image_url} alt={gift.name} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
+                                <span className="text-[11px] font-semibold text-[#b89047] uppercase tracking-wider block mb-3">
+                                    Simulerad förhandsvisning
+                                </span>
 
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="bg-black/30 backdrop-blur-xs text-white px-3 py-1.5 rounded-lg text-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition">
-                                    Gravyr simulerad: {selectedImprint == 'initials' ? imprintText + imprintDate : selectedImprint == 'name-only' ? imprintText : confirmExistence(symbolsList.find(symbol => symbol.key == imprintSymbol)).name}
+                                <div className="relative rounded-xl overflow-hidden aspect-square bg-[#f4efe6] border border-[#e6ded3] mb-4 group">
+                                    <img src={`/` + gift.thumbnail_image_url} alt={gift.name} className="w-full h-full object-cover transition duration-500 group-hover:scale-105" />
+
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="bg-black/30 backdrop-blur-xs text-white px-3 py-1.5 rounded-lg text-center text-xs shadow-md opacity-0 group-hover:opacity-100 transition">
+                                            Gravyr simulerad: {selectedImprint == 'initials' ? imprintText + imprintDate : selectedImprint == 'name-only' ? imprintText : confirmExistence(symbolsList.find(symbol => symbol.key == imprintSymbol)).name}
+                                        </div>
+                                    </div>
+
+                                    <div className="absolute bottom-3 left-3 bg-[#1a3b2b]/85 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[11px] font-medium flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-[#b89047]"></span>
+                                        Handgraverat i Stockholm
+                                    </div>
                                 </div>
                             </div>
-
-                            <div className="absolute bottom-3 left-3 bg-[#1a3b2b]/85 backdrop-blur-sm text-white px-3 py-1 rounded-full text-[11px] font-medium flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[#b89047]"></span>
-                                Handgraverat i Stockholm
-                            </div>
-                        </div>
-
+                        }
                         <div className="p-5 rounded-xl bg-[#fdfbf7] border border-[#e6ded3] relative shadow-inner">
                             <div className="text-center mb-3">
                                 <span className="text-[10px] font-serif uppercase tracking-widest text-[#b89047]">Presently Hälsningskort</span>
