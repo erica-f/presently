@@ -139,6 +139,14 @@
     font: inherit;
   }
 
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
   :focus-visible {
     outline: 3px solid var(--focus-ring);
     outline-offset: 3px;
