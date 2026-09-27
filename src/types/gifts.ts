@@ -1,3 +1,4 @@
+
 export type Membership = {
     name: string
     id: number
@@ -7,12 +8,7 @@ export type Membership = {
     price: number
     is_active: number
 }
-export type UserDetail = {
-    first_name: string
-    user_id: number
-    membership_id: number
-    current_points: number
-}
+
 export type GiftInfo = {
     id: number
     name: string
@@ -29,7 +25,8 @@ export type Categories = {
 }
 
 export interface CardDetails {
-    userDetails: UserDetail
+    userMembershipId: number
+    userCurrentPoints: number
     gift: GiftInfo
     memberships: Membership[]
     category: Categories

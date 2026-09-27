@@ -3,12 +3,11 @@ import { confirmExistence } from '../utils/confirmType'
 import type { CardDetails } from '../types/gifts'
 import { Button } from '../components/Button'
 
-
-const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) => {
-    const pointsLeft = userDetails.current_points - gift.point_cost;
-    const available = gift.minimum_membership_plan_level <= userDetails.membership_id ? true : false;
+const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, category }: CardDetails) => {
+    const pointsLeft = userCurrentPoints - gift.point_cost;
+    const available = gift.minimum_membership_plan_level <= userMembershipId ? true : false;
     const productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_level));
-    const userMembership = confirmExistence(memberships.find(item => item.level == userDetails.membership_id));
+    const userMembership = confirmExistence(memberships.find(item => item.level == userMembershipId));
     const navigate = useNavigate();
     const goToCustomize = () => {
 
@@ -17,7 +16,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
                 pathname: `/gifts/customize/:${gift.id}`
             },
             {
-                state: { gift: gift, user: userDetails }
+                state: { gift: gift }
             }
         )
     }
@@ -71,7 +70,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
                                 <div className="w-full">
                                     <div className="flex items-center justify-between text-[11px] text-[#607469] mb-1.5">
                                         <span>Poängframsteg</span>
-                                        <span className="font-medium text-[#193927]">{userDetails.current_points} / {gift.point_cost} p ({Math.round((userDetails.current_points / gift.point_cost) * 100)}%)
+                                        <span className="font-medium text-[#193927]">{userCurrentPoints} / {gift.point_cost} p ({Math.round((userCurrentPoints / gift.point_cost) * 100)}%)
                                         </span>
                                     </div>
                                     <div className="w-full bg-[#e8efe9] h-1.5 rounded-full overflow-hidden">
@@ -120,7 +119,7 @@ const GiftsCard = ({ userDetails, gift, memberships, category }: CardDetails) =>
                             <svg className="w-4 h-4 text-[#8ea096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
-                            <span>Otillräckligt saldo (Saknas {gift.point_cost - userDetails.current_points} p)</span>
+                            <span>Otillräckligt saldo (Saknas {gift.point_cost - userCurrentPoints} p)</span>
                         </Button>
                     :
                     <Button variant="secondary" className="w-full cursor-pointer" >

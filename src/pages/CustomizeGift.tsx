@@ -2,8 +2,8 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { Star, Moon, Heart, Infinity, ArrowRight, ArrowLeft } from 'lucide-react'
 import { confirmExistence } from '../utils/confirmType'
-import { getUser, UserApiError } from '../api/userApi'
 import useLoginStatus from '../hooks/useLoginStatus'
+import { ProfileApiError, profileApi } from '../lib/profileApi'
 
 const customizeGift = () => {
     const [error, setError] = useState('');
@@ -21,8 +21,7 @@ const customizeGift = () => {
     const gift = location.gift;
     const navigate = useNavigate();
     const handleUnauthorized = useLoginStatus();
-    const [userDetails, setUserDetails] = useState({ first_name: '', last_name: '' });
-    const [nameToUse, setNameToUse] = useState(userDetails ? userDetails.first_name : '');
+    const [nameToUse, setNameToUse] = useState('');
     const [isVisible, setIsVisible] = useState(false);
     console.log(gift);
     useEffect(() => {
@@ -30,15 +29,14 @@ const customizeGift = () => {
             setLoading(true);
             setError('');
             try {
-                const [list] = await getUser();
-                setUserDetails(list);
-                setNameToUse(list.first_name);
+                const list = await profileApi.get();
+                setNameToUse(list.user.firstName);
             } catch (err) {
-                if (err instanceof UserApiError && err.status === 401) {
+                if (err instanceof ProfileApiError && err.status === 401) {
                     handleUnauthorized();
                     return
                 }
-                setError(err instanceof UserApiError ? err.message : 'Kunde inte hämta användaruppgifter');
+                setError(err instanceof ProfileApiError ? err.message : 'Kunde inte hämta användaruppgifter');
             } finally {
                 setLoading(false);
             }

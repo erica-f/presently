@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 import GiftsCard from '../components/GiftsCard'
 import { confirmExistence } from '../utils/confirmType'
-import type { Membership, UserDetail, GiftInfo, Categories } from '../types/gifts'
-import { getList, GiftsApiError } from '../api/giftsApi'
+import type { Membership, GiftInfo, Categories } from '../types/gifts'
+import { getList } from '../api/giftsApi'
 import { Button } from '../components/Button'
 import useLoginStatus from "../hooks/useLoginStatus";
+import { ProfileApiError, profileApi, type Profile as ProfileData } from '../lib/profileApi'
+
 
 const Gifts = () => {
   const handleUnauthorized = useLoginStatus();
@@ -17,6 +19,8 @@ const Gifts = () => {
   const [level, setLevel] = useState<number | string>(0);
   const [selectedCat, setSelectedCat] = useState<number | string>(0);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileData | null>(null)
+
   //divide products in pages
   const [currentPage, setCurrentPage] = useState(1);
   const numberOfPages = Math.ceil(gifts.length / 24);
@@ -42,17 +46,18 @@ const Gifts = () => {
       setLoading(true);
       setError('');
       try {
-        const [list, categoryList, membershipList] = await Promise.all([getList('gifts'), getList('categories'), getList('memberships')]);
+        const [list, categoryList, membershipList, profileData] = await Promise.all([getList('gifts'), getList('categories'), getList('memberships'), profileApi.get()]);
         setGifts(list);
         setAllGifts(list);
         setCategories(categoryList);
         setMemberships(membershipList);
+        setProfile(profileData);
       } catch (err) {
-        if (err instanceof GiftsApiError && err.status === 401) {
+        if (err instanceof ProfileApiError && err.status === 401) {
           handleUnauthorized();
           return
         }
-        setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda gåvor');
+        setError(err instanceof ProfileApiError ? err.message : 'Kunde inte ladda gåvor');
       } finally {
         setLoading(false);
       }
@@ -60,15 +65,8 @@ const Gifts = () => {
     fetchData();
   }, [handleUnauthorized])
 
-  // Temp data, will be replaced by data fetched from API
-  const userDetails: UserDetail = {
-    first_name: 'Test',
-    user_id: 1,
-    membership_id: 3,
-    current_points: 700,
-  }
-
-  const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userDetails.membership_id)) : { id: 0, name: '', level: 0 };
+  const userMembershipId = Number(profile?.subscription?.membership_plan_id ?? 0);
+  const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userMembershipId)) : { id: 0, name: '', level: 0 };
 
   //Filter product by category or membership 
   const filterGifts = (item: number | string, type: string) => {
@@ -133,7 +131,7 @@ const Gifts = () => {
             <p className="text-sm text-[#506359] mt-0.5">
               Du har tillgång till gåvor i nivåerna <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 1)).name}</strong>
               {
-                userDetails.membership_id == 2 ? <span> och <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong>.</span> : userDetails.membership_id == 3 ? <span>, <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong> samt <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong>.</span> : '.'
+                userMembershipId == 2 ? <span> och <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong>.</span> : userMembershipId == 3 ? <span>, <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong> samt <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong>.</span> : '.'
               }
             </p>
           </div>
@@ -143,18 +141,18 @@ const Gifts = () => {
           <div className="text-left md:text-right">
             <div className="text-xs font-medium text-[#6b7c73] uppercase tracking-wider">Ditt poängsaldo</div>
             <div className="flex items-baseline md:justify-end gap-1.5">
-              <span className="text-2xl sm:text-3xl font-bold text-[#193927] tracking-tight">{userDetails.current_points}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-[#193927] tracking-tight">{profile?.pointBalance}</span>
               <span className="text-sm font-semibold text-[#bb9b56]">p</span>
             </div>
           </div>
           <div className="h-9 w-px bg-[#e4ede7] hidden sm:block"></div>
-          {userDetails.membership_id < 3 &&
+          {userMembershipId < 3 &&
             <a href="#signature-info" className="text-xs font-semibold text-[#244d36] hover:text-[#bb9b56] transition-colors flex items-center gap-1 group py-1.5 px-3 rounded-lg hover:bg-[#effcf9]">
               <span>Om {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor</span>
               <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
-            </a>                                                        
+            </a>
           }
         </div>
       </section>
@@ -203,7 +201,7 @@ const Gifts = () => {
       </section>
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
         {currentItems.map((gift) => (
-          <GiftsCard userDetails={userDetails} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
+          <GiftsCard userMembershipId={userMembershipId} userCurrentPoints={profile?.pointBalance ?? 0} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
         ))
         }
       </section>
@@ -227,7 +225,7 @@ const Gifts = () => {
           </Button>
         </div>
       </section>
-      {userDetails.membership_id < 3 &&
+      {userMembershipId < 3 &&
         <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-lg" id="signature-info">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#bb9b56]/10 transform skew-x-12 pointer-events-none"></div>
 
@@ -242,7 +240,7 @@ const Gifts = () => {
               Vill du kunna välja skräddarsydda {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor?
             </h2>
             <p className="text-sm sm:text-base text-[#d8e5df] leading-relaxed mb-6 font-light">
-              Som <strong className="text-white font-medium">{userMembership.name}-medlem</strong> sparar du dina {userDetails.current_points} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong> behåller du självklart alla dina intjänade poäng och låser upp handgjord gravyr, obegränsade sparade mottagare och våra mest exklusiva kureringar.
+              Som <strong className="text-white font-medium">{userMembership.name}-medlem</strong> sparar du dina {profile?.pointBalance} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong> behåller du självklart alla dina intjänade poäng och låser upp handgjord gravyr, obegränsade sparade mottagare och våra mest exklusiva kureringar.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
