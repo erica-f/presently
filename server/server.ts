@@ -13,6 +13,7 @@ import profileRouter from './profile/index.js';
 import sessionRouter from './session.js';
 import membershipRouter from './membership.js';
 import userRouter from './user.js';
+import cart from './cart.js'
 
 dotenv.config();
 setupBigIntSerialization();
@@ -44,6 +45,7 @@ app.use("/api/profile", profileRouter);
 app.use("/api/session", sessionRouter);
 app.use("/api/membership", membershipRouter);
 app.use("/api/user", userRouter);
+app.use("/api/cart", cart);
 
 app.get('/api/health', async (_req: Request, res: Response) => {
     try {
