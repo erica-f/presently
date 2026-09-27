@@ -144,7 +144,7 @@ function LandingPage() {
                         <p className="mt-1 text-sm text-muted-foreground">Alltid fri frakt, fin inslagning och personligt kort inkluderat i varje utskick.</p>
                     </div>
                     <div className="grid items-stretch gap-6 md:grid-cols-3">
-                        {memberships.map((membership) => (
+                        {memberships.map((membership, index) => (
                             <article className={`flex flex-col justify-between overflow-hidden rounded-control border border-border bg-surface p-6 ${membership.name === 'Plus' ? 'border-primary' : ''}`} key={membership.name}>
                                 <div>
                                     <div className="flex items-center justify-between gap-2 border-b border-border pb-3">
@@ -164,7 +164,7 @@ function LandingPage() {
                                     </ul>
                                 </div>
                                 <Button
-                                    href="#kom-igang"
+                                    href={`/checkout/${index + 1}`}
                                     variant={membership.name === 'Plus' ? 'primary' : 'secondary'}
                                     className="w-full"
                                 >

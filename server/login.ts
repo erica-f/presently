@@ -1,12 +1,11 @@
-import express, { type Request, type Response } from 'express';
+import express from 'express';
 import { db } from './db.js';
 
 const loginRouter = express.Router();
 
-loginRouter.post("/", async (req: Request, res: Response) => {
+loginRouter.post("/", async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    console.log(req.session);
     try {
         const [user] = await db.query(`SELECT id, email, password_hash FROM users WHERE email = '${email}'`);
         if (user.password_hash === password) {

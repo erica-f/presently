@@ -1,9 +1,12 @@
-import express, { type Request, type Response } from 'express';
+import express from 'express';
 import { db } from './db.js';
 
 const categories = express.Router();
 
-categories.get("/", async (_req: Request, res: Response) => {
+categories.get("/", async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ message: 'Not logged in' });
+    }
     try {
         const connect = await db.query(`SELECT * FROM categories`);
         res.json(connect);

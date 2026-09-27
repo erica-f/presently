@@ -1,17 +1,15 @@
-import { useState, useContext } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import AuthContext from '../contexts/AuthContext';
+import { useAuth } from '../contexts/useAuth';
 import { Button } from '../components/Button'
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [type, setType] = useState('password');
-    const { user, setUser } = useContext(AuthContext);
     const navigate = useNavigate();
-    if (user) {
-        navigate("/");
-    }
+    const auth = useAuth()
+
     const toggleVisibility = () => {
         if (type === 'password') {
             setType('text')
@@ -36,13 +34,8 @@ const Login = () => {
             });
             const data = await response.json();
             if (data.success) {
-                if (email == 'test@test.com') {
-                    setUser(email);
-
-                    navigate("/");
-                } else {
-                    console.log("Couldn't log in");
-                }
+                auth.login();
+                navigate("/");
             }
         } catch (error) {
             console.log("Couldn't log in: " + error);
@@ -63,7 +56,7 @@ const Login = () => {
                                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" opacity="0.15" />
                                         <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z" fill="none" />
-                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 4a3 3 0 00-3 3v1H5a2 2 0 00-2 2v2a2 2 0 002 2h1v5a2 2 0 002 2h8a2 2 0 002-2v-5h1a2 2 0 002-2v-2a2 2 0 00-2-2h-4V7a3 3 0 00-3-3zm-1 4V7a1 1 0 112 0v1h-2zm-5 4h12v-2H6v2zm2 2v5h8v-5H8z" fill="#244D36" />
+                                        <path fillRule="evenodd" clipRule="evenodd" d="M12 4a3 3 0 00-3 3v1H5a2 2 0 00-2 2v2a2 2 0 002 2h1v5a2 2 0 002 2h8a2 2 0 002-2v-5h1a2 2 0 002-2v-2a2 2 0 00-2-2h-4V7a3 3 0 00-3-3zm-1 4V7a1 1 0 112 0v1h-2zm-5 4h12v-2H6v2zm2 2v5h8v-5H8z" fill="#244D36" />
                                     </svg>
                                 </div>
                                 <span className="text-xs font-semibold uppercase tracking-wider text-warm-muted">Presently-konto</span>
@@ -96,7 +89,7 @@ const Login = () => {
                                         />
                                         <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-warm-muted/70">
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                                             </svg>
                                         </div>
                                     </div>
@@ -123,8 +116,8 @@ const Login = () => {
                                         />
                                         <button type="button" className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-warm-muted hover:text-warm-text transition-colors" onClick={toggleVisibility}>
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke={type == 'password' ? 'currentColor' : 'grey'}>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </button>
                                     </div>
@@ -137,7 +130,7 @@ const Login = () => {
                                         onClick={() => login()}>
                                         <span>Logga in</span>
                                         <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                         </svg>
                                     </Button>
                                 </div>
@@ -157,7 +150,7 @@ const Login = () => {
                         <div className="mt-8 pt-4 flex items-center justify-center gap-6 text-xs text-warm-muted/80">
                             <span className="inline-flex items-center gap-1.5">
                                 <svg className="w-3.5 h-3.5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
                                 Krypterad inloggning
                             </span>

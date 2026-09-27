@@ -8,7 +8,7 @@ const columnCache = new Map<TableName, Set<string>>()
 const userKeys = ['user_id', 'customer_id', 'account_id', 'owner_id']
 
 const asRows = (value: unknown): Row[] => Array.isArray(value) ? value.filter((row): row is Row => typeof row === 'object' && row !== null) : []
-const first = (row: Row | undefined, names: string[], fallback: unknown = null) => {
+const first = (row: Row | null | undefined, names: string[], fallback: unknown = null) => {
     if (!row) return fallback
     const key = names.find((name) => row[name] !== undefined && row[name] !== null)
     return key ? row[key] : fallback
@@ -17,6 +17,8 @@ const numberValue = (value: unknown, fallback = 0) => {
     const parsed = Number(value)
     return Number.isFinite(parsed) ? parsed : fallback
 }
+const nullableNumber = (value: unknown) => value === null || value === undefined || value === '' ? null : numberValue(value, 0)
+const booleanValue = (value: unknown) => value === true || value === 1 || value === '1' || value === 'true'
 const quoteIdentifier = (value: string) => `\`${value.replace(/`/g, '')}\``
 
 async function columns(table: TableName) {
@@ -68,6 +70,16 @@ async function getMembership(userId: string | number) {
     return { subscription, plan: plans[0] ?? null }
 }
 
+async function getAvailablePlans() {
+    const available = await columns('membership_plans')
+    if (!available.size) return []
+    const activeColumn = existingColumn(available, ['is_active', 'active'])
+    const rows = activeColumn
+        ? asRows(await db.query(`SELECT * FROM ${quoteIdentifier('membership_plans')} WHERE ${quoteIdentifier(activeColumn)} = 1`))
+        : await tableRows('membership_plans')
+    return rows.map(normalizePlan).filter((plan) => plan !== null) as Array<NonNullable<ReturnType<typeof normalizePlan>>>
+}
+
 async function getUser(userId: string | number) {
     const available = await columns('users')
     const idColumn = existingColumn(available, ['id', 'user_id'])
@@ -82,6 +94,22 @@ function normalizePlan(row: Row | null) {
         level: first(row, ['level', 'tier', 'membership_level']),
         monthlyPoints: numberValue(first(row, ['monthly_points', 'points_per_month', 'points_allowance', 'points'])),
         maxSavedContacts: first(row, ['max_saved_contacts']) === null ? null : numberValue(first(row, ['max_saved_contacts'])),
+        monthlyPrice: nullableNumber(first(row, ['monthly_price', 'price', 'amount', 'monthly_amount'])),
+        currency: first(row, ['currency', 'price_currency'], null) as string | null,
+    }
+}
+
+function normalizeMembership(row: Row | null) {
+    return {
+        status: first(row, ['status', 'subscription_status', 'state']) as string | null,
+        periodStart: first(row, ['current_period_start', 'period_start', 'billing_period_start', 'starts_at']),
+        periodEnd: first(row, ['current_period_end', 'period_end', 'billing_period_end', 'ends_at']),
+        nextPaymentDate: first(row, ['next_payment_at', 'next_payment_date', 'renewal_date']),
+        nextPaymentAmount: nullableNumber(first(row, ['next_payment_amount', 'renewal_amount'])),
+        currency: first(row, ['currency', 'price_currency'], null) as string | null,
+        cancelAtPeriodEnd: booleanValue(first(row, ['cancel_at_period_end', 'cancel_scheduled', 'cancellation_scheduled'], false)),
+        cancellationEffectiveDate: first(row, ['cancel_at', 'cancellation_effective_date', 'canceled_at_period_end']),
+        operations: { checkout: false, cancel: false, resume: false },
     }
 }
 
@@ -157,13 +185,34 @@ async function gifts(userId: string | number) {
 }
 
 export async function getProfile(userId: string | number) {
-    const [user, membership, balance] = await Promise.all([getUser(userId), getMembership(userId), pointBalance(userId)])
+    const [user, membership, balance, availablePlans] = await Promise.all([getUser(userId), getMembership(userId), pointBalance(userId), getAvailablePlans()])
     return {
         user: normalizeUser(user),
         subscription: membership.subscription,
         plan: normalizePlan(membership.plan),
+        membership: normalizeMembership(membership.subscription),
+        availablePlans,
         pointBalance: balance,
     }
+}
+
+export async function getMembershipOptions(userId: string | number) {
+    const membership = await getMembership(userId)
+    return { current: normalizePlan(membership.plan), membership: normalizeMembership(membership.subscription), plans: await getAvailablePlans() }
+}
+
+export async function changePassword(userId: string | number, currentPassword: string, newPassword: string) {
+    const available = await columns('users')
+    const idColumn = existingColumn(available, ['id', 'user_id'])
+    const passwordColumn = existingColumn(available, ['password_hash', 'password'])
+    if (!idColumn || !passwordColumn) throw new Error('Users table is not configured for password changes')
+    const user = (await tableRows('users', { column: idColumn, value: userId }))[0]
+    if (!user || user[passwordColumn] !== currentPassword) return false
+    const result = await db.query(
+        `UPDATE ${quoteIdentifier('users')} SET ${quoteIdentifier(passwordColumn)} = ? WHERE ${quoteIdentifier(idColumn)} = ?`,
+        [newPassword, userId],
+    ) as { affectedRows?: number }
+    return Boolean(result.affectedRows)
 }
 
 export async function getProfileOverview(userId: string | number) {
@@ -191,7 +240,8 @@ export async function getProfilePayments(userId: string | number) {
         amount: first(row, ['amount', 'total_amount', 'price']),
         currency: first(row, ['currency'], 'SEK'),
         status: first(row, ['status', 'payment_status'], 'Betald'),
-        planName: first(row, ['plan_name', 'membership_name', 'product_name'], 'Medlemskap'),
+        planName: first(row, ['plan_name_snapshot', 'plan_name', 'membership_name', 'product_name'], 'Medlemskap'),
+        receiptNumber: first(row, ['receipt_number', 'receipt_id'], null),
     }))
 }
 
