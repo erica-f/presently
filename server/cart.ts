@@ -31,7 +31,7 @@ cart.get('/', async (_req, res) => {
         }
 
         const items = rows(await db.query(
-            `SELECT ci.id, ci.product_id, ci.quantity, p.name, p.point_cost, p.thumbnail_image_url, ci.quantity * p.point_cost AS point_total
+            `SELECT ci.id, ci.product_id, ci.quantity, p.name, p.point_cost, p.thumbnail_image_url, ci.quantity * p.point_cost AS point_total, p.description, p.category_id, p.minimum_membership_plan_level
              FROM cart_items ci
              INNER JOIN products p ON p.id = ci.product_id
              WHERE ci.cart_id = ?
