@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Users, Plus, ArrowRight } from 'lucide-react'
+import { Users, Plus, ArrowRight, CircleCheckBig, Star, Info } from 'lucide-react'
 import { Button } from '../components/Button';
 import { ProfileApiError, type Contact, type ContactForm, type Profile as ProfileData, profileApi, validateContactForm } from '../lib/profileApi'
 import useLoginStatus from "../hooks/useLoginStatus";
+import { confirmExistence } from '../utils/confirmType';
 
 
 const CartDelivery = () => {
@@ -10,18 +11,30 @@ const CartDelivery = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     const [contacts, setContacts] = useState<Contact[]>();
+    const [profile, setProfile] = useState<ProfileData | null>(null)
+    const [selectedContact, setSelectedContact] = useState<number>();
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [address, setAddress] = useState('');
+    const [postCode, setPostCode] = useState('');
+    const [city, setCity] = useState('');
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
     const [paperType, setPaperType] = useState('forest');
     const paperList = [{ key: 'forest', name: 'Skogsgrön elegans' }, { key: 'warm', name: 'Varm naturbeige' }, { key: 'minimalist', name: 'Minimalistisk vit' }]
     const [personalMessage, setPersonalMessage] = useState('');
     const [signsUsed, setSignsUsed] = useState(0);
     const [nameToUse, setNameToUse] = useState('');
     const [isVisible, setIsVisible] = useState(false);
+
     const fetchContacts = async () => {
         setLoading(true);
         setError('');
         try {
-            const contactList = await profileApi.contacts();
+            const [contactList, profileData] = await Promise.all([profileApi.contacts(), profileApi.get()]);
             setContacts(contactList);
+            setProfile(profileData);
+            setNameToUse(profileData.user.firstName);
         } catch (err) {
             if (err instanceof ProfileApiError && err.status === 401) {
                 handleUnauthorized();
@@ -35,7 +48,8 @@ const CartDelivery = () => {
     useEffect(() => {
         fetchContacts();
     }, [handleUnauthorized])
-    console.log(contacts);
+    const userMembershipLevel = Number(profile?.plan?.level ?? 0);
+    const userMembership = profile?.availablePlans.find(item => item.level == userMembershipLevel);
 
     if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
         <p className="text-muted-foreground" role="status">Laddar kontakter...</p>
@@ -68,7 +82,7 @@ const CartDelivery = () => {
                                 </div>
                                 <div>
                                     <h2 className="text-base font-semibold text-brand-forest">Dina sparade kontakter</h2>
-                                    <p className="text-xs text-brand-textMuted">Obegränsad adressbok i Signature</p>
+                                    <p className="text-xs text-brand-textMuted">Obegränsad adressbok i {userMembership?.name}</p>
                                 </div>
                             </div>
 
@@ -91,155 +105,181 @@ const CartDelivery = () => {
                             />
                         </div> */}
 
-                        {/* <!-- Lista över sparade kontaktkort --> */}
-                        <div className="space-y-3">
-                            {/* <!-- Kontakt 2: Johan Lindqvist --> */}
+                        <div className="mb-3">
                             {contacts?.map(contact => (
-                                <div className="relative p-4 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all" key={contact.id as number}>
-                                    <label className="flex items-start space-x-3.5">
-                                        <div className="flex items-start space-x-3.5">
-                                            <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                JL
+                                <label className={selectedContact == contact.id ? `relative p-4 mb-2 rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} key={contact.id as number} onClick={() => setSelectedContact(contact.id as number)}>
+                                    <div className="flex w-full items-center space-x-3.5">
+                                        <input type="radio" className="appearance-none" />
+                                        <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            JL
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center space-x-2">
+                                                <h3 className="text-sm font-semibold text-brand-textMain">{contact.firstName} {contact.lastName}</h3>
+                                            </div>
+                                            <p className="text-xs text-brand-textMuted mt-1">{`${contact.address}, ${contact.postalCode} ${contact.city}`}</p>
+                                        </div>
+                                        {selectedContact == contact.id && <CircleCheckBig />}
+                                    </div>
+                                </label>
+                            ))}
+                            <label className={selectedContact == 0 ? `relative p-4 mb-2  rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} onClick={() => setSelectedContact(0)}>
+                                <div className="flex w-full items-center space-x-3.5">
+                                    <input type="radio" className="appearance-none" />
+                                    <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center space-x-2">
+                                            <h3 className="text-sm font-semibold text-brand-textMain">Engångskontakt (fyll i nedan)</h3>
+                                        </div>
+                                    </div>
+                                    {selectedContact == 0 && <CircleCheckBig />}
+                                </div>
+                            </label>
+                        </div>
+                        <div className="p-3.5 rounded-xl bg-brand-goldBg/60 border border-brand-gold/20 text-xs text-[#5c4921] flex items-center space-x-2.5">
+                            <Star />
+                            {userMembershipLevel == 2 &&
+                                <span>{userMembership?.name}-medlemskap: Spara enkelt ner dina tre favoritkontakter. Du kan när som helst uppgradera ditt medlemskap till {confirmExistence(profile?.availablePlans?.find(item => item.level == 3)).name} för obegränsat med kontakter.</span>
+                            }
+                            {userMembershipLevel == 3 &&
+                                <span>{userMembership?.name}-medlemskap: Spara enkelt ner ett obegränsat antal kontakter.</span>
+                            }
+                        </div>
+                    </div>
+                    {(selectedContact == 0 || userMembershipLevel == 1) &&
+                        <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
+                            <div className="pt-1">
+                                <div className="group border border-brand-border rounded-xl p-3.5 bg-transparent">
+                                    <div className="flex items-center justify-between pb-5 mb-6 border-b border-brand-borderLight">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-9 h-9 rounded-full bg-brand-sand flex items-center justify-center text-brand-forest">
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                </svg>
                                             </div>
                                             <div>
-                                                <div className="flex items-center space-x-2">
-                                                    <h3 className="text-sm font-semibold text-brand-textMain">{contact.firstName} {contact.lastName}</h3>
-                                                </div>
-                                                <p className="text-xs text-brand-textMuted mt-1">{`${contact.address}, ${contact.postalCode} ${contact.city}`}</p>
+                                                <h2 className="text-base font-semibold text-brand-forest">Mottagarens uppgifter</h2>
                                             </div>
                                         </div>
-                                        <input type="radio" />
-                                    </label>
-                                </div>
-                            ))}
-
-                        </div>
-                        {/* <!-- Signature förmånsnotis --> */}
-                        <div className="p-3.5 rounded-xl bg-brand-goldBg/60 border border-brand-gold/20 text-xs text-[#5c4921] flex items-center space-x-2.5">
-                            <svg className="w-4 h-4 text-brand-gold flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <span>Signature-medlemskap: Spara obegränsat antal vänner, födelsedagar och adresser.</span>
-                        </div>
-                    </div>
-
-                    <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
-                        {/* <!-- Fäll ut: Ange engångsmottagare --> */}
-                        <div className="pt-1">
-                            <details className="group border border-brand-border rounded-xl p-3.5 bg-transparent [&_summary::-webkit-details-marker]:hidden">
-                                <summary className="flex items-center justify-between cursor-pointer text-xs font-semibold text-brand-textMuted hover:text-brand-forest select-none">
-                                    <span className="flex items-center space-x-2">
-                                        <svg className="w-3.5 h-3.5 text-brand-forest group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                        <span>Skicka som engångsgåva utan att spara i adressboken</span>
-                                    </span>
-                                </summary>
-                                <div className="mt-3 pt-3 border-t border-brand-borderLight space-y-3">
-                                    <input type="text" placeholder="Mottagarens namn" className="w-full px-3 py-2 bg-white border border-brand-border rounded-lg text-xs" />
-                                    <input type="text" placeholder="Gatuadress" className="w-full px-3 py-2 bg-white border border-brand-border rounded-lg text-xs" />
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <input type="text" placeholder="Postnummer" className="w-full px-3 py-2 bg-white border border-brand-border rounded-lg text-xs" />
-                                        <input type="text" placeholder="Ort" className="w-full px-3 py-2 bg-white border border-brand-border rounded-lg text-xs" />
+                                        <span className="text-xs font-medium text-brand-textSubtle bg-[#f7f5f0] px-2.5 py-1 rounded-md">Engångssändning</span>
                                     </div>
-                                </div>
-                            </details>
-                        </div>
-                        <div className="pt-1">
-                            <details className="group border border-brand-border rounded-xl p-3.5 bg-transparent [&_summary::-webkit-details-marker]:hidden">
-                                <summary className="flex items-center justify-between cursor-pointer text-xs font-semibold text-brand-textMuted hover:text-brand-forest select-none">
-                                    <span className="flex items-center space-x-2">
-                                        <svg className="w-3.5 h-3.5 text-brand-forest group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                        </svg>
-                                        <span>Skicka som engångsgåva utan att spara i adressboken</span>
-                                    </span>
-                                </summary>
-                                <div className="flex items-center justify-between pb-5 mb-6 border-b border-brand-borderLight">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-9 h-9 rounded-full bg-brand-sand flex items-center justify-center text-brand-forest">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                            </svg>
+
+                                    <form className="space-y-4">
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label htmlFor="first-name" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                    Förnamn *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="first-name"
+                                                    value={firstName}
+                                                    onChange={e => setFirstName(e.target.value)}
+                                                    placeholder="Elin"
+                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="last-name" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                    Efternamn *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="last-name"
+                                                    value={lastName}
+                                                    onChange={e => setLastName(e.target.value)}
+                                                    placeholder="Sundström"
+                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
-                                            <h2 className="text-base font-semibold text-brand-forest">Mottagarens uppgifter</h2>
-                                            <p className="text-xs text-brand-textMuted">Manuell inmatning för denna sändning</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-xs font-medium text-brand-textSubtle bg-[#f7f5f0] px-2.5 py-1 rounded-md">Engångssändning</span>
-                                </div>
-
-                                <form className="space-y-4">
-                                    <div>
-                                        <label htmlFor="full-name" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
-                                            Mottagarens för- och efternamn *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="full-name"
-                                            value="Elin Sundström"
-                                            placeholder="T.ex. Elin Sundström"
-                                            className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label htmlFor="address" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
-                                            Gatuadress &amp; ev. lägenhetsnummer *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="address"
-                                            value="Storgatan 14B, lgh 1201"
-                                            placeholder="T.ex. Storgatan 14B, lgh 1201"
-                                            className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label htmlFor="postal-code" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
-                                                Postnummer *
+                                            <label htmlFor="address" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                Gatuadress &amp; ev. lägenhetsnummer *
                                             </label>
                                             <input
                                                 type="text"
-                                                id="postal-code"
-                                                value="411 24"
-                                                placeholder="T.ex. 411 24"
+                                                id="address"
+                                                value={address}
+                                                onChange={e => setAddress(e.target.value)}
+                                                placeholder="Storgatan 14B, lgh 1201"
                                                 className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                             />
                                         </div>
-                                        <div>
-                                            <label htmlFor="city" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
-                                                Ort *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                id="city"
-                                                value="Göteborg"
-                                                placeholder="T.ex. Göteborg"
-                                                className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
-                                            />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label htmlFor="postal-code" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                    Postnummer *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="postal-code"
+                                                    value={postCode}
+                                                    onChange={e => setPostCode(e.target.value)}
+                                                    placeholder="411 24"
+                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="city" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                    Ort *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="city"
+                                                    value={city}
+                                                    onChange={e => setCity(e.target.value)}
+                                                    placeholder="Göteborg"
+                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
+                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label htmlFor="phone" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                    Telefonnummer *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="phone"
+                                                    value={phone}
+                                                    onChange={e => setPhone(e.target.value)}
+                                                    placeholder="073 123 456 78"
+                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor="email" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                    Email *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="email"
+                                                    value={email}
+                                                    onChange={e => setEmail(e.target.value)}
+                                                    placeholder="Elin@mail.com"
+                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                />
+                                            </div>
+                                        </div>
+                                        {userMembershipLevel == 1 &&
+                                            <div className="mt-6 p-4 rounded-xl bg-brand-goldBg border border-brand-gold/20 flex items-start space-x-3.5">
+                                                <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-gold/15 text-brand-gold flex items-center justify-center flex-shrink-0">
+                                                    <Info />
+                                                </div>
+                                                <div className="text-xs leading-relaxed text-[#5c4921]">
+                                                    <p className="font-medium text-[#483713]">Med {confirmExistence(profile?.availablePlans?.find(item => item.level == 2)).name} kan du spara favoritkontakter. Du kan när som helst uppgradera ditt medlemskap.</p>
+                                                </div>
+                                            </div>
+                                        }
+                                    </form>
+                                </div>
+                            </div>
 
-                                    <div className="mt-6 p-4 rounded-xl bg-brand-goldBg border border-brand-gold/20 flex items-start space-x-3.5">
-                                        <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-gold/15 text-brand-gold flex items-center justify-center flex-shrink-0">
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                        <div className="text-xs leading-relaxed text-[#5c4921]">
-                                            <p className="font-medium text-[#483713]">Med Plus kan du spara favoritkontakter.</p>
-                                            <p className="mt-0.5 text-[#6c5931]">Som Simple-medlem fyller du smidigt i uppgifterna för varje gåva för hand. Du kan när som helst uppgradera ditt medlemskap.</p>
-                                        </div>
-                                    </div>
-                                </form>
-                            </details>
-                        </div>
-
-                    </div>
+                        </div>}
 
                     <div className="pt-3">
                         <Button
