@@ -4,7 +4,7 @@ import { addToCart } from '../../lib/cartApi'
 import type { AddToCartButtonProps } from '../../types/gifts'
 import { Button } from '../Button'
 
-export function AddToCartButton({ productId, disabled = false, className = '', label = 'Välj gåvan' }: AddToCartButtonProps) {
+export function AddToCartButton({ productId, disabled = false, className = '', label = 'Välj gåvan', onAdded }: AddToCartButtonProps) {
     const [status, setStatus] = useState<'idle' | 'adding' | 'added'>('idle')
     const [error, setError] = useState('')
 
@@ -12,8 +12,9 @@ export function AddToCartButton({ productId, disabled = false, className = '', l
         setStatus('adding')
         setError('')
         try {
-            await addToCart(productId)
+            const result = await addToCart(productId)
             setStatus('added')
+            onAdded?.(result)
         } catch (requestError) {
             setStatus('idle')
             setError(requestError instanceof Error ? requestError.message : 'Gåvan kunde inte läggas i kundvagnen.')

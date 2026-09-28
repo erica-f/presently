@@ -7,6 +7,7 @@ import { MembershipGate } from '../components/gift-details/MembershipGate'
 import { PageMessage } from '../components/gift-details/PageMessage'
 import { ProductGallery } from '../components/gift-details/ProductGallery'
 import { SuggestedGifts } from '../components/gift-details/SuggestedGifts'
+import { getCart } from '../lib/cartApi'
 import { profileApi } from '../lib/profileApi'
 import type { GiftInfo, Membership } from '../types/gifts'
 import { shuffled, toAssetUrl } from '../utils/giftDetails'
@@ -20,6 +21,7 @@ const GiftDetails = () => {
     const [memberships, setMemberships] = useState<Membership[]>([])
     const [membershipLevel, setMembershipLevel] = useState(0)
     const [currentPoints, setCurrentPoints] = useState(0)
+    const [cartPointTotal, setCartPointTotal] = useState(0)
     const [selectedImage, setSelectedImage] = useState(0)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
@@ -29,17 +31,19 @@ const GiftDetails = () => {
 
         const fetchGift = async () => {
             try {
-                const [giftData, giftList, membershipData, overview, profile] = await Promise.all([
+                const [giftData, giftList, membershipData, overview, profile, cart] = await Promise.all([
                     getGift(giftId),
                     getList('gifts') as Promise<GiftInfo[]>,
                     getList('memberships') as Promise<Membership[]>,
                     profileApi.overview(),
                     profileApi.get(),
+                    getCart(),
                 ])
                 setGift(giftData)
                 setAllGifts(shuffled(giftList))
                 setMemberships(membershipData)
                 setCurrentPoints(overview.pointBalance)
+                setCartPointTotal(cart.pointTotal)
                 setMembershipLevel(Number(profile.plan?.level ?? 0))
                 setSelectedImage(0)
             } catch (error) {
@@ -77,7 +81,7 @@ const GiftDetails = () => {
 
             <div className="grid items-start gap-9 lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,.92fr)] lg:gap-14">
                 <ProductGallery giftName={gift.name} images={images} selectedImage={selectedImage} onSelectImage={setSelectedImage} />
-                <GiftPurchasePanel gift={gift} currentPoints={currentPoints} />
+                <GiftPurchasePanel gift={gift} currentPoints={currentPoints} cartPointTotal={cartPointTotal} onCartPointTotalChange={setCartPointTotal} />
             </div>
 
             <SuggestedGifts gifts={suggestedGifts} />

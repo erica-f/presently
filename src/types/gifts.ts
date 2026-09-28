@@ -73,6 +73,8 @@ export type ProductGalleryProps = {
 export type GiftPurchasePanelProps = {
     gift: GiftInfo
     currentPoints: number
+    cartPointTotal: number
+    onCartPointTotalChange: (pointTotal: number) => void
 }
 
 export type AddToCartButtonProps = {
@@ -80,11 +82,18 @@ export type AddToCartButtonProps = {
     disabled?: boolean
     className?: string
     label?: string
+    onAdded?: (result: AddToCartResponse) => void
 }
 
 export type AddToCartResponse = {
     success: boolean
     productId: number
     quantity: number
+    pointTotal: number
+}
+
+export type CartSummary = {
+    items: unknown[]
+    itemCount: number
     pointTotal: number
 }
