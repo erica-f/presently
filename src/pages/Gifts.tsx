@@ -65,7 +65,7 @@ const Gifts = () => {
     fetchData();
   }, [handleUnauthorized])
 
-  const userMembershipId = Number(profile?.subscription?.membership_plan_id ?? 0);
+  const userMembershipId = Number(profile?.plan?.level ?? 0);
   const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userMembershipId)) : { id: 0, name: '', level: 0 };
 
   //Filter product by category or membership 
