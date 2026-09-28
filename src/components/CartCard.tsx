@@ -11,12 +11,16 @@ const CartCard = ({ item, membership, refresh }: CartCardType) => {
     const [loading, setLoading] = useState(false);
     const handleUnauthorized = useLoginStatus();
     const [amount, setAmount] = useState(item.quantity);
+    const [success, setSuccess] = useState(true);
 
-    const updateAmount = async (changedAmount: number) => {
+    const updateAmount = async (change: string) => {
         setLoading(true);
+        const newAmount = change == 'minus' ? amount-1 : amount+1;
+        setAmount(newAmount)
         try {
-            const result = await deleteItem(item.product_id, changedAmount);
-            if(changedAmount <= 0) {
+            const result = await deleteItem(item.product_id, newAmount);
+            setSuccess(result.success);
+            if (newAmount <= 0) {
                 refresh(previous => !previous)
             }
         } catch (err) {
@@ -48,7 +52,12 @@ const CartCard = ({ item, membership, refresh }: CartCardType) => {
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#f5eee1] text-[#b89047]">{membership.name}</span>
                         <span className="text-xs font-bold text-[#1a3b2b]">{item.point_cost}</span>
                     </div>
-                    <span className="justify-self-end flex items-center"><Button variant="ghost" onClick={() => { setAmount(amount - 1), updateAmount(amount - 1) }} icon={<Minus />}> </Button><span>{amount}</span><Button variant="ghost" onClick={() => { setAmount(amount + 1), updateAmount(amount + 1) }} icon={<Plus />}> </Button></span>
+                    <span className="justify-self-end flex items-center">
+                        <Button variant="ghost" onClick={() => {updateAmount('minus') }} icon={<Minus />}> </Button>
+                        <span>{amount}</span>
+                        <Button variant="ghost" onClick={() => {updateAmount('plus') }} icon={<Plus />}> </Button>
+                    </span>
+                    {!success && <span>Kunde inte uppdatera antal gåvor</span>}
                 </div>
                 <h3 className="text-lg font-serif text-[#1a3b2b]">{item.name}</h3>
                 <p className="text-xs text-[#68736c]">

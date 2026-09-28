@@ -1,18 +1,18 @@
 import { useLocation, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { Star, Moon, Heart, Infinity, ArrowRight, ArrowLeft } from 'lucide-react'
+import { Star, Moon, Heart, ArrowRight, ArrowLeft } from 'lucide-react'
 import { confirmExistence } from '../utils/confirmType'
 import useLoginStatus from '../hooks/useLoginStatus'
 import { ProfileApiError, profileApi } from '../lib/profileApi'
 
-const customizeGift = () => {
+const CustomizeGift = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [selectedImprint, setSelectedImprint] = useState('initials');
     const [imprintText, setImprintText] = useState('');
     const [imprintDate, setImprintDate] = useState('');
     const [imprintSymbol, setImprintSymbol] = useState('star');
-    const symbolsList = [{ key: 'star', name: 'Stjärna', icon: <Star className="size-4" /> }, { key: 'moon', name: 'Måne', icon: <Moon className="size-4" /> }, { key: 'heart', name: 'Hjärta', icon: <Heart className="size-4" /> }, { key: 'infinity', name: 'Oändlighet', icon: <Infinity className="size-4" /> }];
+    const symbolsList = [{ key: 'star', name: 'Stjärna', icon: <Star className="size-4" /> }, { key: 'moon', name: 'Måne', icon: <Moon className="size-4" /> }, { key: 'heart', name: 'Hjärta', icon: <Heart className="size-4" /> }];
     const [paperType, setPaperType] = useState('forest');
     const paperList = [{ key: 'forest', name: 'Skogsgrön elegans' }, { key: 'warm', name: 'Varm naturbeige' }, { key: 'minimalist', name: 'Minimalistisk vit' }]
     const [personalMessage, setPersonalMessage] = useState('');
@@ -222,7 +222,7 @@ const customizeGift = () => {
                                 className="w-full p-4 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent font-serif"
                                 placeholder="Skriv din hälsning här..."
                                 value={personalMessage}
-                                onChange={(e) => { setPersonalMessage(e.target.value), setSignsUsed(e.target.value.length) }}
+                                onChange={(e) => ( setPersonalMessage(e.target.value), setSignsUsed(e.target.value.length) )}
                                 maxLength={300}
                             />
 
@@ -317,4 +317,4 @@ const customizeGift = () => {
     )
 }
 
-export default customizeGift
+export default CustomizeGift
