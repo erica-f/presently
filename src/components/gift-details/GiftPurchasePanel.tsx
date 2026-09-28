@@ -1,8 +1,8 @@
-import { ChevronRight, RotateCcw, ShieldCheck, Truck } from 'lucide-react'
-import type { GiftInfo } from '../../types/gifts'
-import { Button } from '../Button'
+import { RotateCcw, ShieldCheck, Truck } from 'lucide-react'
+import type { GiftPurchasePanelProps } from '../../types/gifts'
+import { AddToCartButton } from '../cart/AddToCartButton'
 
-export function GiftPurchasePanel({ gift, currentPoints }: { gift: GiftInfo; currentPoints: number }) {
+export function GiftPurchasePanel({ gift, currentPoints }: GiftPurchasePanelProps) {
     const hasEnoughPoints = currentPoints >= gift.point_cost
     const missingPoints = Math.max(0, gift.point_cost - currentPoints)
 
@@ -27,10 +27,7 @@ export function GiftPurchasePanel({ gift, currentPoints }: { gift: GiftInfo; cur
                     </p>
                 </div>
 
-                <Button className="w-full py-3" disabled={!hasEnoughPoints}>
-                    {hasEnoughPoints ? 'Välj gåvan' : 'Otillräckligt saldo'}
-                    {hasEnoughPoints && <ChevronRight className="size-4" aria-hidden="true" />}
-                </Button>
+                <AddToCartButton className="w-full py-3" disabled={!hasEnoughPoints} productId={gift.id} />
 
                 <ul className="divide-y divide-border border-y border-border text-sm text-muted-foreground">
                     <li className="flex items-start gap-3 py-3"><Truck className="size-4 shrink-0 text-primary" aria-hidden="true" />Beräknad leverans inom 3 arbetsdagar.</li>
