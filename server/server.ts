@@ -14,6 +14,7 @@ import sessionRouter from './session.js';
 import membershipRouter from './membership.js';
 import publicFeaturedGifts from './publicFeaturedGifts.js';
 import publicMembershipPlans from './publicMembershipPlans.js';
+import cart from './cart.js'
 
 dotenv.config();
 setupBigIntSerialization();
@@ -46,6 +47,7 @@ app.use("/api/session", sessionRouter);
 app.use("/api/membership", membershipRouter);
 app.use("/api/public/featured-gifts", publicFeaturedGifts);
 app.use("/api/public/membership-plans", publicMembershipPlans);
+app.use("/api/cart", cart);
 
 app.get('/api/health', async (_req: Request, res: Response) => {
     try {
