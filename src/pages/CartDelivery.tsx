@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom';
 import { Users, Plus, ArrowRight, CircleCheckBig, Star, Info } from 'lucide-react'
 import { Button } from '../components/Button';
 import { ProfileApiError, type Contact, type ContactForm, type Profile as ProfileData, profileApi, validateContactForm } from '../lib/profileApi'
@@ -12,21 +13,41 @@ const CartDelivery = () => {
     const [loading, setLoading] = useState(true);
     const [contacts, setContacts] = useState<Contact[]>();
     const [profile, setProfile] = useState<ProfileData | null>(null)
-    const [selectedContact, setSelectedContact] = useState<number>();
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [address, setAddress] = useState('');
-    const [postCode, setPostCode] = useState('');
-    const [city, setCity] = useState('');
-    const [phone, setPhone] = useState('');
-    const [email, setEmail] = useState('');
+    const [selectedContact, setSelectedContact] = useState<number>(0);
     const [paperType, setPaperType] = useState('forest');
     const paperList = [{ key: 'forest', name: 'Skogsgrön elegans' }, { key: 'warm', name: 'Varm naturbeige' }, { key: 'minimalist', name: 'Minimalistisk vit' }]
     const [personalMessage, setPersonalMessage] = useState('');
     const [signsUsed, setSignsUsed] = useState(0);
     const [nameToUse, setNameToUse] = useState('');
     const [isVisible, setIsVisible] = useState(false);
-
+    const [contactDetails, setContactDetails] = useState<ContactForm>({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        address: '',
+        postalCode: '',
+        city: '',
+    });
+    const [savedContactDetails, setSavedContactDetails] = useState<ContactForm>({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        address: '',
+        postalCode: '',
+        city: '',
+    });
+    const saveContact = (field: keyof ContactForm, value: string) => {
+        setContactDetails(previous => ({
+            ...previous,
+            [field]: value,
+        }));
+    };
+    const logContact = (contact: Contact) => {
+        const { id, ...formValues } = contact;
+        setSavedContactDetails(formValues);
+    }
     const fetchContacts = async () => {
         setLoading(true);
         setError('');
@@ -107,7 +128,7 @@ const CartDelivery = () => {
 
                         <div className="mb-3">
                             {contacts?.map(contact => (
-                                <label className={selectedContact == contact.id ? `relative p-4 mb-2 rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} key={contact.id as number} onClick={() => setSelectedContact(contact.id as number)}>
+                                <label className={selectedContact == contact.id ? `relative p-4 mb-2 rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} key={contact.id as number} onClick={() => (setSelectedContact(contact.id as number), logContact(contact))}>
                                     <div className="flex w-full items-center space-x-3.5">
                                         <input type="radio" className="appearance-none" />
                                         <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -176,8 +197,8 @@ const CartDelivery = () => {
                                                 <input
                                                     type="text"
                                                     id="first-name"
-                                                    value={firstName}
-                                                    onChange={e => setFirstName(e.target.value)}
+                                                    value={contactDetails.firstName}
+                                                    onChange={e => saveContact('firstName', e.target.value)}
                                                     placeholder="Elin"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />
@@ -189,8 +210,8 @@ const CartDelivery = () => {
                                                 <input
                                                     type="text"
                                                     id="last-name"
-                                                    value={lastName}
-                                                    onChange={e => setLastName(e.target.value)}
+                                                    value={contactDetails.lastName}
+                                                    onChange={e => saveContact('lastName', e.target.value)}
                                                     placeholder="Sundström"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />
@@ -203,8 +224,8 @@ const CartDelivery = () => {
                                             <input
                                                 type="text"
                                                 id="address"
-                                                value={address}
-                                                onChange={e => setAddress(e.target.value)}
+                                                value={contactDetails.address}
+                                                onChange={e => saveContact('address', e.target.value)}
                                                 placeholder="Storgatan 14B, lgh 1201"
                                                 className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                             />
@@ -217,8 +238,8 @@ const CartDelivery = () => {
                                                 <input
                                                     type="text"
                                                     id="postal-code"
-                                                    value={postCode}
-                                                    onChange={e => setPostCode(e.target.value)}
+                                                    value={contactDetails.postalCode}
+                                                    onChange={e => saveContact('postalCode', e.target.value)}
                                                     placeholder="411 24"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />
@@ -230,14 +251,14 @@ const CartDelivery = () => {
                                                 <input
                                                     type="text"
                                                     id="city"
-                                                    value={city}
-                                                    onChange={e => setCity(e.target.value)}
+                                                    value={contactDetails.city}
+                                                    onChange={e => saveContact('city', e.target.value)}
                                                     placeholder="Göteborg"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />
                                             </div>
                                         </div>
-                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label htmlFor="phone" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
                                                     Telefonnummer *
@@ -245,8 +266,8 @@ const CartDelivery = () => {
                                                 <input
                                                     type="text"
                                                     id="phone"
-                                                    value={phone}
-                                                    onChange={e => setPhone(e.target.value)}
+                                                    value={contactDetails.phone}
+                                                    onChange={e => saveContact('phone', e.target.value)}
                                                     placeholder="073 123 456 78"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />
@@ -258,8 +279,8 @@ const CartDelivery = () => {
                                                 <input
                                                     type="text"
                                                     id="email"
-                                                    value={email}
-                                                    onChange={e => setEmail(e.target.value)}
+                                                    value={contactDetails.email}
+                                                    onChange={e => saveContact('email', e.target.value)}
                                                     placeholder="Elin@mail.com"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />
@@ -282,13 +303,16 @@ const CartDelivery = () => {
                         </div>}
 
                     <div className="pt-3">
-                        <Button
-                            icon={<ArrowRight />}
-                            iconPosition='right'
-                            className="w-full"
-                        >
-                            <span>Fortsätt till bekräftelse</span>
-                        </Button>
+                        <Link to="/cart/checkout" state={{ deliverTo: selectedContact == 0 ? contactDetails : savedContactDetails, message: {type: paperType, message: personalMessage, signed: nameToUse}}} className={'pointer-events-none'}>
+                            <Button
+                                icon={<ArrowRight />}
+                                iconPosition='right'
+                                className="w-full"
+                            >
+                                <span>Fortsätt till bekräftelse</span>
+                            </Button>
+                        </Link>
+
                     </div>
                 </section>
 
