@@ -1,5 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
@@ -10,6 +9,7 @@ import Profile from './pages/Profile'
 import ProtectedRoute from './utils/ProtectedRoute'
 import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
+import { ScrollToHash } from './utils/scroll'
 
 function App() {
     return (
