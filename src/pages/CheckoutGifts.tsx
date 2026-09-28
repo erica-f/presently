@@ -2,44 +2,6 @@
 const CheckoutGifts = () => {
   return (
     <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-
-      {/* <!-- Stegvisare --> */}
-      <div className="mb-10">
-        <div className="flex items-center justify-between max-w-xl mx-auto">
-          {/* <!-- Steg 1: Mottagare (Klar) --> */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#244d36] text-white text-xs font-semibold flex items-center justify-center">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <span className="text-xs font-medium text-[#244d36] hidden sm:inline">1. Mottagare</span>
-          </div>
-
-          <div className="flex-1 h-[2px] bg-[#244d36] mx-3 sm:mx-4"></div>
-
-          {/* <!-- Steg 2: Personlig hälsning (Klar) --> */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#244d36] text-white text-xs font-semibold flex items-center justify-center">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <span className="text-xs font-medium text-[#244d36] hidden sm:inline">2. Personlig hälsning</span>
-          </div>
-
-          <div className="flex-1 h-[2px] bg-[#244d36] mx-3 sm:mx-4"></div>
-
-          {/* <!-- Steg 3: Granska & skicka (Aktiv) --> */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#244d36] text-white text-xs font-semibold flex items-center justify-center ring-4 ring-[#244d36]/15">
-              3
-            </div>
-            <span className="text-xs font-semibold text-[#1a3b2b] hidden sm:inline">3. Granska & skicka</span>
-          </div>
-        </div>
-      </div>
-
       {/* <!-- Huvudrubrik --> */}
       <div className="text-center max-w-2xl mx-auto mb-10">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-[#1a3b2b] tracking-tight mb-2">

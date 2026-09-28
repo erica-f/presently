@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom';
 import { getList, GiftsApiError } from '../api/giftsApi'
 import { type Overview, profileApi } from '../lib/profileApi'
 import useLoginStatus from "../hooks/useLoginStatus";
@@ -87,7 +88,6 @@ const Cart = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         <div className="lg:col-span-7 space-y-6">
-
           <section className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#f0eae0]">
               <h2 className="text-xs font-bold uppercase tracking-wider text-[#244d36] flex items-center gap-2">
@@ -99,14 +99,14 @@ const Cart = () => {
               </h2>
             </div>
             {cart.map((item) => (
-              <CartCard item={item} membership={confirmExistence(memberships.find(membership => membership.level == item.level))} refresh={setRefresh} updateCart={updateCart} pointsLeft={pointsLeft}/>
+              <CartCard item={item} membership={confirmExistence(memberships.find(membership => membership.level == item.level))} refresh={setRefresh} updateCart={updateCart} pointsLeft={pointsLeft} />
             ))}
           </section>
         </div>
 
         <div className="lg:col-span-5 space-y-6">
 
-          <div className="p-6 sm:p-7 rounded-2xl bg-white border-2 border-[#244d36]/20 shadow-sm">
+          <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
 
             <div className="flex items-center justify-between pb-4 border-b border-[#e6ded3]">
               <span className="text-xs font-bold uppercase tracking-wider text-[#1a3b2b]">Poängberäkning</span>
@@ -149,14 +149,17 @@ const Cart = () => {
             </div>
 
             <div className="space-y-3">
-              <Button
-                className="w-full"
-                disabled={pointsLeft < 0 ? true : false}
-                icon={<ArrowRight />}
-                iconPosition='right'
-              >
-                <span>Välj mottagare</span>
-              </Button>
+              <Link to="/cart/checkout">
+                <Button
+                  className="w-full"
+                  disabled={pointsLeft < 0 ? true : false}
+                  icon={<ArrowRight />}
+                  iconPosition='right'
+                >
+                  <span>Välj mottagare</span>
+                </Button>
+              </Link>
+
             </div>
           </div>
 
