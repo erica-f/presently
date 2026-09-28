@@ -7,12 +7,14 @@ export type Membership = {
     price: number
     is_active: number
 }
+
 export type UserDetail = {
     first_name: string
     user_id: number
     membership_id: number
     current_points: number
 }
+
 export type GiftInfo = {
     id: number
     name: string
@@ -23,6 +25,7 @@ export type GiftInfo = {
     product_images?: string[]
     category_id: number
 }
+
 export type Categories = {
     id: number
     name: string
@@ -34,4 +37,24 @@ export interface CardDetails {
     gift: GiftInfo
     memberships: Membership[]
     category: Categories
+}
+
+export type MembershipGateProps = {
+    currentMembership?: Membership
+    giftName: string
+    requiredLevel: number
+    requiredMembership?: Membership
+}
+
+export type PageMessageProps = {
+    title: string
+    description?: string
+    loading?: boolean
+}
+
+export type ProductGalleryProps = {
+    giftName: string
+    images: string[]
+    selectedImage: number
+    onSelectImage: (index: number) => void
 }
