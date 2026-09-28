@@ -43,3 +43,15 @@ export const getGift = async (id: number): Promise<GiftInfo> => {
 
     return data;
 };
+
+export const getFeaturedGifts = async () => {
+    const response = await fetch('/api/public/featured-gifts', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    })
+    const data = await response.json()
+    if (!response.ok) {
+        throw new GiftsApiError(data?.message ?? 'Något gick fel.', response.status)
+    }
+    return data as import('../types/gifts').FeaturedGift[]
+}
