@@ -69,3 +69,22 @@ export type ProductGalleryProps = {
     selectedImage: number
     onSelectImage: (index: number) => void
 }
+
+export type GiftPurchasePanelProps = {
+    gift: GiftInfo
+    currentPoints: number
+}
+
+export type AddToCartButtonProps = {
+    productId: number
+    disabled?: boolean
+    className?: string
+    label?: string
+}
+
+export type AddToCartResponse = {
+    success: boolean
+    productId: number
+    quantity: number
+    pointTotal: number
+}
