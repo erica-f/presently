@@ -22,11 +22,20 @@ const Cart = () => {
   const calculatePoints = (data: CartInfo[]) => {
     let totalPointCost = 0;
     data.forEach((item) => {
-      totalPointCost += item.point_cost;
+      totalPointCost += (item.point_cost * item.quantity);
     })
     setPointCostSum(totalPointCost);
   }
 
+  const updateCart = (productId: number, amount: number) => {
+    const updatedCart = cart.map(item =>
+      productId === item.product_id
+        ? { ...item, quantity: amount }
+        : item
+    )
+    setCart(updatedCart);
+    calculatePoints(updatedCart);
+  }
   const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
@@ -51,7 +60,6 @@ const Cart = () => {
     }
     fetchData();
   }, [handleUnauthorized, refresh])
-  console.log(cart);
   const pointsLeft = (currentPoints?.pointBalance ?? 0) - pointCostSum;
 
   if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
@@ -91,7 +99,7 @@ const Cart = () => {
               </h2>
             </div>
             {cart.map((item) => (
-              <CartCard item={item} membership={confirmExistence(memberships.find(membership => membership.level == item.level))} refresh={setRefresh} />
+              <CartCard item={item} membership={confirmExistence(memberships.find(membership => membership.level == item.level))} refresh={setRefresh} updateCart={updateCart} pointsLeft={pointsLeft}/>
             ))}
           </section>
         </div>
@@ -115,7 +123,7 @@ const Cart = () => {
                   <div className="flex items-center gap-1.5">
                     <span className="text-[#1a3b2b] font-medium">{item.name}</span>
                   </div>
-                  <span className="font-semibold text-[#9e3a2b] font-mono text-base">-{item.point_cost} p</span>
+                  <span className="font-semibold text-[#9e3a2b] font-mono text-base">-{item.point_cost * item.quantity} p</span>
                 </div>
               ))}
               <div className="pt-2 border-t border-[#e6ded3]"></div>

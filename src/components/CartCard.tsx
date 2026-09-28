@@ -6,7 +6,7 @@ import useLoginStatus from "../hooks/useLoginStatus";
 import { Plus, Minus } from 'lucide-react'
 
 
-const CartCard = ({ item, membership, refresh }: CartCardType) => {
+const CartCard = ({ item, membership, refresh, updateCart, pointsLeft }: CartCardType) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const handleUnauthorized = useLoginStatus();
@@ -15,14 +15,17 @@ const CartCard = ({ item, membership, refresh }: CartCardType) => {
 
     const updateAmount = async (change: string) => {
         setLoading(true);
-        const newAmount = change == 'minus' ? amount-1 : amount+1;
-        setAmount(newAmount)
+        const newAmount = change == 'minus' ? amount - 1 : amount + 1;
+
+        setAmount(newAmount);
+
         try {
             const result = await deleteItem(item.product_id, newAmount);
             setSuccess(result.success);
-            if (newAmount <= 0) {
+            if( newAmount <= 0) {
                 refresh(previous => !previous)
             }
+            updateCart(item.product_id, newAmount);
         } catch (err) {
             if (err instanceof CartApiError && err.status === 401) {
                 handleUnauthorized();
@@ -36,12 +39,12 @@ const CartCard = ({ item, membership, refresh }: CartCardType) => {
     if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
         <p className="text-muted-foreground" role="status">Laddar uppdatering</p>
     </main>
-    if (error) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
-        <div className="border border-danger/30 bg-surface p-6">
-            <h1 className="text-2xl text-foreground">Kunde inte hämta in produkten</h1>
+    if (error) return 
+        <div className="flex flex-col sm:flex-row gap-4 items-start mb-5">
+            <h3 className="text-lg font-serif text-[#1a3b2b]">Kunde inte hämta in produkten</h3>
             <p className="mt-2 text-muted-foreground">{error}</p>
         </div>
-    </main>
+
 
     return (
         <div className="flex flex-col sm:flex-row gap-4 items-start mb-5" key={item.cartItemId}>
@@ -53,9 +56,9 @@ const CartCard = ({ item, membership, refresh }: CartCardType) => {
                         <span className="text-xs font-bold text-[#1a3b2b]">{item.point_cost}</span>
                     </div>
                     <span className="justify-self-end flex items-center">
-                        <Button variant="ghost" onClick={() => {updateAmount('minus') }} icon={<Minus />}> </Button>
+                        <Button variant="ghost" onClick={() => { updateAmount('minus') }} icon={<Minus />} > </Button>
                         <span>{amount}</span>
-                        <Button variant="ghost" onClick={() => {updateAmount('plus') }} icon={<Plus />}> </Button>
+                        <Button variant="ghost" onClick={() => { updateAmount('plus') }} icon={<Plus />} disabled={pointsLeft - item.point_cost >= 0 ? false : true} className="disabled:bg-transparent"> </Button>
                     </span>
                     {!success && <span>Kunde inte uppdatera antal gåvor</span>}
                 </div>

@@ -18,4 +18,6 @@ export interface CartCardType {
     item: CartInfo
     membership: Membership
     refresh: Dispatch<SetStateAction<boolean>>
+    updateCart: (arg1: number, arg2: number) => void
+    pointsLeft: number
 }
