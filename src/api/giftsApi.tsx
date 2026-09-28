@@ -1,3 +1,4 @@
+import type { GiftInfo } from '../types/gifts'
 
 export class GiftsApiError extends Error {
     status: number
@@ -25,6 +26,21 @@ export const getList = async (path: string) => {
             data?.message ?? 'Något gick fel.', response.status
         );
     }
+    return data;
+};
+
+export const getGift = async (id: number): Promise<GiftInfo> => {
+    const response = await fetch(`/api/gifts/${id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+    });
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data?.message ?? 'Kunde inte hämta gåvan');
+
     return data;
 };
 
