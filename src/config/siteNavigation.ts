@@ -3,9 +3,8 @@ import type { NavigationLocation, SiteNavigationLink } from '../types/navigation
 const siteNavigation: SiteNavigationLink[] = [
     { label: 'Home', path: '/', header: true, footer: true, style: 'link' },
     { label: 'Gåvor', path: '/gifts', header: true, footer: true, style: 'link' },
-    { label: 'Något här', path: '/something-here', header: true, footer: true, style: 'link' },
     { label: 'Logga in', path: '/login', header: true, footer: false, style: 'secondary' },
-    { label: 'Kom igång', path: '#kom-igang', header: true, footer: false, style: 'primary' },
+    { label: 'Kom igång', path: '/#kom-igang', header: true, footer: false, style: 'primary' },
 ]
 
 export function getNavigationLinks(location: NavigationLocation) {
