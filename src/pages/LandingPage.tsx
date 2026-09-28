@@ -229,7 +229,7 @@ function LandingPage() {
                             <h2 id="gifts-title" className="text-2xl tracking-tight text-foreground font-bold">Upptäck våra gåvor</h2>
                             <p className="mt-1 text-sm text-muted-foreground">Upptäck gåvor för olika tillfällen och nivåer – välj något som passar dina poäng.</p>
                         </div>
-                        <a className="shrink-0 whitespace-nowrap text-sm font-semibold text-primary underline-offset-4 hover:underline sm:mt-1" href="/gifts">Se alla gåvor</a>
+                        {isLoggedIn && <a className="shrink-0 whitespace-nowrap text-sm font-semibold text-primary underline-offset-4 hover:underline sm:mt-1" href="/gifts">Se alla gåvor</a>}
                     </div>
                     {featuredGiftsLoading && <p className="text-sm text-muted-foreground">Laddar gåvor...</p>}
                     {!featuredGiftsLoading && featuredGiftsError && <p className="text-sm text-muted-foreground">Gåvorna kunde inte laddas just nu.</p>}
