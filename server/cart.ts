@@ -11,7 +11,7 @@ cart.get("/", async (req, res) => {
         const getCart = await db.query(`SELECT * FROM carts WHERE user_id = ${req.session.userId}`);
         if (getCart.length > 0) {
             const cartId = getCart[0].id;
-            const getItems = await db.query(`SELECT * FROM cart_items WHERE cart_id = ${cartId}`);
+            const getItems = await db.query(`SELECT c.id AS cartItemId, c.cart_id, c.product_id, c.quantity, p.name, p.description, p.thumbnail_image_url, p.category_id, p.point_cost, p.minimum_membership_plan_level AS level FROM cart_items AS c JOIN products AS p ON p.id = c.product_id WHERE c.cart_id = ${cartId}`);
             res.json(getItems);
         } else {
             res.json("No cart exists");
@@ -38,6 +38,7 @@ cart.post("/", async (req, res) => {
             if (getItems.length > 0) {
                 const currentAmount = getItems[0].quantity;
                 const cartItemId = getItems[0].id;
+
                 const updateAmount = await db.query(`UPDATE cart_items SET quantity = ${currentAmount + quantity} WHERE id = ${cartItemId}`);
                 if (updateAmount.affectedRows == 1) {
                     res.json({ success: true });
