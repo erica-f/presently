@@ -40,12 +40,21 @@ order.post('/', async (req: Request<object, unknown, BodyDetails>, res) => {
         res.status(400).json({ message: 'Inga gåvor i varukorgen' })
         return
     }
-    //expand on this logic later
-    if (delivery.firstName == '') {
-        res.status(400).json({ message: 'Ingen mottagare är angiven' })
+    const requiredContactFields: (keyof Contact)[] = [
+        'firstName',
+        'lastName',
+        'address',
+        'postalCode',
+        'city',
+    ];
+    const oneTimeContactComplete = requiredContactFields.every(
+        field => delivery[field].trim() !== ''
+    );
+    if (!oneTimeContactComplete) {
+        res.status(400).json({ message: 'Mottagaruppgifter saknas' })
         return
     }
-     if (pointCostSum <= 0) {
+    if (pointCostSum <= 0) {
         res.status(400).json({ message: 'Ingen poängkostnad angiven' })
         return
     }
@@ -55,7 +64,7 @@ order.post('/', async (req: Request<object, unknown, BodyDetails>, res) => {
     try {
         connection = await db.getConnection()
         await connection.beginTransaction()
-        
+
         const createNewOrder = await connection.query(`INSERT INTO gift_orders(user_id, recipient_name, recipient_address_line_1, recipient_postal_code, recipient_city, total_points, paper_type, message, signed) VALUES(? , ? , ? , ? , ?, ? , ? , ? , ? )`, [res.locals.userId, delivery.firstName + ' ' + delivery.lastName, delivery.address, delivery.postalCode, delivery.city, pointCostSum, message.type, message.message, message.signed])
         const newOrderId = createNewOrder.insertId;
         for (const item of cart) {
@@ -67,7 +76,7 @@ order.post('/', async (req: Request<object, unknown, BodyDetails>, res) => {
         await connection.query(`DELETE FROM carts WHERE user_id = ? `, [res.locals.userId]);
         await connection.commit();
 
-        res.status(201).json({ success: true, delivery, message, cart, pointCostSum, newOrderId})
+        res.status(201).json({ success: true, delivery, message, cart, pointCostSum, newOrderId })
 
     } catch (error) {
         if (connection) await connection.rollback().catch(() => undefined)
