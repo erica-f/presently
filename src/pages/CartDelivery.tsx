@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Users, Plus, ArrowRight, CircleCheckBig, Star, Info } from 'lucide-react'
 import { Button } from '../components/Button';
 import { ProfileApiError, type Contact, type ContactForm, type Profile as ProfileData, profileApi, validateContactForm } from '../lib/profileApi'
@@ -9,11 +9,12 @@ import { confirmExistence } from '../utils/confirmType';
 
 const CartDelivery = () => {
     const handleUnauthorized = useLoginStatus();
+    const navigate = useNavigate();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     const [contacts, setContacts] = useState<Contact[]>();
     const [profile, setProfile] = useState<ProfileData | null>(null)
-    const [selectedContact, setSelectedContact] = useState<number>(0);
+    const [selectedContact, setSelectedContact] = useState<number>();
     const [paperType, setPaperType] = useState('forest');
     const paperList = [{ key: 'forest', name: 'Skogsgrön elegans' }, { key: 'warm', name: 'Varm naturbeige' }, { key: 'minimalist', name: 'Minimalistisk vit' }]
     const [personalMessage, setPersonalMessage] = useState('');
@@ -48,6 +49,7 @@ const CartDelivery = () => {
         const { id, ...formValues } = contact;
         setSavedContactDetails(formValues);
     }
+
     const fetchContacts = async () => {
         setLoading(true);
         setError('');
@@ -303,11 +305,12 @@ const CartDelivery = () => {
                         </div>}
 
                     <div className="pt-3">
-                        <Link to="/cart/checkout" state={{ deliverTo: selectedContact == 0 ? contactDetails : savedContactDetails, message: {type: paperType, message: personalMessage, signed: nameToUse}}} className={'pointer-events-none'}>
+                        <Link to="/cart/checkout" state={{ deliverTo: selectedContact == 0 ? contactDetails : savedContactDetails, message: {type: paperType, message: personalMessage, signed: nameToUse}}} className={selectedContact == null ? 'pointer-events-none' : (selectedContact == 0 && contactDetails.firstName == '') ? 'pointer-events-none' :''}>
                             <Button
                                 icon={<ArrowRight />}
                                 iconPosition='right'
                                 className="w-full"
+                                disabled={selectedContact == null || (selectedContact == 0 && contactDetails.firstName == '')}
                             >
                                 <span>Fortsätt till bekräftelse</span>
                             </Button>

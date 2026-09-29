@@ -6,9 +6,11 @@ import useLoginStatus from "../hooks/useLoginStatus";
 import type { CartInfo } from '../types/cart'
 import type { Membership } from '../types/gifts'
 import { Button } from '../components/Button';
-import { ArrowRight, Gift, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Gift } from 'lucide-react'
 import CartCard from '../components/cart/CartCard'
 import PointsDisplay from '../components/cart/PointsDisplay';
+import Headline from '../components/Headline';
+import SafetyInfo from '../components/cart/SafetyInfo';
 
 const Cart = () => {
   const [error, setError] = useState('');
@@ -63,18 +65,14 @@ const Cart = () => {
 
   return (
     <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-[#1a3b2b] tracking-tight mb-2">
-          Varukorg
-        </h1>
-      </div>
+      <Headline headline={"Varukorg"} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         <div className="lg:col-span-7 space-y-6">
           <section className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#f0eae0]">
               <h2 className="text-xs font-bold uppercase tracking-wider text-[#244d36] flex items-center gap-2">
-                <Gift />
+                <Gift className='size-4' />
                 Valda gåvor
               </h2>
             </div>
@@ -84,7 +82,7 @@ const Cart = () => {
               );
               if (!membership) return <div key={item.product_id}>Kunde inte hämta gåvan...</div>
               return (
-                < CartCard item={item} membership={membership} refresh={setRefresh} pointsLeft={pointsLeft} key={item.product_id} />
+                <CartCard item={item} membership={membership} refresh={setRefresh} pointsLeft={pointsLeft} key={item.product_id} />
               )
             })}
           </section>
@@ -93,8 +91,8 @@ const Cart = () => {
         <div className="lg:col-span-5 space-y-6">
 
           <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
-            <PointsDisplay cart={cart} currentPoints={currentPoints ? currentPoints.pointBalance : 0 } pointsLeft={pointsLeft}/>
-            
+            <PointsDisplay cart={cart} currentPoints={currentPoints ? currentPoints.pointBalance : 0} pointsLeft={pointsLeft} />
+
             <div className="space-y-3">
               <Link to="/cart/delivery">
                 <Button
@@ -109,16 +107,7 @@ const Cart = () => {
 
             </div>
           </div>
-
-          <div className="p-5 rounded-2xl bg-white border border-[#e6ded3] space-y-2.5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#1a3b2b]">
-              <ShieldCheck />
-              <span>Presently Trygghet & Diskretion</span>
-            </div>
-            <p className="text-xs text-[#68736c] leading-relaxed">
-              Inga fakturor eller priser syns någonsin för mottagaren. Du får en bekräftelse och spårningslänk direkt när paketet lämnar Stockholmsateljén.
-            </p>
-          </div>
+          <SafetyInfo />
         </div>
       </div>
     </main>

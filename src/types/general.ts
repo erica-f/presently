@@ -1,4 +1,4 @@
 export type HeadlineType = {
     headline: string
-    description: string
+    description?: string
 }
