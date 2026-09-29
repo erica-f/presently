@@ -6,8 +6,9 @@ import useLoginStatus from "../hooks/useLoginStatus";
 import type { CartInfo } from '../types/cart'
 import type { Membership } from '../types/gifts'
 import { Button } from '../components/Button';
-import { ArrowRight, Gift, Info, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Gift, ShieldCheck } from 'lucide-react'
 import CartCard from '../components/cart/CartCard'
+import PointsDisplay from '../components/cart/PointsDisplay';
 
 const Cart = () => {
   const [error, setError] = useState('');
@@ -42,6 +43,7 @@ const Cart = () => {
     }
     fetchData();
   }, [handleUnauthorized, refresh])
+
   const pointsLeft = (currentPoints?.pointBalance ?? 0) - pointCostSum;
 
   if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
@@ -80,7 +82,7 @@ const Cart = () => {
               const membership = memberships.find(
                 membership => Number(membership.level) == Number(item.level)
               );
-              if (!membership) return <div key={item.product_id}>Kunde inte hämta gåvan...membership</div>
+              if (!membership) return <div key={item.product_id}>Kunde inte hämta gåvan...</div>
               return (
                 < CartCard item={item} membership={membership} refresh={setRefresh} pointsLeft={pointsLeft} key={item.product_id} />
               )
@@ -91,45 +93,8 @@ const Cart = () => {
         <div className="lg:col-span-5 space-y-6">
 
           <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
-
-            <div className="flex items-center justify-between pb-4 border-b border-[#e6ded3]">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#1a3b2b]">Poängberäkning</span>
-            </div>
-
-            <div className="py-5 space-y-3.5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-[#68736c]">Saldo före sändning</span>
-                <span className="font-semibold text-[#1a3b2b] font-mono text-base">{currentPoints?.pointBalance} p</span>
-              </div>
-
-              {cart.map((item) => (
-                <div className="flex items-center justify-between text-sm" key={item.id}>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[#1a3b2b] font-medium">{item.name}</span>
-                  </div>
-                  <span className="font-semibold text-[#9e3a2b] font-mono text-base">-{item.point_total} p</span>
-                </div>
-              ))}
-              <div className="pt-2 border-t border-[#e6ded3]"></div>
-
-              <div className="flex items-center justify-between pt-1">
-                <div>
-                  <span className="block text-sm font-bold text-[#1a3b2b]">Saldo efter sändning</span>
-                  <span className="text-[11px] text-[#68736c]">Dina sparade poäng förfaller aldrig</span>
-                </div>
-                <div className="text-right">
-                  <span className="font-mono text-xl sm:text-2xl font-bold text-[#244d36]">{pointsLeft} p</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e6ded3] text-xs text-[#68736c] mb-6">
-              <div className="flex items-start gap-2">
-                <Info />
-                <span>Detta är en poänginlösen. Inga betalkort eller extra avgifter debiteras. Gåvan graveras och paketeras omsorgsfullt så fort du bekräftar.</span>
-              </div>
-            </div>
-
+            <PointsDisplay cart={cart} currentPoints={currentPoints ? currentPoints.pointBalance : 0 } pointsLeft={pointsLeft}/>
+            
             <div className="space-y-3">
               <Link to="/cart/delivery">
                 <Button
