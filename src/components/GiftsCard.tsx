@@ -1,28 +1,14 @@
-import { useNavigate } from 'react-router-dom'
 import { confirmExistence } from '../utils/confirmType'
 import type { CardDetails } from '../types/gifts'
 import { Button } from '../components/Button'
+import { ArrowRight, Lock, CircleCheck, Gift } from 'lucide-react'
+
 
 const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, category }: CardDetails) => {
     const pointsLeft = userCurrentPoints - gift.point_cost;
     const available = gift.minimum_membership_plan_level <= userMembershipId ? true : false;
     const productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_level));
     const userMembership = confirmExistence(memberships.find(item => item.level == userMembershipId));
-    const navigate = useNavigate();
-    const goToCustomize = () => {
-
-        navigate(
-            {
-                pathname: `/gifts/customize/:${gift.id}`
-            },
-            {
-                state: { gift: gift }
-            }
-        )
-    }
-    const addToCart = () => {
-        console.log("add to cart");
-    }
 
     return (
         <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
@@ -58,9 +44,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                         <div className="mt-4 pt-3 border-t border-[#f0f5f2] flex items-center justify-between text-xs text-[#52655c]">
                             {pointsLeft >= 0 &&
                                 <span className="flex items-center gap-1 text-[#3b5e4c]">
-                                    <svg className="w-3.5 h-3.5 text-[#bb9b56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                    </svg>
+                                   <Gift className='size-3'/>
                                     Presentinslagning ingår
                                 </span>
                             }
@@ -77,9 +61,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                                         <div className="bg-amber-500 h-full rounded-full" ></div>
                                     </div>
                                     <p className="text-[11px] text-amber-800/90 mt-2 flex items-center gap-1">
-                                        <svg className="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                        </svg>
+                                        <CircleCheck className="size-3.5" />
                                         Ingår i ditt {userMembership.name}-medlemskap. Fylls på nästa månad.
                                     </p>
                                 </div>
@@ -89,9 +71,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                         :
                         <div className="mt-4 p-3 bg-[#fbf8f2] border border-[#eedfc1] rounded-xl text-xs text-[#5c4a22]">
                             <div className="flex items-start gap-2">
-                                <svg className="w-4 h-4 text-[#bb9b56] shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                                </svg>
+                                <Lock className="size-4"/>
                                 <div className="leading-relaxed">
                                     <span className="font-semibold text-[#3b2e11]">Låst för Presently {userMembership.name}.</span>
                                     <p className="text-[11px] text-[#735e31] mt-0.5">
@@ -104,29 +84,19 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                 </div>
             </div>
 
-            {/* <!-- Card Footer / Primary CTA --> */}
             <div className="p-5 pt-0">
                 {available ?
                     pointsLeft >= 0 ?
-                        <Button className="w-full cursor-pointer" onClick={() => productMembership.level === 3 ? goToCustomize() : addToCart()}>
-                            <span>Välj denna gåva</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
+                        <Button className="w-full cursor-pointer" href={`/gifts/${gift.id}`} icon={<ArrowRight />} iconPosition='right'>
+                            <span>Visa gåva</span>
                         </Button>
                         :
-                        <Button disabled className="w-full" variant="secondary">
-                            <svg className="w-4 h-4 text-[#8ea096]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                            <span>Otillräckligt saldo (Saknas {gift.point_cost - userCurrentPoints} p)</span>
+                        <Button className="w-full" variant="secondary" href={`/gifts/${gift.id}`}>
+                            <span>Visa gåva</span>
                         </Button>
                     :
-                    <Button variant="secondary" className="w-full cursor-pointer" >
+                    <Button variant="secondary" className="w-full cursor-pointer" icon={<ArrowRight />} iconPosition='right'>
                         <span>{productMembership ? 'Uppgradera till ' + productMembership.name : 'Uppgradera ditt medlemskap'}</span>
-                        <svg className="w-4 h-4 text-[#bb9b56]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
                     </Button>
                 }
             </div>
