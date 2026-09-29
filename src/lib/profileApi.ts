@@ -21,7 +21,7 @@ export type MembershipState = {
 }
 
 export type Profile = {
-    user: { id: string | number | null; firstName: string; lastName: string; email: string }
+    user: { id: string | number | null; firstName: string; lastName: string; email: string; role?: string }
     subscription: Record<string, unknown> | null
     plan: MembershipPlan | null
     membership: MembershipState
