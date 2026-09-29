@@ -119,6 +119,7 @@ function normalizeUser(row: Row | null) {
         firstName: first(row ?? undefined, ['first_name', 'firstname', 'given_name'], ''),
         lastName: first(row ?? undefined, ['last_name', 'lastname', 'family_name'], ''),
         email: first(row ?? undefined, ['email'], ''),
+        role: first(row ?? undefined, ['role'], 'user') as string,
     }
 }
 
