@@ -9,6 +9,8 @@ import Profile from './pages/Profile'
 import ProtectedRoute from './utils/ProtectedRoute'
 import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
+import Register from './pages/Register'
+import MembershipOnboarding from './pages/MembershipOnboarding'
 import { ScrollToHash } from './utils/scroll'
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/register/membership" element={<ProtectedRoute><MembershipOnboarding /></ProtectedRoute>} />
                     <Route path="/checkout/success/:paymentId" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
                     <Route path="/checkout/:plan" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                     <Route path="/gifts" element={<ProtectedRoute><Gifts /></ProtectedRoute>} />
@@ -31,6 +35,6 @@ function App() {
             </div>
         </BrowserRouter>
     )
-
 }
+
 export default App

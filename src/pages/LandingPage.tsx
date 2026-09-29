@@ -56,6 +56,7 @@ function LandingPage() {
     const { isLoggedIn } = useAuth()
     const [availableMemberships, setAvailableMemberships] = useState<Membership[]>([])
     const [membershipLoading, setMembershipLoading] = useState(true)
+    const [membershipStatusLoading, setMembershipStatusLoading] = useState(true)
     const [membershipError, setMembershipError] = useState(false)
     const [hasActiveMembership, setHasActiveMembership] = useState(false)
     const [featuredProducts, setFeaturedProducts] = useState<FeaturedGift[]>([])
@@ -101,6 +102,8 @@ function LandingPage() {
             }
         }).catch(() => {
             if (isCurrent) setHasActiveMembership(false)
+        }).finally(() => {
+            if (isCurrent) setMembershipStatusLoading(false)
         })
 
         return () => {
@@ -143,6 +146,7 @@ function LandingPage() {
                         <p className="max-w-2xl leading-relaxed text-muted-foreground">
                             Samla gåvopoäng varje månad. Välj noga utvalda kvalitetsprodukter och skicka direkt hem till någon du bryr dig om – precis när det passar dig.
                         </p>
+                        {!membershipStatusLoading && isLoggedIn && !hasActiveMembership && <div className="rounded-control border border-accent/40 bg-accent-muted px-4 py-3 text-sm text-foreground"><p className="font-semibold text-primary">Slutför din registrering</p><p className="mt-1 text-muted-foreground">Välj ett medlemskap för att börja använda Presently.</p><a className="mt-2 inline-block font-semibold text-link underline" href="/register/membership">Välj medlemskap</a></div>}
                         <div className="flex flex-wrap items-center gap-3 pt-1">
                             <Button href="#medlemskap" icon={<ArrowRight className="size-4" strokeWidth={1.8} />} iconPosition="right" className="text-sm">
                                 Kom igång
@@ -210,11 +214,11 @@ function LandingPage() {
                                     </ul>
                                 </div>
                                 <Button
-                                    href={isLoggedIn && hasActiveMembership ? '/profile' : `/checkout/${membership.id}`}
+                                    href={!isLoggedIn ? `/register?plan=${membership.id}` : membershipStatusLoading ? '#medlemskap' : hasActiveMembership ? '/profile/account' : `/register/membership?plan=${membership.id}`}
                                     variant={membership.name === 'Plus' ? 'primary' : 'secondary'}
                                     className="w-full"
                                 >
-                                    {isLoggedIn && hasActiveMembership ? 'Hantera medlemskap' : `Välj ${membership.name}`}
+                                    {membershipStatusLoading && isLoggedIn ? 'Laddar medlemskap…' : isLoggedIn && hasActiveMembership ? 'Hantera konto' : `Välj ${membership.name}`}
                                 </Button>
                             </article>
                         ))}

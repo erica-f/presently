@@ -139,7 +139,7 @@ const Login = () => {
                             <div className="mt-8 text-center pt-6 border-t border-border/60">
                                 <p className="text-sm text-warm-muted">
                                     Har du inget konto?
-                                    <a href="#skapa-konto" className="font-semibold text-brand hover:text-brand-dark transition-colors ml-1 focus:outline-none focus:underline">
+                                    <a href="/register" className="font-semibold text-brand hover:text-brand-dark transition-colors ml-1 focus:outline-none focus:underline">
                                         Skapa konto
                                     </a>
                                 </p>
