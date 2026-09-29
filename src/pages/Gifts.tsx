@@ -3,7 +3,7 @@ import { ChevronRight, ChevronLeft } from 'lucide-react'
 import GiftsCard from '../components/GiftsCard'
 import { confirmExistence } from '../utils/confirmType'
 import type { Membership, GiftInfo, Categories } from '../types/gifts'
-import { getList } from '../api/giftsApi'
+import { getList } from '../lib/giftsApi'
 import { Button } from '../components/Button'
 import useLoginStatus from "../hooks/useLoginStatus";
 import { ProfileApiError, profileApi, type Profile as ProfileData } from '../lib/profileApi'

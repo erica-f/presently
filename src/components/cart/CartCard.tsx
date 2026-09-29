@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import type { CartCardType } from '../types/cart'
-import { Button } from './Button';
-import { CartApiError, deleteItem } from '../api/cartApi'
-import useLoginStatus from "../hooks/useLoginStatus";
+import type { CartCardType } from '../../types/cart'
+import { Button } from '../Button';
+import { CartApiError, deleteItem } from '../../lib/cartApi'
+import useLoginStatus from "../../hooks/useLoginStatus";
 import { Plus, Minus } from 'lucide-react'
 
 

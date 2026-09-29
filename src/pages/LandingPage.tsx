@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, Check } from 'lucide-react'
 import { Button } from '../components/Button'
-import { getFeaturedGifts } from '../api/giftsApi'
+import { getFeaturedGifts } from '../lib/giftsApi'
 import type { FeaturedGift } from '../types/gifts'
 import { membershipApi, type MembershipPlan } from '../lib/membershipApi'
 import { useAuth } from '../contexts/useAuth'

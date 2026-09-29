@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
-import { getList, GiftsApiError } from '../api/giftsApi'
+import { getList, GiftsApiError } from '../lib/giftsApi'
 import { type Overview, profileApi } from '../lib/profileApi'
 import useLoginStatus from "../hooks/useLoginStatus";
 import type { CartInfo } from '../types/cart'
 import type { Membership } from '../types/gifts'
 import { Button } from '../components/Button';
 import { ArrowRight, Gift, Info, ShieldCheck } from 'lucide-react'
-import CartCard from '../components/CartCard'
+import CartCard from '../components/cart/CartCard'
 
 
 const Cart = () => {
