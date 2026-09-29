@@ -67,7 +67,7 @@ order.post('/', async (req: Request<{}, unknown, BodyDetails>, res) => {
         await connection.query(`DELETE FROM carts WHERE user_id = ? `, [res.locals.userId]);
         await connection.commit();
 
-        res.status(201).json({ success: true, delivery, message, cart, pointCostSum })
+        res.status(201).json({ success: true, delivery, message, cart, pointCostSum, newOrderId})
 
     } catch (error) {
         if (connection) await connection.rollback().catch(() => undefined)

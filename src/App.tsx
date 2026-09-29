@@ -14,6 +14,7 @@ import CustomizeGift from './pages/CustomizeGift'
 import Cart from './pages/Cart'
 import CheckoutGifts from './pages/CheckoutGifts'
 import CartDelivery from './pages/CartDelivery'
+import OrderSuccess from './pages/OrderSuccess'
 
 function App() {
   return (
@@ -31,7 +32,7 @@ function App() {
           <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
           <Route path="/cart/delivery" element={<ProtectedRoute><CartDelivery /></ProtectedRoute>} />
           <Route path="/cart/checkout" element={<ProtectedRoute><CheckoutGifts /></ProtectedRoute>} />
-          <Route path="/cart/checkout/success" element={<ProtectedRoute><CheckoutGifts /></ProtectedRoute>} />
+          <Route path="/cart/checkout/success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
           <Route path="/gifts/:id" element={<ProtectedRoute><GiftDetails /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/profile/:section" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

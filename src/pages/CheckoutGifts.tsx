@@ -56,7 +56,7 @@ const CheckoutGifts = () => {
         const result = await createOrder(delivery, message, cart, pointCostSum);
         console.log(result);
         if(result.success) {
-          navigate("/")
+          navigate("/cart/checkout/success", {state: result})
         }
     } catch (err) {
       if (err instanceof GiftsApiError && err.status === 401) {
