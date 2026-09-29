@@ -39,7 +39,7 @@ const PointsDisplay = ({ cart, currentPoints, pointsLeft }: CartPoints) => {
             <div className="p-3.5 rounded-xl bg-[#f4efe6] border border-[#e6ded3] text-xs text-[#68736c] mb-6">
                 <div className="flex items-start gap-2">
                     <Info />
-                    <span>Detta är en poänginlösen. Inga betalkort eller extra avgifter debiteras. Gåvan graveras och paketeras omsorgsfullt så fort du bekräftar.</span>
+                    <span>Detta är en poänginlösen. Inga betalkort eller extra avgifter debiteras.</span>
                 </div>
             </div>
         </div>

@@ -19,6 +19,7 @@ const CartDelivery = () => {
     const [profile, setProfile] = useState<ProfileData | null>(null)
     const [selectedContact, setSelectedContact] = useState<number>();
     const [paperType, setPaperType] = useState('forest');
+    const paperColors = paperType == 'forest' ? 'bg-[#5f8971]/70' : paperType == 'warm' ? 'bg-[#e3d9c9]/80' : 'bg-[#fdf9f9]'
     const paperList = [{ key: 'forest', name: 'Skogsgrön elegans' }, { key: 'warm', name: 'Varm naturbeige' }, { key: 'minimalist', name: 'Minimalistisk vit' }]
     const [personalMessage, setPersonalMessage] = useState('');
     const [signsUsed, setSignsUsed] = useState(0);
@@ -354,7 +355,7 @@ const CartDelivery = () => {
                             <label className="block text-xs font-semibold text-[#1a3b2b] uppercase tracking-wider mb-2">Kortdesign</label>
                             <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                 {paperList.map((type) => (
-                                    <label className={paperType == `${type.key}` ? "relative flex flex-col items-center justify-center p-2 rounded-xl border-2 border-[#244d36] bg-[#effcf9]/50 text-center cursor-pointer" : "relative flex flex-col items-center justify-center p-2 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"} key={type.key}>
+                                    <label className={paperType == `${type.key}` ? `relative flex flex-col items-center justify-center p-2 rounded-xl border-2 border-[#244d36] ${paperColors} text-center cursor-pointer` : "relative flex flex-col items-center justify-center p-2 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"} key={type.key}>
                                         <input type="radio" name={type.key} checked={paperType == type.key} onChange={() => setPaperType(type.key)} className="appearance-none" />
                                         <span className="text-xs font-semibold flex items-center gap-2">{type.name} </span>
                                     </label>

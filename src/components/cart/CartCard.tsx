@@ -58,7 +58,7 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
                     </div>
                     <span className="justify-self-end flex items-center">
                         <Button variant="ghost" onClick={() => { updateAmount('minus') }} icon={<Minus />} > </Button>
-                        <span>{amount}</span>
+                        <span className="ml-2 mr-2">{amount}</span>
                         <Button variant="ghost" onClick={() => { updateAmount('plus') }} icon={<Plus />} disabled={pointsLeft - item.point_cost >= 0 ? false : true} className="disabled:bg-transparent"> </Button>
                     </span>
                     {!success && <span>Kunde inte uppdatera antal gåvor</span>}
