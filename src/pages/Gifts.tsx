@@ -158,7 +158,7 @@ const Gifts = () => {
       </section>
 
       <header className="mb-10 text-left max-w-3xl">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-semibold text-[#193927] tracking-tight mb-3">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#193927] tracking-tight mb-3">
           Gåvor
         </h1>
         <p className="text-base sm:text-lg text-[#55695f] leading-relaxed">
@@ -236,7 +236,7 @@ const Gifts = () => {
               </svg>
               <span>Presently Medlemsförmåner</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-serif font-semibold text-white tracking-tight mb-3">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight mb-3">
               Vill du kunna välja skräddarsydda {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor?
             </h2>
             <p className="text-sm sm:text-base text-[#d8e5df] leading-relaxed mb-6 font-light">

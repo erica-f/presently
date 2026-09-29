@@ -147,13 +147,13 @@ const CheckoutGifts = () => {
 
             <div className="p-5 rounded-xl bg-[#fdfbf7] border border-[#e6ded3] relative">
               <div className="text-center mb-2">
-                <span className="text-[10px] font-serif uppercase tracking-widest text-[#b89047]">Design: {message.type}</span>
+                <span className="text-[10px] uppercase tracking-widest text-[#b89047]">Design: {message.type}</span>
               </div>
-              <p className="font-serif italic text-sm text-[#1a3b2b] leading-relaxed text-center px-4">
+              <p className="italic text-sm text-[#1a3b2b] leading-relaxed text-center px-4">
                 {message.message}
               </p>
               <div className="mt-3 text-right pr-4">
-                <span className="font-serif text-xs text-[#244d36] font-semibold">— {message.signed}</span>
+                <span className="text-xs text-[#244d36] font-semibold">— {message.signed}</span>
               </div>
             </div>
           </section>

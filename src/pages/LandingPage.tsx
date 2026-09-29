@@ -260,7 +260,7 @@ function LandingPage() {
                                             <div className="mb-1.5 flex items-center justify-between text-xs text-[#708278]">
                                                 <span>{product.category}</span>
                                             </div>
-                                            <h3 className="line-clamp-1 font-serif text-lg font-semibold text-[#193927] transition-colors group-hover:text-[#244d36]">{product.name}</h3>
+                                            <h3 className="line-clamp-1 text-lg font-semibold text-[#193927] transition-colors group-hover:text-[#244d36]">{product.name}</h3>
                                             <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-[#52655c]">{product.description}</p>
                                         </div>
                                     </div>

@@ -12,7 +12,7 @@ const PointsDisplay = ({ cart, currentPoints, pointsLeft }: CartPoints) => {
             <div className="py-5 space-y-3.5">
                 <div className="flex items-center justify-between text-sm">
                     <span className="text-[#68736c]">Saldo före sändning</span>
-                    <span className="font-semibold text-[#1a3b2b] font-mono text-base">{currentPoints} p</span>
+                    <span className="font-semibold text-[#1a3b2b] text-base">{currentPoints} p</span>
                 </div>
 
                 {cart.map((item) => (
@@ -20,7 +20,7 @@ const PointsDisplay = ({ cart, currentPoints, pointsLeft }: CartPoints) => {
                         <div className="flex items-center gap-1.5">
                             <span className="text-[#1a3b2b] font-medium">{item.name}</span>
                         </div>
-                        <span className="font-semibold text-[#9e3a2b] font-mono text-base">-{item.point_total} p</span>
+                        <span className="font-semibold text-[#9e3a2b] text-base">-{item.point_total} p</span>
                     </div>
                 ))}
                 <div className="pt-2 border-t border-[#e6ded3]"></div>
@@ -31,7 +31,7 @@ const PointsDisplay = ({ cart, currentPoints, pointsLeft }: CartPoints) => {
                         <span className="text-[11px] text-[#68736c]">Dina sparade poäng förfaller aldrig</span>
                     </div>
                     <div className="text-right">
-                        <span className="font-mono text-xl sm:text-2xl font-bold text-[#244d36]">{pointsLeft} p</span>
+                        <span className="text-xl sm:text-2xl font-bold text-[#244d36]">{pointsLeft} p</span>
                     </div>
                 </div>
             </div>

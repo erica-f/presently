@@ -34,7 +34,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                     <div className="flex items-center justify-between text-xs text-[#708278] mb-1.5">
                         <span>{category.label}</span>
                     </div>
-                    <h2 className="text-lg font-serif font-semibold text-[#193927] group-hover:text-[#244d36] transition-colors line-clamp-1">
+                    <h2 className="text-lg font-semibold text-[#193927] group-hover:text-[#244d36] transition-colors line-clamp-1">
                         {gift.name}
                     </h2>
                     <p className="text-xs text-[#52655c] mt-2 line-clamp-2 leading-relaxed">

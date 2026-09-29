@@ -42,7 +42,7 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
     </main>
     if (error) return
     <div className="flex flex-col sm:flex-row gap-4 items-start mb-5">
-        <h3 className="text-lg font-serif text-[#1a3b2b]">Kunde inte hämta in produkten</h3>
+        <h3 className="text-lg text-[#1a3b2b]">Kunde inte hämta in produkten</h3>
         <p className="mt-2 text-muted-foreground">{error}</p>
     </div>
 
@@ -63,7 +63,7 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
                     </span>
                     {!success && <span>Kunde inte uppdatera antal gåvor</span>}
                 </div>
-                <h3 className="text-lg font-serif text-[#1a3b2b]">{item.name}</h3>
+                <h3 className="text-lg text-[#1a3b2b]">{item.name}</h3>
                 <p className="text-xs text-[#68736c]">
                     {item.description}
                 </p>

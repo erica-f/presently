@@ -340,7 +340,7 @@ const CartDelivery = () => {
                     <section className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
                         <div className="flex items-start justify-between gap-3 mb-4">
                             <div>
-                                <h3 className="text-base sm:text-lg font-serif text-[#1a3b2b] mb-1">Personlig hälsning</h3>
+                                <h3 className="text-base sm:text-lg text-[#1a3b2b] mb-1">Personlig hälsning</h3>
                                 <p className="text-xs sm:text-sm text-[#68736c]">
                                     Trycks på ett matt, präglat bomullskort och läggs i gåvoasken tillsammans med din gåva.
                                 </p>
@@ -366,12 +366,12 @@ const CartDelivery = () => {
                         <div className="space-y-2">
                             <div className="flex items-center justify-between text-xs">
                                 <label htmlFor="personal_message" className="font-medium text-[#1a3b2b]">Ditt meddelande</label>
-                                <span className="font-mono text-[#68736c]" id="char-counter"><span className="font-semibold text-[#1a3b2b]">{signsUsed}</span> / 300 tecken</span>
+                                <span className="text-[#68736c]" id="char-counter"><span className="font-semibold text-[#1a3b2b]">{signsUsed}</span> / 300 tecken</span>
                             </div>
                             <textarea
                                 id="personal_message"
                                 rows={4}
-                                className="w-full p-4 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent font-serif"
+                                className="w-full p-4 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent"
                                 placeholder="Skriv din hälsning här..."
                                 value={personalMessage}
                                 onChange={(e) => (setPersonalMessage(e.target.value), setSignsUsed(e.target.value.length))}
@@ -383,7 +383,7 @@ const CartDelivery = () => {
                                 <button type="button" className="text-[#244d36] hover:underline" onClick={() => setIsVisible(!isVisible)}>Ändra namn</button>
                             </div>
                             <div className={isVisible ? 'flex items-end justify-end' : 'invisible flex justify-end'} >
-                                <input type="text" value={nameToUse} onChange={e => setNameToUse(e.target.value)} className="p-2 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent font-serif" />
+                                <input type="text" value={nameToUse} onChange={e => setNameToUse(e.target.value)} className="p-2 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent" />
                             </div>
                         </div>
                     </section>
