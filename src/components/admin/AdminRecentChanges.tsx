@@ -6,7 +6,7 @@ const defaultChanges: RecentProductChangeItem[] = [
     {
         id: '1',
         title: 'Graverat smycke i borstat guld',
-        sku: 'Art.nr: PRO-7012',
+        sku: 'Art.nr: 7012',
         category: 'Smycken & Accessoarer',
         tier: 'Signature',
         points: 500,
@@ -17,7 +17,7 @@ const defaultChanges: RecentProductChangeItem[] = [
     {
         id: '2',
         title: 'Munblåst Glasvas & Mässingsljusstake',
-        sku: 'Art.nr: PRO-4089',
+        sku: 'Art.nr: 4089',
         category: 'Inredning & Hantverk',
         tier: 'Plus',
         points: 350,
@@ -27,7 +27,7 @@ const defaultChanges: RecentProductChangeItem[] = [
     {
         id: '3',
         title: 'Ekologiskt Handvårdskit & Linnehandduk',
-        sku: 'Art.nr: PRO-3021',
+        sku: 'Art.nr: 3021',
         category: 'Kroppsvård & Textil',
         tier: 'Plus',
         points: 300,
@@ -37,7 +37,7 @@ const defaultChanges: RecentProductChangeItem[] = [
     {
         id: '4',
         title: 'Svenskt Hantverkskaffe & Havssaltschoklad',
-        sku: 'Art.nr: PRO-1045',
+        sku: 'Art.nr: 1045',
         category: 'Delikatesser & Skafferi',
         tier: 'Simple',
         points: 150,

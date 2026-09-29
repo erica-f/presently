@@ -236,7 +236,7 @@ adminRouter.get('/overview', async (_req: Request, res: Response) => {
             return {
                 id: String(pid),
                 title,
-                sku: `Art.nr: PRO-${String(pid).padStart(4, '0')}`,
+                sku: `Art.nr: ${String(pid).padStart(4, '0')}`,
                 category: String(product.category_label ?? 'Gåvor'),
                 points: Number(product.point_cost ?? 0),
                 tier,
