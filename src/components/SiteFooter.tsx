@@ -1,8 +1,10 @@
 import { getNavigationLinks } from '../config/siteNavigation'
-
-const footerLinks = getNavigationLinks('footer')
+import { useAuth } from '../contexts/useAuth'
 
 export function SiteFooter() {
+    const { isLoggedIn, loading } = useAuth()
+    const footerLinks = loading ? [] : getNavigationLinks('footer', isLoggedIn)
+
     return (
         <footer className="border-t border-border bg-surface">
             <div className="mx-auto max-w-7xl px-4 pt-12 pb-6 sm:px-6 lg:px-9">

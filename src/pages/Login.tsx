@@ -43,7 +43,7 @@ const Login = () => {
     }
 
     return (
-        <div className="min-h-full flex flex-col justify-center bg-warm-cream antialiased selection:bg-brand-light selection:text-brand">
+        <div className="flex flex-1 flex-col justify-center bg-warm-cream antialiased selection:bg-brand-light selection:text-brand">
 
             <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 my-auto">
                 <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">

@@ -1,5 +1,7 @@
 import type { AddToCartResponse, CartSummary } from '../types/gifts'
 
+export const cartUpdatedEvent = 'presently:cart-updated'
+
 export async function getCart(): Promise<CartSummary> {
     const response = await fetch('/api/cart', { credentials: 'include' })
     const payload = await response.json().catch(() => ({})) as Partial<CartSummary> & { message?: string }
@@ -26,6 +28,7 @@ export async function addToCart(productId: number, quantity = 1): Promise<AddToC
         throw new Error(payload.message ?? 'Gåvan kunde inte läggas i kundvagnen.')
     }
 
+    window.dispatchEvent(new CustomEvent(cartUpdatedEvent))
     return payload as AddToCartResponse
 }
 
