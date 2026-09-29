@@ -12,11 +12,10 @@ const CartCard = ({ item, membership, refresh, updateCart, pointsLeft }: CartCar
     const handleUnauthorized = useLoginStatus();
     const [amount, setAmount] = useState(item.quantity);
     const [success, setSuccess] = useState(true);
-
+    console.log(error);
     const updateAmount = async (change: string) => {
         setLoading(true);
         const newAmount = change == 'minus' ? amount - 1 : amount + 1;
-
         setAmount(newAmount);
 
         try {
@@ -36,6 +35,7 @@ const CartCard = ({ item, membership, refresh, updateCart, pointsLeft }: CartCar
             setLoading(false);
         }
     }
+
     if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
         <p className="text-muted-foreground" role="status">Laddar uppdatering</p>
     </main>
@@ -47,8 +47,8 @@ const CartCard = ({ item, membership, refresh, updateCart, pointsLeft }: CartCar
 
 
     return (
-        <div className="flex flex-col sm:flex-row gap-4 items-start mb-5" key={item.cartItemId}>
-            <img src={item.thumbnail_image_url} alt={item.name} className="w-24 h-24 rounded-xl object-cover border border-[#e6ded3] shrink-0" />
+        <div className="flex flex-col sm:flex-row gap-4 items-start mb-5" key={item.id}>
+            <img src={'/' + item.thumbnail_image_url} alt={item.name} className="w-24 h-24 rounded-xl object-cover border border-[#e6ded3] shrink-0" />
             <div className="space-y-1.5 flex-1">
                 <div className="items-center gap-2 grid grid-cols-2">
                     <div>

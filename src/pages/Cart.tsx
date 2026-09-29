@@ -26,7 +26,7 @@ const Cart = () => {
     })
     setPointCostSum(totalPointCost);
   }
-
+  console.log(memberships);
   const updateCart = (productId: number, amount: number) => {
     const updatedCart = cart.map(item =>
       productId === item.product_id
@@ -44,10 +44,10 @@ const Cart = () => {
       setError('');
       try {
         const [data, membershipList, points] = await Promise.all([getList("cart"), getList('memberships'), profileApi.overview()]);
-        setCart(data);
+        setCart(data.items);
         setMemberships(membershipList);
         setCurrentPoints(points);
-        calculatePoints(data);
+        calculatePoints(data.items);
       } catch (err) {
         if (err instanceof GiftsApiError && err.status === 401) {
           handleUnauthorized();
@@ -98,7 +98,7 @@ const Cart = () => {
               const membership = memberships.find(
                 membership => Number(membership.level) == Number(item.level)
               );
-              if (!membership) return <div key={item.product_id}>Kunde inte hämta gåvan...</div>
+              if (!membership) return <div key={item.product_id}>Kunde inte hämta gåvan...membership</div>
               return (
                 < CartCard item={item} membership={membership} refresh={setRefresh} updateCart={updateCart} pointsLeft={pointsLeft} key={item.product_id} />
               )
@@ -121,7 +121,7 @@ const Cart = () => {
               </div>
 
               {cart.map((item) => (
-                <div className="flex items-center justify-between text-sm" key={item.cartItemId}>
+                <div className="flex items-center justify-between text-sm" key={item.id}>
                   <div className="flex items-center gap-1.5">
                     <span className="text-[#1a3b2b] font-medium">{item.name}</span>
                   </div>

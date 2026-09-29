@@ -2,7 +2,7 @@ import type { Membership } from "./gifts"
 import type { SetStateAction, Dispatch } from 'react'
 
 export type CartInfo = {
-    cartItemId: number
+    id: number
     cart_id: number
     category_id: number
     description: string
