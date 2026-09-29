@@ -6,4 +6,8 @@ export type SiteNavigationLink = {
     header: boolean
     footer: boolean
     style: 'link' | 'primary' | 'secondary'
+    onlyLoggedIn?: boolean
+    onlyLoggedOut?: boolean
+    action?: 'logout'
+    display?: 'profile-menu' | 'cart-icon'
 }
