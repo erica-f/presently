@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, Plus, ArrowRight, CircleCheckBig, Star, Info } from 'lucide-react'
+import { Users, ArrowRight, CircleCheckBig, Star, Info, UserRound, Mail } from 'lucide-react'
 import { Button } from '../components/Button';
-import { ProfileApiError, type Contact, type ContactForm, type Profile as ProfileData, profileApi, validateContactForm } from '../lib/profileApi'
+import { ProfileApiError, type Contact, type ContactForm, type Profile as ProfileData, profileApi } from '../lib/profileApi'
+import { getCart } from '../lib/cartApi'
 import useLoginStatus from "../hooks/useLoginStatus";
 import { confirmExistence } from '../utils/confirmType';
 import Headline from '../components/cart/Headline';
+import SafetyInfo from '../components/cart/SafetyInfo';
 
 
 const CartDelivery = () => {
@@ -40,25 +42,47 @@ const CartDelivery = () => {
         postalCode: '',
         city: '',
     });
+    function validityCheck(e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) {
+        var checkV = e.target.checkValidity();
+
+        if (checkV == false) {
+            e.target.reportValidity();
+        }
+    }
     const saveContact = (field: keyof ContactForm, value: string) => {
         setContactDetails(previous => ({
             ...previous,
             [field]: value,
         }));
     };
+
     const logContact = (contact: Contact) => {
         const { id, ...formValues } = contact;
         setSavedContactDetails(formValues);
     }
+    const requiredContactFields: (keyof ContactForm)[] = [
+    'firstName',
+    'lastName',
+    'address',
+    'postalCode',
+    'city',
+];
+    const oneTimeContactComplete = requiredContactFields.every(
+        field => contactDetails[field].trim() !== ''
+    );
+
     useEffect(() => {
         const fetchContacts = async () => {
             setLoading(true);
             setError('');
             try {
-                const [contactList, profileData] = await Promise.all([profileApi.contacts(), profileApi.get()]);
+                const [contactList, profileData, cartList] = await Promise.all([profileApi.contacts(), profileApi.get(), getCart()]);
                 setContacts(contactList);
                 setProfile(profileData);
                 setNameToUse(profileData.user.firstName);
+                if (cartList.itemCount <= 0) {
+                    navigate("/cart");
+                }
             } catch (err) {
                 if (err instanceof ProfileApiError && err.status === 401) {
                     handleUnauthorized();
@@ -94,32 +118,15 @@ const CartDelivery = () => {
                         <div className="flex items-center justify-between pb-5">
                             <div className="flex items-center space-x-3">
                                 <div className="w-9 h-9 rounded-full bg-brand-goldBg border border-brand-gold/30 flex items-center justify-center text-brand-gold">
-                                    <Users />
+                                    <Users className="size-5" />
                                 </div>
                                 <div>
                                     <h2 className="text-base font-semibold text-brand-forest">Dina sparade kontakter</h2>
-                                    <p className="text-xs text-brand-textMuted">Obegränsad adressbok i {userMembership?.name}</p>
+                                    {userMembership?.level == 2 && <p className="text-xs text-brand-textMuted">Spara 3 kontakter med {userMembership?.name}</p>}
+                                    {userMembership?.level == 3 && <p className="text-xs text-brand-textMuted">Obegränsad adressbok i {userMembership?.name}</p>}
                                 </div>
                             </div>
-
-                            <Button variant="ghost" icon={<Plus />}>
-                                <span>Lägg till ny kontakt</span>
-                            </Button>
                         </div>
-
-                        {/* <!-- Sökfält (vänligt och intuitivt, inte CRM-artat) --> */}
-                        {/* <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brand-textSubtle">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Sök bland sparade vänner, familj eller kollegor..."
-                                className="w-full pl-10 pr-4 py-2.5 bg-[#fdfcf9] border border-brand-border rounded-xl text-sm text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all"
-                            />
-                        </div> */}
 
                         <div className="mb-3">
                             {contacts?.map(contact => (
@@ -171,9 +178,7 @@ const CartDelivery = () => {
                                     <div className="flex items-center justify-between pb-5 mb-6 border-b border-brand-borderLight">
                                         <div className="flex items-center space-x-3">
                                             <div className="w-9 h-9 rounded-full bg-brand-sand flex items-center justify-center text-brand-forest">
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
+                                                <UserRound className="size-5" />
                                             </div>
                                             <div>
                                                 <h2 className="text-base font-semibold text-brand-forest">Mottagarens uppgifter</h2>
@@ -193,9 +198,11 @@ const CartDelivery = () => {
                                                     type="text"
                                                     id="first-name"
                                                     value={contactDetails.firstName}
-                                                    onChange={e => saveContact('firstName', e.target.value)}
+                                                    onChange={e => { validityCheck(e), saveContact('firstName', e.target.value) }}
                                                     placeholder="Elin"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    required
+                                                    pattern="[A-Öa-ö\-\s]*$"
                                                 />
                                             </div>
                                             <div>
@@ -206,9 +213,11 @@ const CartDelivery = () => {
                                                     type="text"
                                                     id="last-name"
                                                     value={contactDetails.lastName}
-                                                    onChange={e => saveContact('lastName', e.target.value)}
+                                                    onChange={e => { validityCheck(e), saveContact('lastName', e.target.value) }}
                                                     placeholder="Sundström"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    required
+                                                    pattern="[A-Öa-ö\-\s]*$"
                                                 />
                                             </div>
                                         </div>
@@ -220,9 +229,11 @@ const CartDelivery = () => {
                                                 type="text"
                                                 id="address"
                                                 value={contactDetails.address}
-                                                onChange={e => saveContact('address', e.target.value)}
+                                                onChange={e => { validityCheck(e), saveContact('address', e.target.value) }}
                                                 placeholder="Storgatan 14B, lgh 1201"
                                                 className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                required
+                                                pattern="[A-Öa-ö\-\s]*$"
                                             />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -234,9 +245,11 @@ const CartDelivery = () => {
                                                     type="text"
                                                     id="postal-code"
                                                     value={contactDetails.postalCode}
-                                                    onChange={e => saveContact('postalCode', e.target.value)}
+                                                    onChange={e => { validityCheck(e), saveContact('postalCode', e.target.value) }}
                                                     placeholder="411 24"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    required
+                                                    pattern="[0-9]{3}\s[0-9]{2}"
                                                 />
                                             </div>
                                             <div>
@@ -247,35 +260,38 @@ const CartDelivery = () => {
                                                     type="text"
                                                     id="city"
                                                     value={contactDetails.city}
-                                                    onChange={e => saveContact('city', e.target.value)}
+                                                    onChange={e => { validityCheck(e), saveContact('city', e.target.value) }}
                                                     placeholder="Göteborg"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    required
+                                                    pattern="[A-Öa-ö\-\s]*$"
                                                 />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
                                                 <label htmlFor="phone" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
-                                                    Telefonnummer *
+                                                    Telefonnummer
                                                 </label>
                                                 <input
-                                                    type="text"
+                                                    type="phone"
                                                     id="phone"
                                                     value={contactDetails.phone}
-                                                    onChange={e => saveContact('phone', e.target.value)}
+                                                    onChange={e => { validityCheck(e), saveContact('phone', e.target.value) }}
                                                     placeholder="073 123 456 78"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    pattern="[0-9]{10}"
                                                 />
                                             </div>
                                             <div>
                                                 <label htmlFor="email" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
-                                                    Email *
+                                                    Email
                                                 </label>
                                                 <input
-                                                    type="text"
+                                                    type="email"
                                                     id="email"
                                                     value={contactDetails.email}
-                                                    onChange={e => saveContact('email', e.target.value)}
+                                                    onChange={e => { validityCheck(e), saveContact('email', e.target.value) }}
                                                     placeholder="Elin@mail.com"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />
@@ -296,19 +312,17 @@ const CartDelivery = () => {
                             </div>
 
                         </div>}
-
                     <div className="pt-3">
-                        <Link to="/cart/checkout" state={{ deliverTo: selectedContact == 0 ? contactDetails : savedContactDetails, message: { type: paperType, message: personalMessage, signed: nameToUse } }} className={selectedContact == null ? 'pointer-events-none' : (selectedContact == 0 && contactDetails.firstName == '') ? 'pointer-events-none' : ''}>
+                        <Link to="/cart/checkout" state={{ deliverTo: selectedContact == 0 ? contactDetails : savedContactDetails, message: { type: paperType, message: personalMessage, signed: nameToUse } }} className={selectedContact == null || (selectedContact == 0 && !oneTimeContactComplete) ? 'pointer-events-none' : ''}>
                             <Button
                                 icon={<ArrowRight />}
                                 iconPosition='right'
                                 className="w-full"
-                                disabled={selectedContact == null || (selectedContact == 0 && contactDetails.firstName == '')}
+                                disabled={selectedContact == null || (selectedContact == 0 && !oneTimeContactComplete)}
                             >
                                 <span>Fortsätt till bekräftelse</span>
                             </Button>
                         </Link>
-
                     </div>
                 </section>
 
@@ -322,9 +336,7 @@ const CartDelivery = () => {
                                 </p>
                             </div>
                             <div className="w-9 h-9 rounded-full bg-[#f4efe6] text-[#244d36] flex items-center justify-center shrink-0">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
+                                <Mail className="size-4" />
                             </div>
                         </div>
 
@@ -365,17 +377,8 @@ const CartDelivery = () => {
                             </div>
                         </div>
                     </section>
-                    <section className="bg-brand-sageBg/50 rounded-2xl p-5 border border-brand-forest/10 space-y-3">
-                        <div className="flex items-center space-x-2.5 text-brand-forest font-semibold text-xs uppercase tracking-wider">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                            </svg>
-                            <span>Presently Omtanke &amp; Trygghet</span>
-                        </div>
-                        <p className="text-xs text-brand-textMuted leading-relaxed">
-                            Mottagaren ser aldrig priser, kvitton eller poängangivelser. Paketet levereras i en vacker, omärkt ytterkartong med ett förseglat gåvokuvert.
-                        </p>
-                    </section>
+                    <SafetyInfo />
+
                 </section>
             </div >
         </main >
