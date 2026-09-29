@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useLocation, Navigate, Link } from "react-router-dom"
+import { useLocation, Navigate, Link, useNavigate } from "react-router-dom"
 import { Check, Gift, MapPin, Mail, ArrowRight } from 'lucide-react'
 import { getList, GiftsApiError } from '../lib/giftsApi'
 import { type Overview, profileApi } from '../lib/profileApi'
@@ -15,7 +15,7 @@ import { createOrder } from '../lib/orderApi'
 
 const CheckoutGifts = () => {
   const location = useLocation().state;
-
+  const navigate = useNavigate();
   const [delivery] = useState(location && location.deliverTo);
   const [message] = useState(location && location.message);
   const [error, setError] = useState('');
@@ -53,8 +53,11 @@ const CheckoutGifts = () => {
 
   const checkOut = async () => {
     try {
-        const result = await createOrder(delivery, message, cart);
+        const result = await createOrder(delivery, message, cart, pointCostSum);
         console.log(result);
+        if(result.success) {
+          navigate("/")
+        }
     } catch (err) {
       if (err instanceof GiftsApiError && err.status === 401) {
         handleUnauthorized();
@@ -65,7 +68,7 @@ const CheckoutGifts = () => {
       setLoading(false);
     }
   }
-  
+
   const pointsLeft = (currentPoints?.pointBalance ?? 0) - pointCostSum;
   console.log(cart.length);
   if (location === null) return <Navigate to="/cart" />;
