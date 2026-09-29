@@ -45,7 +45,7 @@ export function Button({
         </span>
     ) : null
 
-    const sharedClasses = `inline-flex box-border items-center justify-center rounded-button border border-transparent px-4 py-2.5 text-xs leading-4 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:border-transparent disabled:bg-border/60 disabled:text-muted-foreground disabled:shadow-none disabled:hover:bg-border/60 disabled:hover:text-muted-foreground ${variantClasses[variant]} ${className}`
+    const sharedClasses = `inline-flex cursor-pointer box-border items-center justify-center rounded-button border border-transparent px-4 py-2.5 text-xs leading-4 font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:border-transparent disabled:bg-border/60 disabled:text-muted-foreground disabled:shadow-none disabled:hover:bg-border/60 disabled:hover:text-muted-foreground ${variantClasses[variant]} ${className}`
     const content = (
         <>
             {iconPosition === 'left' && iconElement}
