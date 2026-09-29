@@ -1,4 +1,4 @@
-import { ChevronDown, LogOut, Menu, ShoppingBag, UserRound } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, ShieldCheck, ShoppingBag, UserRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getNavigationLinks } from '../config/siteNavigation'
@@ -9,8 +9,10 @@ import { profileApi } from '../lib/profileApi'
 export function SiteHeader() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [profileName, setProfileName] = useState('Mitt konto')
+    const [profileRole, setProfileRole] = useState<string | null>(null)
     const [cartCount, setCartCount] = useState(0)
-    const { isLoggedIn, loading, logout } = useAuth()
+    const { isLoggedIn, isAdmin: authIsAdmin, loading, logout } = useAuth()
+    const isAdmin = authIsAdmin || profileRole === 'admin'
     const headerLinks = loading ? [] : getNavigationLinks('header', isLoggedIn)
     const menuLinks = headerLinks.filter((link) => link.style === 'link')
     const profileLink = headerLinks.find((link) => link.display === 'profile-menu')
@@ -37,6 +39,9 @@ export function SiteHeader() {
             if (!isCurrent) return
             const name = [profile.user.firstName, profile.user.lastName].filter(Boolean).join(' ')
             setProfileName(name || profile.user.email || 'Mitt konto')
+            if (profile.user.role) {
+                setProfileRole(profile.user.role)
+            }
         }).catch(() => undefined)
         updateCartCount()
         window.addEventListener(cartUpdatedEvent, updateCartCount)
@@ -76,6 +81,12 @@ export function SiteHeader() {
                         </summary>
                         <div className="absolute right-0 z-20 mt-2 w-48 rounded-card border border-border bg-surface p-1.5 shadow-card">
                             <Link className="flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-foreground no-underline hover:bg-secondary" to={profileLink.path}><UserRound aria-hidden="true" className="size-4" />{profileLink.label}</Link>
+                            {isAdmin && (
+                                <Link className="flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-foreground no-underline hover:bg-secondary" to="/admin">
+                                    <ShieldCheck aria-hidden="true" className="size-4 text-primary" />
+                                    Admin
+                                </Link>
+                            )}
                             {logoutLink && <button className="flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-secondary" onClick={() => void logout()} type="button"><LogOut aria-hidden="true" className="size-4" />{logoutLink.label}</button>}
                         </div>
                     </details>}
@@ -90,6 +101,12 @@ export function SiteHeader() {
                         ) : (
                             <Link className="rounded-lg px-3.5 py-2.5 text-foreground no-underline hover:bg-secondary" key={item.label} to={item.path}>{item.label}</Link>
                         ))}
+                        {isAdmin && (
+                            <Link className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 font-medium text-foreground no-underline hover:bg-secondary" to="/admin">
+                                <ShieldCheck aria-hidden="true" className="size-4 text-primary" />
+                                Admin
+                            </Link>
+                        )}
                     </nav>
                 </details>
             </div>
