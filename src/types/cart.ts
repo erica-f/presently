@@ -12,12 +12,12 @@ export type CartInfo = {
     product_id: number
     quantity: number
     thumbnail_image_url: string
+    point_total: number
 }
 
 export interface CartCardType {
     item: CartInfo
     membership: Membership
     refresh: Dispatch<SetStateAction<boolean>>
-    updateCart: (arg1: number, arg2: number) => void
     pointsLeft: number
 }

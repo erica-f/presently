@@ -9,7 +9,6 @@ import { Button } from '../components/Button';
 import { ArrowRight, Gift, Info, ShieldCheck } from 'lucide-react'
 import CartCard from '../components/cart/CartCard'
 
-
 const Cart = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -19,23 +18,6 @@ const Cart = () => {
   const [currentPoints, setCurrentPoints] = useState<Overview>();
   const [pointCostSum, setPointCostSum] = useState(0);
 
-  const calculatePoints = (data: CartInfo[]) => {
-    let totalPointCost = 0;
-    data.forEach((item) => {
-      totalPointCost += (item.point_cost * item.quantity);
-    })
-    setPointCostSum(totalPointCost);
-  }
-  console.log(memberships);
-  const updateCart = (productId: number, amount: number) => {
-    const updatedCart = cart.map(item =>
-      productId === item.product_id
-        ? { ...item, quantity: amount }
-        : item
-    )
-    setCart(updatedCart);
-    calculatePoints(updatedCart);
-  }
   const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
@@ -47,7 +29,7 @@ const Cart = () => {
         setCart(data.items);
         setMemberships(membershipList);
         setCurrentPoints(points);
-        calculatePoints(data.items);
+        setPointCostSum(data.pointTotal);
       } catch (err) {
         if (err instanceof GiftsApiError && err.status === 401) {
           handleUnauthorized();
@@ -100,7 +82,7 @@ const Cart = () => {
               );
               if (!membership) return <div key={item.product_id}>Kunde inte hämta gåvan...membership</div>
               return (
-                < CartCard item={item} membership={membership} refresh={setRefresh} updateCart={updateCart} pointsLeft={pointsLeft} key={item.product_id} />
+                < CartCard item={item} membership={membership} refresh={setRefresh} pointsLeft={pointsLeft} key={item.product_id} />
               )
             })}
           </section>
@@ -125,7 +107,7 @@ const Cart = () => {
                   <div className="flex items-center gap-1.5">
                     <span className="text-[#1a3b2b] font-medium">{item.name}</span>
                   </div>
-                  <span className="font-semibold text-[#9e3a2b] font-mono text-base">-{item.point_cost * item.quantity} p</span>
+                  <span className="font-semibold text-[#9e3a2b] font-mono text-base">-{item.point_total} p</span>
                 </div>
               ))}
               <div className="pt-2 border-t border-[#e6ded3]"></div>
