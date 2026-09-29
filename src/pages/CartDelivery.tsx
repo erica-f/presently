@@ -87,6 +87,9 @@ const CartDelivery = () => {
                 if (cartList.itemCount <= 0) {
                     setNoContacts(true);
                 }
+                if(profileData?.plan?.level === 1) {
+                    setSelectedContact(0);
+                }
             } catch (err) {
                 if (err instanceof ProfileApiError && err.status === 401) {
                     handleUnauthorized();
@@ -102,7 +105,7 @@ const CartDelivery = () => {
     const userMembershipLevel = Number(profile?.plan?.level ?? 0);
     const userMembership = profile?.availablePlans.find(item => item.level == userMembershipLevel);
 
-    if (noContacts) return <Navigate to="/cart"/> 
+    if (noContacts) return <Navigate to="/cart" />
     if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
         <p className="text-muted-foreground" role="status">Laddar kontakter...</p>
     </main>
@@ -119,63 +122,65 @@ const CartDelivery = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
                 <section className="lg:col-span-7 space-y-6">
-                    <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
-                        <div className="flex items-center justify-between pb-5">
-                            <div className="flex items-center space-x-3">
-                                <div className="w-9 h-9 rounded-full bg-brand-goldBg border border-brand-gold/30 flex items-center justify-center text-brand-gold">
-                                    <Users className="size-5" />
-                                </div>
-                                <div>
-                                    <h2 className="text-base font-semibold text-brand-forest">Dina sparade kontakter</h2>
-                                    {userMembership?.level == 2 && <p className="text-xs text-brand-textMuted">Spara 3 kontakter med {userMembership?.name}</p>}
-                                    {userMembership?.level == 3 && <p className="text-xs text-brand-textMuted">Obegränsad adressbok i {userMembership?.name}</p>}
+                    {(userMembershipLevel == 2 || userMembershipLevel == 3) &&
+                        <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
+                            <div className="flex items-center justify-between pb-5">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-9 h-9 rounded-full bg-brand-goldBg border border-brand-gold/30 flex items-center justify-center text-brand-gold">
+                                        <Users className="size-5" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-base font-semibold text-brand-forest">Dina sparade kontakter</h2>
+                                        {userMembership?.level == 2 && <p className="text-xs text-brand-textMuted">Spara 3 kontakter med {userMembership?.name}</p>}
+                                        {userMembership?.level == 3 && <p className="text-xs text-brand-textMuted">Obegränsad adressbok i {userMembership?.name}</p>}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="mb-3">
-                            {contacts?.map(contact => (
-                                <label className={selectedContact == contact.id ? `relative p-4 mb-2 rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} key={contact.id as number} onClick={() => (setSelectedContact(contact.id as number), logContact(contact))}>
+                            <div className="mb-3">
+                                {contacts?.map(contact => (
+                                    <label className={selectedContact == contact.id ? `relative p-4 mb-2 rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} key={contact.id as number} onClick={() => (setSelectedContact(contact.id as number), logContact(contact))}>
+                                        <div className="flex w-full items-center space-x-3.5">
+                                            <input type="radio" className="appearance-none" />
+                                            <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                {contact.firstName.charAt(0)}{contact.lastName.charAt(0)}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center space-x-2">
+                                                    <h3 className="text-sm font-semibold text-brand-textMain">{contact.firstName} {contact.lastName}</h3>
+                                                </div>
+                                                <p className="text-xs text-brand-textMuted mt-1">{`${contact.address}, ${contact.postalCode} ${contact.city}`}</p>
+                                            </div>
+                                            {selectedContact == contact.id && <CircleCheckBig />}
+                                        </div>
+                                    </label>
+                                ))}
+                                <label className={selectedContact == 0 ? `relative p-4 mb-2  rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} onClick={() => setSelectedContact(0)}>
                                     <div className="flex w-full items-center space-x-3.5">
                                         <input type="radio" className="appearance-none" />
                                         <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            JL
+
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center space-x-2">
-                                                <h3 className="text-sm font-semibold text-brand-textMain">{contact.firstName} {contact.lastName}</h3>
+                                                <h3 className="text-sm font-semibold text-brand-textMain">Engångskontakt (fyll i nedan)</h3>
                                             </div>
-                                            <p className="text-xs text-brand-textMuted mt-1">{`${contact.address}, ${contact.postalCode} ${contact.city}`}</p>
                                         </div>
-                                        {selectedContact == contact.id && <CircleCheckBig />}
+                                        {selectedContact == 0 && <CircleCheckBig />}
                                     </div>
                                 </label>
-                            ))}
-                            <label className={selectedContact == 0 ? `relative p-4 mb-2  rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} onClick={() => setSelectedContact(0)}>
-                                <div className="flex w-full items-center space-x-3.5">
-                                    <input type="radio" className="appearance-none" />
-                                    <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
-
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-center space-x-2">
-                                            <h3 className="text-sm font-semibold text-brand-textMain">Engångskontakt (fyll i nedan)</h3>
-                                        </div>
-                                    </div>
-                                    {selectedContact == 0 && <CircleCheckBig />}
-                                </div>
-                            </label>
+                            </div>
+                            <div className="p-3.5 rounded-xl bg-brand-goldBg/60 border border-brand-gold/20 text-xs text-[#5c4921] flex items-center space-x-2.5">
+                                <Star />
+                                {userMembershipLevel == 2 &&
+                                    <span>{userMembership?.name}-medlemskap: Spara enkelt ner dina tre favoritkontakter. Du kan när som helst uppgradera ditt medlemskap till {confirmExistence(profile?.availablePlans?.find(item => item.level == 3)).name} för obegränsat med kontakter.</span>
+                                }
+                                {userMembershipLevel == 3 &&
+                                    <span>{userMembership?.name}-medlemskap: Spara enkelt ner ett obegränsat antal kontakter.</span>
+                                }
+                            </div>
                         </div>
-                        <div className="p-3.5 rounded-xl bg-brand-goldBg/60 border border-brand-gold/20 text-xs text-[#5c4921] flex items-center space-x-2.5">
-                            <Star />
-                            {userMembershipLevel == 2 &&
-                                <span>{userMembership?.name}-medlemskap: Spara enkelt ner dina tre favoritkontakter. Du kan när som helst uppgradera ditt medlemskap till {confirmExistence(profile?.availablePlans?.find(item => item.level == 3)).name} för obegränsat med kontakter.</span>
-                            }
-                            {userMembershipLevel == 3 &&
-                                <span>{userMembership?.name}-medlemskap: Spara enkelt ner ett obegränsat antal kontakter.</span>
-                            }
-                        </div>
-                    </div>
+                    }
                     {(selectedContact == 0 || userMembershipLevel == 1) &&
                         <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
                             <div className="pt-1">
@@ -308,7 +313,7 @@ const CartDelivery = () => {
                                                     <Info />
                                                 </div>
                                                 <div className="text-xs leading-relaxed text-[#5c4921]">
-                                                    <p className="font-medium text-[#483713]">Med {confirmExistence(profile?.availablePlans?.find(item => item.level == 2)).name} kan du spara favoritkontakter. Du kan när som helst uppgradera ditt medlemskap.</p>
+                                                    <p className="font-medium text-[#483713]">På en högre nivå kan du spara dina favoritkontakter. Du kan när som helst uppgradera ditt medlemskap.</p>
                                                 </div>
                                             </div>
                                         }
