@@ -1,7 +1,10 @@
 export interface AuthContextType {
-    isLoggedIn: boolean,
-    loading: boolean,
-    login(): void,
-    logout(): void,
+    isLoggedIn: boolean
+    isAdmin: boolean
+    role: string | null
+    isOnline: boolean
+    loading: boolean
+    login(): void
+    logout(): void
     flagLoggedOut(): void
 }
