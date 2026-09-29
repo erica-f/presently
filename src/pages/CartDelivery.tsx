@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Users, ArrowRight, CircleCheckBig, Star, Info, UserRound, Mail } from 'lucide-react'
 import { Button } from '../components/Button';
 import { ProfileApiError, type Contact, type ContactForm, type Profile as ProfileData, profileApi } from '../lib/profileApi'
@@ -12,9 +12,9 @@ import SafetyInfo from '../components/cart/SafetyInfo';
 
 const CartDelivery = () => {
     const handleUnauthorized = useLoginStatus();
-    const navigate = useNavigate();
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [noContacts, setNoContacts] = useState(false);
     const [contacts, setContacts] = useState<Contact[]>();
     const [profile, setProfile] = useState<ProfileData | null>(null)
     const [selectedContact, setSelectedContact] = useState<number>();
@@ -43,7 +43,7 @@ const CartDelivery = () => {
         city: '',
     });
     function validityCheck(e: React.ChangeEvent<HTMLInputElement, HTMLInputElement>) {
-        var checkV = e.target.checkValidity();
+        const checkV = e.target.checkValidity();
 
         if (checkV == false) {
             e.target.reportValidity();
@@ -55,18 +55,22 @@ const CartDelivery = () => {
             [field]: value,
         }));
     };
-
+    const requiredContactFields: (keyof ContactForm)[] = [
+        'firstName',
+        'lastName',
+        'address',
+        'postalCode',
+        'city',
+    ];
     const logContact = (contact: Contact) => {
-        const { id, ...formValues } = contact;
+        const formValues = requiredContactFields.reduce((result, field) => {
+            result[field] = contact[field];
+            return result;
+        }, {} as ContactForm);
+
         setSavedContactDetails(formValues);
     }
-    const requiredContactFields: (keyof ContactForm)[] = [
-    'firstName',
-    'lastName',
-    'address',
-    'postalCode',
-    'city',
-];
+
     const oneTimeContactComplete = requiredContactFields.every(
         field => contactDetails[field].trim() !== ''
     );
@@ -81,7 +85,7 @@ const CartDelivery = () => {
                 setProfile(profileData);
                 setNameToUse(profileData.user.firstName);
                 if (cartList.itemCount <= 0) {
-                    navigate("/cart");
+                    setNoContacts(true);
                 }
             } catch (err) {
                 if (err instanceof ProfileApiError && err.status === 401) {
@@ -98,6 +102,7 @@ const CartDelivery = () => {
     const userMembershipLevel = Number(profile?.plan?.level ?? 0);
     const userMembership = profile?.availablePlans.find(item => item.level == userMembershipLevel);
 
+    if (noContacts) return <Navigate to="/cart"/> 
     if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
         <p className="text-muted-foreground" role="status">Laddar kontakter...</p>
     </main>
@@ -198,7 +203,7 @@ const CartDelivery = () => {
                                                     type="text"
                                                     id="first-name"
                                                     value={contactDetails.firstName}
-                                                    onChange={e => { validityCheck(e), saveContact('firstName', e.target.value) }}
+                                                    onChange={e => (validityCheck(e), saveContact('firstName', e.target.value))}
                                                     placeholder="Elin"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     required
@@ -213,7 +218,7 @@ const CartDelivery = () => {
                                                     type="text"
                                                     id="last-name"
                                                     value={contactDetails.lastName}
-                                                    onChange={e => { validityCheck(e), saveContact('lastName', e.target.value) }}
+                                                    onChange={e => (validityCheck(e), saveContact('lastName', e.target.value))}
                                                     placeholder="Sundström"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     required
@@ -229,11 +234,11 @@ const CartDelivery = () => {
                                                 type="text"
                                                 id="address"
                                                 value={contactDetails.address}
-                                                onChange={e => { validityCheck(e), saveContact('address', e.target.value) }}
+                                                onChange={e => (validityCheck(e), saveContact('address', e.target.value))}
                                                 placeholder="Storgatan 14B, lgh 1201"
                                                 className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 required
-                                                pattern="[A-Öa-ö\-\s]*$"
+                                                pattern="[A-Öa-ö0-9\-\s]*$"
                                             />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -245,7 +250,7 @@ const CartDelivery = () => {
                                                     type="text"
                                                     id="postal-code"
                                                     value={contactDetails.postalCode}
-                                                    onChange={e => { validityCheck(e), saveContact('postalCode', e.target.value) }}
+                                                    onChange={e => (validityCheck(e), saveContact('postalCode', e.target.value))}
                                                     placeholder="411 24"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     required
@@ -260,7 +265,7 @@ const CartDelivery = () => {
                                                     type="text"
                                                     id="city"
                                                     value={contactDetails.city}
-                                                    onChange={e => { validityCheck(e), saveContact('city', e.target.value) }}
+                                                    onChange={e => (validityCheck(e), saveContact('city', e.target.value))}
                                                     placeholder="Göteborg"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     required
@@ -277,7 +282,7 @@ const CartDelivery = () => {
                                                     type="phone"
                                                     id="phone"
                                                     value={contactDetails.phone}
-                                                    onChange={e => { validityCheck(e), saveContact('phone', e.target.value) }}
+                                                    onChange={e => (validityCheck(e), saveContact('phone', e.target.value))}
                                                     placeholder="073 123 456 78"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     pattern="[0-9]{10}"
@@ -291,7 +296,7 @@ const CartDelivery = () => {
                                                     type="email"
                                                     id="email"
                                                     value={contactDetails.email}
-                                                    onChange={e => { validityCheck(e), saveContact('email', e.target.value) }}
+                                                    onChange={e => (validityCheck(e), saveContact('email', e.target.value))}
                                                     placeholder="Elin@mail.com"
                                                     className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />

@@ -33,7 +33,7 @@ type BodyDetails = {
 const order = express.Router()
 order.use(authenticated)
 
-order.post('/', async (req: Request<{}, unknown, BodyDetails>, res) => {
+order.post('/', async (req: Request<object, unknown, BodyDetails>, res) => {
     const { delivery, message, cart, pointCostSum } = req.body
 
     if (cart.length <= 0) {
@@ -55,7 +55,7 @@ order.post('/', async (req: Request<{}, unknown, BodyDetails>, res) => {
     try {
         connection = await db.getConnection()
         await connection.beginTransaction()
-        cart
+        
         const createNewOrder = await connection.query(`INSERT INTO gift_orders(user_id, recipient_name, recipient_address_line_1, recipient_postal_code, recipient_city, total_points, paper_type, message, signed) VALUES(? , ? , ? , ? , ?, ? , ? , ? , ? )`, [res.locals.userId, delivery.firstName + ' ' + delivery.lastName, delivery.address, delivery.postalCode, delivery.city, pointCostSum, message.type, message.message, message.signed])
         const newOrderId = createNewOrder.insertId;
         for (const item of cart) {
