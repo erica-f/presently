@@ -76,6 +76,7 @@ const CheckoutGifts = () => {
   if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
     <p className="text-muted-foreground" role="status">Laddar detaljer...</p>
   </main>
+  if(cart.length <= 0) return <Navigate to="/cart" />;
   if (error) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
     <div className="border border-danger/30 bg-surface p-6">
       <h1 className="text-2xl text-foreground">Kunde inte hämta detaljer</h1>

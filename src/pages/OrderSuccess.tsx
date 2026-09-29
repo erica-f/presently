@@ -2,6 +2,8 @@
 import { useLocation } from "react-router-dom"
 import { Button } from "../components/Button"
 import type { CartInfo } from '../types/cart'
+import { Gem } from 'lucide-react'
+
 const OrderSuccess = () => {
   const location = useLocation().state;
   if (location === null) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
@@ -12,17 +14,17 @@ const OrderSuccess = () => {
     </div>
   </main>
 
-  const gifts:CartInfo[] = location.result.cart;
-  const pointCostSum = location.result.pointCostSum;
-  const delivery = location.result.delivery;
-  const newOrderId = location.result.newOrderId;
+  const gifts:CartInfo[] = location.cart;
+  const pointCostSum = location.pointCostSum;
+  const delivery = location.delivery;
+  const newOrderId = location.newOrderId;
 
   return (
     <main className="flex-1 bg-background px-4 py-10 sm:px-8 sm:py-16">
       <div className="mx-auto max-w-5xl rounded-control border border-border bg-surface px-5 py-10 sm:px-12 sm:py-14 lg:px-20">
         <div className="text-center">
           <div className="mx-auto flex size-14 items-center justify-center bg-secondary text-primary">
-
+            <Gem />
           </div>
           <p className="mt-6 text-sm font-medium text-accent">Beställning genomförd</p>
           <h1 className="mt-4 text-4xl sm:text-5xl">Din gåva behandlas</h1>
