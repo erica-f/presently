@@ -45,6 +45,10 @@ order.post('/', async (req: Request<{}, unknown, BodyDetails>, res) => {
         res.status(400).json({ message: 'Ingen mottagare är angiven' })
         return
     }
+     if (pointCostSum <= 0) {
+        res.status(400).json({ message: 'Ingen poängkostnad angiven' })
+        return
+    }
 
     let connection: PoolConnection | undefined
 
@@ -53,24 +57,22 @@ order.post('/', async (req: Request<{}, unknown, BodyDetails>, res) => {
         await connection.beginTransaction()
         cart
         const createNewOrder = await connection.query(`INSERT INTO gift_orders(user_id, recipient_name, recipient_address_line_1, recipient_postal_code, recipient_city, total_points, paper_type, message, signed) VALUES(? , ? , ? , ? , ?, ? , ? , ? , ? )`, [res.locals.userId, delivery.firstName + ' ' + delivery.lastName, delivery.address, delivery.postalCode, delivery.city, pointCostSum, message.type, message.message, message.signed])
-        // await connection.commit()
-
         const newOrderId = createNewOrder.insertId;
         for (const item of cart) {
             await connection.query('INSERT INTO gift_order_items(gift_order_id, product_id, product_name_snapshot, unit_point_cost, quantity, line_point_total) VALUES(?, ?, ?, ?, ?, ?)', [newOrderId, item.product_id, item.name, item.point_cost, item.quantity, item.point_total]);
-            // await connection.commit()
         }
 
-        for (const item of cart) {
-            await connection.query(`DELETE FROM cart_items WHERE cart_id= ? `, [//insert cart id]);
-        }
+        await connection.query('INSERT INTO point_transactions (user_id, gift_order_id, transaction_type, points) VALUES(?,?,?,?)', [res.locals.userId, newOrderId, 'gift_purchase', -pointCostSum]);
+
+        await connection.query(`DELETE FROM carts WHERE user_id = ? `, [res.locals.userId]);
+        await connection.commit();
 
         res.status(201).json({ success: true, delivery, message, cart, pointCostSum })
 
     } catch (error) {
         if (connection) await connection.rollback().catch(() => undefined)
-        console.error('Unable to update cart:', error)
-        res.status(500).json({ message: 'Gåvan kunde inte läggas i kundvagnen.' })
+        console.error('Unable to create order:', error)
+        res.status(500).json({ message: 'Beställningen kunde inte slutföras.' })
     } finally {
         connection?.release()
     }
