@@ -1,6 +1,5 @@
 import type { Membership } from "./gifts"
 import type { SetStateAction, Dispatch } from 'react'
-import type { Overview } from "../lib/profileApi"
 
 export type CartInfo = {
     id: number
@@ -19,7 +18,7 @@ export type CartInfo = {
 export interface CartCardType {
     item: CartInfo
     membership: Membership
-    refresh?: Dispatch<SetStateAction<boolean>>
+    refresh: Dispatch<SetStateAction<boolean>>
     pointsLeft: number
 }
 
@@ -27,4 +26,9 @@ export interface CartPoints {
     cart: CartInfo[]
     currentPoints: number
     pointsLeft: number
+}
+
+export type HeadlineType = {
+    headline: string
+    description?: string
 }

@@ -1,4 +1,4 @@
-import type { HeadlineType } from "../types/general"
+import type { HeadlineType } from "../../types/cart"
 
 const Headline = ({ headline, description }: HeadlineType) => {
     return (

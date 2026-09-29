@@ -5,6 +5,7 @@ import { Button } from '../components/Button';
 import { ProfileApiError, type Contact, type ContactForm, type Profile as ProfileData, profileApi, validateContactForm } from '../lib/profileApi'
 import useLoginStatus from "../hooks/useLoginStatus";
 import { confirmExistence } from '../utils/confirmType';
+import Headline from '../components/cart/Headline';
 
 
 const CartDelivery = () => {
@@ -49,26 +50,25 @@ const CartDelivery = () => {
         const { id, ...formValues } = contact;
         setSavedContactDetails(formValues);
     }
-
-    const fetchContacts = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            const [contactList, profileData] = await Promise.all([profileApi.contacts(), profileApi.get()]);
-            setContacts(contactList);
-            setProfile(profileData);
-            setNameToUse(profileData.user.firstName);
-        } catch (err) {
-            if (err instanceof ProfileApiError && err.status === 401) {
-                handleUnauthorized();
-                return
-            }
-            setError(err instanceof ProfileApiError ? err.message : 'Kunde inte ladda gåvor');
-        } finally {
-            setLoading(false);
-        }
-    }
     useEffect(() => {
+        const fetchContacts = async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const [contactList, profileData] = await Promise.all([profileApi.contacts(), profileApi.get()]);
+                setContacts(contactList);
+                setProfile(profileData);
+                setNameToUse(profileData.user.firstName);
+            } catch (err) {
+                if (err instanceof ProfileApiError && err.status === 401) {
+                    handleUnauthorized();
+                    return
+                }
+                setError(err instanceof ProfileApiError ? err.message : 'Kunde inte ladda gåvor');
+            } finally {
+                setLoading(false);
+            }
+        }
         fetchContacts();
     }, [handleUnauthorized])
     const userMembershipLevel = Number(profile?.plan?.level ?? 0);
@@ -86,14 +86,7 @@ const CartDelivery = () => {
 
     return (
         <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16">
-            <header className="text-center max-w-2xl mx-auto mb-10">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif text-[#1a3b2b] tracking-tight mb-2">
-                    Vem vill du skicka till?
-                </h1>
-                <p className="text-brand-textMuted text-base leading-relaxed">
-                    Lägg till personen du vill skicka gåvan till och skriv en personlig hälsning.
-                </p>
-            </header>
+            <Headline headline={"Vem vill du skicka till?"} description={"Lägg till personen du vill skicka gåvan till och skriv en personlig hälsning."} />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
                 <section className="lg:col-span-7 space-y-6">
@@ -305,7 +298,7 @@ const CartDelivery = () => {
                         </div>}
 
                     <div className="pt-3">
-                        <Link to="/cart/checkout" state={{ deliverTo: selectedContact == 0 ? contactDetails : savedContactDetails, message: {type: paperType, message: personalMessage, signed: nameToUse}}} className={selectedContact == null ? 'pointer-events-none' : (selectedContact == 0 && contactDetails.firstName == '') ? 'pointer-events-none' :''}>
+                        <Link to="/cart/checkout" state={{ deliverTo: selectedContact == 0 ? contactDetails : savedContactDetails, message: { type: paperType, message: personalMessage, signed: nameToUse } }} className={selectedContact == null ? 'pointer-events-none' : (selectedContact == 0 && contactDetails.firstName == '') ? 'pointer-events-none' : ''}>
                             <Button
                                 icon={<ArrowRight />}
                                 iconPosition='right'

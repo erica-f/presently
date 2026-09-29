@@ -9,7 +9,7 @@ import { Button } from '../components/Button';
 import { ArrowRight, Gift } from 'lucide-react'
 import CartCard from '../components/cart/CartCard'
 import PointsDisplay from '../components/cart/PointsDisplay';
-import Headline from '../components/Headline';
+import Headline from '../components/cart/Headline';
 import SafetyInfo from '../components/cart/SafetyInfo';
 
 const Cart = () => {

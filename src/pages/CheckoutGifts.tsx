@@ -6,7 +6,7 @@ import { type Overview, profileApi } from '../lib/profileApi'
 import useLoginStatus from "../hooks/useLoginStatus";
 import type { CartInfo } from '../types/cart'
 import type { Membership } from '../types/gifts'
-import Headline from '../components/Headline';
+import Headline from '../components/cart/Headline';
 import { Button } from '../components/Button';
 import CartCard from '../components/cart/CartCard';
 import SafetyInfo from '../components/cart/SafetyInfo';
