@@ -1,5 +1,6 @@
 import type { Membership } from "./gifts"
 import type { SetStateAction, Dispatch } from 'react'
+import type { ContactForm } from '../lib/profileApi'
 
 export type CartInfo = {
     id: number
@@ -31,4 +32,17 @@ export interface CartPoints {
 export type HeadlineType = {
     headline: string
     description?: string
+}
+
+export type MessageDetails = {
+    type: string
+    message: string
+    signed: string
+}
+
+export type OrderResponse = {
+    success: boolean
+    delivery: ContactForm
+    message: MessageDetails
+    cart: CartInfo[]
 }

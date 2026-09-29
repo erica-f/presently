@@ -11,6 +11,7 @@ import { Button } from '../components/Button';
 import CartCard from '../components/cart/CartCard';
 import SafetyInfo from '../components/cart/SafetyInfo';
 import PointsDisplay from '../components/cart/PointsDisplay'
+import { createOrder } from '../lib/orderApi'
 
 const CheckoutGifts = () => {
   const location = useLocation().state;
@@ -50,6 +51,21 @@ const CheckoutGifts = () => {
     fetchData();
   }, [handleUnauthorized, refresh])
 
+  const checkOut = async () => {
+    try {
+        const result = await createOrder(delivery, message, cart);
+        console.log(result);
+    } catch (err) {
+      if (err instanceof GiftsApiError && err.status === 401) {
+        handleUnauthorized();
+        return
+      }
+      setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda gåvor');
+    } finally {
+      setLoading(false);
+    }
+  }
+  
   const pointsLeft = (currentPoints?.pointBalance ?? 0) - pointCostSum;
   console.log(cart.length);
   if (location === null) return <Navigate to="/cart" />;
@@ -149,6 +165,7 @@ const CheckoutGifts = () => {
                 className="w-full"
                 icon={<ArrowRight />}
                 iconPosition="right"
+                onClick={() => checkOut()}
               >
                 <span>Skicka gåvan</span>
               </Button>
