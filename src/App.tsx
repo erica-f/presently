@@ -17,10 +17,10 @@ import { ScrollToHash } from './utils/scroll'
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <BrowserRouter>
+    <BrowserRouter>
+      <div className="min-h-screen flex flex-col">
+        <ScrollToHash />
         <SiteHeader />
-        <Logout />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
@@ -36,8 +36,8 @@ function App() {
           <Route path="/profile/:section" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
         <SiteFooter />
-      </BrowserRouter>
-    </div>
+      </div>
+    </BrowserRouter>
   )
-
+}
 export default App
