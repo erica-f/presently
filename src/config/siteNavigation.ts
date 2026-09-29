@@ -1,7 +1,7 @@
 import type { NavigationLocation, SiteNavigationLink } from '../types/navigation'
 
 const siteNavigation: SiteNavigationLink[] = [
-    { label: 'Home', path: '/', header: false, footer: true, style: 'link' },
+    { label: 'Hem', path: '/', header: false, footer: true, style: 'link' },
     { label: 'Gåvor', path: '/gifts', header: true, footer: true, style: 'link', onlyLoggedIn: true },
     { label: 'Logga in', path: '/login', header: true, footer: false, style: 'secondary', onlyLoggedOut: true },
     { label: 'Kom igång', path: '/#kom-igang', header: true, footer: false, style: 'primary', onlyLoggedOut: true },
