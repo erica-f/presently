@@ -1,3 +1,4 @@
+
 export type Membership = {
     name: string
     id: number
@@ -44,7 +45,8 @@ export type Categories = {
 }
 
 export interface CardDetails {
-    userDetails: UserDetail
+    userMembershipId: number
+    userCurrentPoints: number
     gift: GiftInfo
     memberships: Membership[]
     category: Categories

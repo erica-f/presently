@@ -16,6 +16,7 @@ import membershipRouter from './membership.js';
 import publicFeaturedGifts from './publicFeaturedGifts.js';
 import publicMembershipPlans from './publicMembershipPlans.js';
 import cart from './cart.js'
+import order from './order.js'
 
 dotenv.config();
 setupBigIntSerialization();
@@ -50,6 +51,7 @@ app.use("/api/membership", membershipRouter);
 app.use("/api/public/featured-gifts", publicFeaturedGifts);
 app.use("/api/public/membership-plans", publicMembershipPlans);
 app.use("/api/cart", cart);
+app.use("/api/order", order);
 
 app.get('/api/health', async (_req: Request, res: Response) => {
     try {

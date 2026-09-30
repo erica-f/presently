@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { getGift, getList } from '../api/giftsApi'
+import { getGift, getList } from '../lib/giftsApi'
 import { GiftBreadcrumbs } from '../components/gift-details/GiftBreadcrumbs'
 import { GiftPurchasePanel } from '../components/gift-details/GiftPurchasePanel'
 import { MembershipGate } from '../components/gift-details/MembershipGate'
