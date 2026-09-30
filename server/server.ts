@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import setupBigIntSerialization from './utils/bigIntSerialization.js';
 import { db, options } from './db.js';
 import loginRouter from './login.js';
+import registerRouter from './register.js';
 import logoutRouter from './logout.js';
 import gifts from './gifts.js';
 import categories from './categories.js';
@@ -39,6 +40,7 @@ app.use(expressSession({
 }))
 
 app.use("/api/login", loginRouter);
+app.use("/api/register", registerRouter);
 app.use("/api/logout", logoutRouter);
 app.use("/api/gifts", gifts);
 app.use("/api/categories", categories);
