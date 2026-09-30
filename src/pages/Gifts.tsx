@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { ChevronRight, ChevronLeft, UserStar, ChevronDown, Star, ArrowRight } from 'lucide-react'
 import GiftsCard from '../components/GiftsCard'
 import { confirmExistence } from '../utils/confirmType'
-import type { Membership, UserDetail, GiftInfo, Categories } from '../types/gifts'
-import { getList, GiftsApiError } from '../api/giftsApi'
+import type { Membership, GiftInfo, Categories } from '../types/gifts'
+import { getList } from '../lib/giftsApi'
 import { Button } from '../components/Button'
 import useLoginStatus from "../hooks/useLoginStatus";
+import { ProfileApiError, profileApi, type Profile as ProfileData } from '../lib/profileApi'
 
 const Gifts = () => {
   const handleUnauthorized = useLoginStatus();
@@ -17,6 +18,9 @@ const Gifts = () => {
   const [level, setLevel] = useState<number | string>(0);
   const [selectedCat, setSelectedCat] = useState<number | string>(0);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [cartPoints, setCartPoints] = useState(0)
+
   //divide products in pages
   const [currentPage, setCurrentPage] = useState(1);
   const numberOfPages = Math.ceil(gifts.length / 24);
@@ -42,17 +46,19 @@ const Gifts = () => {
       setLoading(true);
       setError('');
       try {
-        const [list, categoryList, membershipList] = await Promise.all([getList('gifts'), getList('categories'), getList('memberships')]);
+        const [list, categoryList, membershipList, profileData, cartData] = await Promise.all([getList('gifts'), getList('categories'), getList('memberships'), profileApi.get(), getList('cart')]);
         setGifts(list);
         setAllGifts(list);
         setCategories(categoryList);
         setMemberships(membershipList);
+        setProfile(profileData);
+        setCartPoints(cartData.pointTotal);
       } catch (err) {
-        if (err instanceof GiftsApiError && err.status === 401) {
+        if (err instanceof ProfileApiError && err.status === 401) {
           handleUnauthorized();
           return
         }
-        setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda gåvor');
+        setError(err instanceof ProfileApiError ? err.message : 'Kunde inte ladda gåvor');
       } finally {
         setLoading(false);
       }
@@ -60,15 +66,9 @@ const Gifts = () => {
     fetchData();
   }, [handleUnauthorized])
 
-  // Temp data, will be replaced by data fetched from API
-  const userDetails: UserDetail = {
-    first_name: 'Test',
-    user_id: 1,
-    membership_id: 2,
-    current_points: 200,
-  }
-
-  const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userDetails.membership_id)) : { id: 0, name: '', level: 0 };
+  const userMembershipId = Number(profile?.plan?.level ?? 0);
+  const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userMembershipId)) : { id: 0, name: '', level: 0 };
+  const pointsLeft = profile?.pointBalance ? profile?.pointBalance - cartPoints : 0
 
   //Filter product by category or membership 
   const filterGifts = (item: number | string, type: string) => {
@@ -113,57 +113,54 @@ const Gifts = () => {
 
   return (
     <main className="w-full max-w-7xl mx-auto mb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
-      <section className="mb-10 bg-white border border-[#e4ede7] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
-        <div className="absolute -right-8 -top-12 w-48 h-48 bg-[#effcf9] rounded-full blur-2xl pointer-events-none"></div>
+      <section className="mb-10 bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
+        <div className="absolute -right-8 -top-12 w-48 h-48 bg-ring/20 rounded-full blur-2xl pointer-events-none"></div>
 
         <div className="flex items-start sm:items-center gap-4 relative z-10">
-          <div className="w-12 h-12 rounded-xl bg-[#244d36] text-[#bb9b56] flex items-center justify-center shrink-0 shadow-inner">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-inner">
+            <UserStar className="size-5 stroke-accent" />
           </div>
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="text-xs font-semibold tracking-wider uppercase text-[#3b5e4c]">Inloggad som</span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#effcf9] text-[#244d36] border border-[#d4ede4]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#244d36] mr-1.5"></span>
+              <span className="text-xs font-semibold tracking-wider uppercase text-primary">Inloggad som</span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-ring/40 text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary-active mr-1.5"></span>
                 Presently {userMembership.name}
               </span>
             </div>
             <p className="text-sm text-[#506359] mt-0.5">
-              Du har tillgång till gåvor i nivåerna <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 1)).name}</strong>
+              Du har tillgång till gåvor i nivåerna <strong className="text-foreground-muted font-semibold">{confirmExistence(memberships.find(item => item.level == 1)).name}</strong>
               {
-                userDetails.membership_id == 2 ? <span> och <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong>.</span> : userDetails.membership_id == 3 ? <span>, <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong> samt <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong>.</span> : '.'
+                userMembershipId == 2 ? <span> och <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong>.</span> : userMembershipId == 3 ? <span>, <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong> samt <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong>.</span> : '.'
               }
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-[#edf3ef] relative z-10">
+        <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-border relative z-10">
           <div className="text-left md:text-right">
-            <div className="text-xs font-medium text-[#6b7c73] uppercase tracking-wider">Ditt poängsaldo</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tillgängliga poäng</div>
             <div className="flex items-baseline md:justify-end gap-1.5">
-              <span className="text-2xl sm:text-3xl font-bold text-[#193927] tracking-tight">{userDetails.current_points}</span>
-              <span className="text-sm font-semibold text-[#bb9b56]">p</span>
+              <span className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">{pointsLeft} / {profile?.pointBalance}</span>
+              <span className="text-sm font-semibold text-accent">p</span>
             </div>
+            <span className="text-xs text-muted-foreground" >{cartPoints} poäng används redan av gåvor i kundvagnen</span>
           </div>
           <div className="h-9 w-px bg-[#e4ede7] hidden sm:block"></div>
-          {userDetails.membership_id < 3 &&
-            <a href="#signature-info" className="text-xs font-semibold text-[#244d36] hover:text-[#bb9b56] transition-colors flex items-center gap-1 group py-1.5 px-3 rounded-lg hover:bg-[#effcf9]">
+          {userMembershipId < 3 &&
+            <a href="#signature-info" className="text-xs font-semibold text-primary hover:text-accent transition-colors flex items-center gap-1 group py-1.5 px-3 rounded-lg">
               <span>Om {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor</span>
-              <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
+              <ChevronRight className="size-4" />
             </a>
           }
         </div>
       </section>
 
       <header className="mb-10 text-left max-w-3xl">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-semibold text-[#193927] tracking-tight mb-3">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-primary tracking-tight mb-3">
           Gåvor
         </h1>
-        <p className="text-base sm:text-lg text-[#55695f] leading-relaxed">
+        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
           Välj en genomtänkt gåva till någon du bryr dig om. Alla gåvor paketeras för hand i återvunnet premiumpapper med handskrivet kort och levereras direkt till mottagaren.
         </p>
       </header>
@@ -188,25 +185,28 @@ const Gifts = () => {
 
           <div className="flex items-center gap-3 shrink-0">
             <div className="relative">
-              <select className="appearance-none bg-white border border-[#e4ede7] text-sm text-[#3f4e46] py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-[#244d36] cursor-pointer" onChange={(e) => { setLevel(e.target.value); filterGifts(e.target.value, 'level') }} value={level}>
+              <select className="appearance-none bg-surface border border-border text-sm text-primary py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-ring cursor-pointer" onChange={(e) => { setLevel(e.target.value); filterGifts(e.target.value, 'level') }} value={level}>
                 <option value="0">Gåvonivå</option>
                 <option value="1">{confirmExistence(memberships.find(item => item.level == 1)).name}</option>
                 <option value="2">{confirmExistence(memberships.find(item => item.level == 2)).name}</option>
                 <option value="3">{confirmExistence(memberships.find(item => item.level == 3)).name}</option>
               </select>
-              <svg className="w-4 h-4 text-[#6e8076] absolute right-2.5 top-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <ChevronDown className="size-4 w-4 h-4 text-[#6e8076] absolute right-2.5 top-3 pointer-events-none" />
             </div>
           </div>
         </div>
       </section>
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-        {currentItems.map((gift) => (
-          <GiftsCard userDetails={userDetails} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
-        ))
-        }
-      </section>
+      {currentItems.length > 0 ?
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+          {
+            currentItems.map((gift) => (
+              <GiftsCard userMembershipId={userMembershipId} userCurrentPoints={pointsLeft} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
+            ))
+          }
+        </section>
+        :
+        <div className="w-full mb-10 bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-sm ">Inga gåvor matchar ditt filter.</div>
+      }
       <section className="mb-10 mt-10">
         <div className="flex">
           <Button icon={<ChevronLeft />} onClick={() => currentPage >= 2 && setCurrentPage(currentPage - 1)}>
@@ -227,33 +227,30 @@ const Gifts = () => {
           </Button>
         </div>
       </section>
-      {userDetails.membership_id < 3 &&
-
-        <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-lg" id="signature-info">
+      {userMembershipId < 3 &&
+        <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-primary-foreground relative overflow-hidden shadow-lg" id="signature-info">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#bb9b56]/10 transform skew-x-12 pointer-events-none"></div>
 
           <div className="max-w-2xl relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#bb9b56] text-xs font-semibold mb-4 border border-white/10">
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-accent text-xs font-semibold mb-4 border border-white/10">
+              <Star className="size-3 fill-accent stroke-accent" />
               <span>Presently Medlemsförmåner</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-serif font-semibold text-white tracking-tight mb-3">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-primary-foreground tracking-tight mb-3">
               Vill du kunna välja skräddarsydda {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor?
             </h2>
-            <p className="text-sm sm:text-base text-[#d8e5df] leading-relaxed mb-6 font-light">
-              Som <strong className="text-white font-medium">{userMembership.name}-medlem</strong> sparar du dina {userDetails.current_points} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong> behåller du självklart alla dina intjänade poäng och låser upp handgjord gravyr, obegränsade sparade mottagare och våra mest exklusiva kureringar.
+            <p className="text-sm sm:text-base leading-relaxed mb-6 font-light">
+              Som <strong className="font-medium">{userMembership.name}-medlem</strong> sparar du dina {profile?.pointBalance} poäng säkert varje månad. När du uppgraderar till <strong className="text-accent font-medium">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong> behåller du självklart alla dina intjänade poäng och låser upp tillgång till obegränsade sparade mottagare samt våra mest exklusiva kureringar.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
-              <button className="bg-[#bb9b56] hover:bg-[#a88a48] text-[#193927] font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-md flex items-center gap-2">
-                <span>Uppgradera medlemskap</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </button>
-              <a href="#" className="text-sm font-medium text-[#d8e5df] hover:text-white underline underline-offset-4 transition-colors">
+              <a href="/checkout/3">
+                <button className="bg-accent hover:bg-warning font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-md flex items-center gap-2" >
+                  <span>Uppgradera medlemskap</span>
+                  <ArrowRight className="size-4" />
+                </button>
+              </a>
+              <a href="/#medlemskap" className="text-sm font-medium text-primary-foreground hover:text-white underline underline-offset-4 transition-colors">
                 Jämför alla medlemsnivåer
               </a>
             </div>

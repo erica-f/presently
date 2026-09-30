@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, Check } from 'lucide-react'
 import { Button } from '../components/Button'
-import { getFeaturedGifts } from '../api/giftsApi'
+import { getFeaturedGifts } from '../lib/giftsApi'
 import type { FeaturedGift } from '../types/gifts'
 import { membershipApi, type MembershipPlan } from '../lib/membershipApi'
 import { useAuth } from '../contexts/useAuth'
@@ -56,6 +56,7 @@ function LandingPage() {
     const { isLoggedIn } = useAuth()
     const [availableMemberships, setAvailableMemberships] = useState<Membership[]>([])
     const [membershipLoading, setMembershipLoading] = useState(true)
+    const [membershipStatusLoading, setMembershipStatusLoading] = useState(true)
     const [membershipError, setMembershipError] = useState(false)
     const [hasActiveMembership, setHasActiveMembership] = useState(false)
     const [featuredProducts, setFeaturedProducts] = useState<FeaturedGift[]>([])
@@ -101,6 +102,8 @@ function LandingPage() {
             }
         }).catch(() => {
             if (isCurrent) setHasActiveMembership(false)
+        }).finally(() => {
+            if (isCurrent) setMembershipStatusLoading(false)
         })
 
         return () => {
@@ -143,6 +146,7 @@ function LandingPage() {
                         <p className="max-w-2xl leading-relaxed text-muted-foreground">
                             Samla gåvopoäng varje månad. Välj noga utvalda kvalitetsprodukter och skicka direkt hem till någon du bryr dig om – precis när det passar dig.
                         </p>
+                        {!membershipStatusLoading && isLoggedIn && !hasActiveMembership && <div className="rounded-control border border-accent/40 bg-accent-muted px-4 py-3 text-sm text-foreground"><p className="font-semibold text-primary">Slutför din registrering</p><p className="mt-1 text-muted-foreground">Välj ett medlemskap för att börja använda Presently.</p><a className="mt-2 inline-block font-semibold text-link underline" href="/register/membership">Välj medlemskap</a></div>}
                         <div className="flex flex-wrap items-center gap-3 pt-1">
                             <Button href="#medlemskap" icon={<ArrowRight className="size-4" strokeWidth={1.8} />} iconPosition="right" className="text-sm">
                                 Kom igång
@@ -210,11 +214,11 @@ function LandingPage() {
                                     </ul>
                                 </div>
                                 <Button
-                                    href={isLoggedIn && hasActiveMembership ? '/profile' : `/checkout/${membership.id}`}
+                                    href={!isLoggedIn ? `/register?plan=${membership.id}` : membershipStatusLoading ? '#medlemskap' : hasActiveMembership ? '/profile/account' : `/register/membership?plan=${membership.id}`}
                                     variant={membership.name === 'Plus' ? 'primary' : 'secondary'}
                                     className="w-full"
                                 >
-                                    {isLoggedIn && hasActiveMembership ? 'Hantera medlemskap' : `Välj ${membership.name}`}
+                                    {membershipStatusLoading && isLoggedIn ? 'Laddar medlemskap…' : isLoggedIn && hasActiveMembership ? 'Hantera konto' : `Välj ${membership.name}`}
                                 </Button>
                             </article>
                         ))}
@@ -237,7 +241,7 @@ function LandingPage() {
                     {!featuredGiftsLoading && !featuredGiftsError && featuredProducts.length > 0 && (
                         <div className="grid gap-6 md:grid-cols-3">
                             {featuredProducts.map((product) => (
-                                <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e5ede8] bg-white shadow-sm transition-all duration-300 hover:shadow-md" key={product.id}>
+                                <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e5ede8] bg-surface shadow-sm transition-all duration-300 hover:shadow-md" key={product.id}>
                                     <div>
                                         <div className="relative flex aspect-[4/3] overflow-hidden bg-[#f5f1eb]">
                                             <img
@@ -260,7 +264,7 @@ function LandingPage() {
                                             <div className="mb-1.5 flex items-center justify-between text-xs text-[#708278]">
                                                 <span>{product.category}</span>
                                             </div>
-                                            <h3 className="line-clamp-1 font-serif text-lg font-semibold text-[#193927] transition-colors group-hover:text-[#244d36]">{product.name}</h3>
+                                            <h3 className="line-clamp-1 text-lg font-semibold text-[#193927] transition-colors group-hover:text-[#244d36]">{product.name}</h3>
                                             <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-[#52655c]">{product.description}</p>
                                         </div>
                                     </div>

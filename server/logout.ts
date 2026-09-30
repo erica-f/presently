@@ -1,6 +1,8 @@
 import express, { type Request, type Response } from 'express';
-
+import { authenticated } from './middleware/authenticated.js' 
 const logoutRouter = express.Router();
+
+logoutRouter.use(authenticated);
 
 logoutRouter.post("/", (req: Request, res: Response) => {
     if (!req.session.userId) {
