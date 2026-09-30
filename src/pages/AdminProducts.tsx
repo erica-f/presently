@@ -330,7 +330,7 @@ export default function AdminProducts() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="rounded-card border border-border bg-surface p-5 shadow-card">
                     <p className="text-xs font-medium text-muted-foreground">Totalt sortiment</p>
                     <p className="mt-1.5 text-2xl font-bold font-heading text-foreground">{metrics.total} st</p>
@@ -345,11 +345,6 @@ export default function AdminProducts() {
                     <p className="text-xs font-medium text-muted-foreground">Kategorier</p>
                     <p className="mt-1.5 text-2xl font-bold font-heading text-foreground">{metrics.categoriesCount} st</p>
                     <p className="mt-1 text-xs text-muted-foreground">Aktiva produktkategorier</p>
-                </div>
-                <div className="rounded-card border border-border bg-surface p-5 shadow-card">
-                    <p className="text-xs font-medium text-muted-foreground">Genomförda gåvor</p>
-                    <p className="mt-1.5 text-2xl font-bold font-heading text-foreground">{metrics.totalOrders} st</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Totalt antal beställningar</p>
                 </div>
             </div>
 
