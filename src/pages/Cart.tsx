@@ -69,7 +69,7 @@ const Cart = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         <div className="lg:col-span-7 space-y-6">
-          <section className="p-6 rounded-2xl bg-surface border border-border shadow-xs">
+          <section className="p-6 rounded-2xl bg-surface border border-border shadow-xs overflow-scroll">
             <div className="flex items-center justify-between pb-4 mb-4 border-b border-border">
               <h2 className="text-xs font-bold uppercase tracking-wider text-[#244d36] flex items-center gap-2">
                 <Gift className='size-4' />

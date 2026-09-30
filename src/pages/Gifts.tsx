@@ -68,7 +68,7 @@ const Gifts = () => {
 
   const userMembershipId = Number(profile?.plan?.level ?? 0);
   const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userMembershipId)) : { id: 0, name: '', level: 0 };
-  const pointsLeft = profile?.pointBalance ? profile?.pointBalance - cartPoints : 0 
+  const pointsLeft = profile?.pointBalance ? profile?.pointBalance - cartPoints : 0
 
   //Filter product by category or membership 
   const filterGifts = (item: number | string, type: string) => {
@@ -196,12 +196,17 @@ const Gifts = () => {
           </div>
         </div>
       </section>
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-        {currentItems.map((gift) => (
-          <GiftsCard userMembershipId={userMembershipId} userCurrentPoints={pointsLeft} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
-        ))
-        }
-      </section>
+      {currentItems.length > 0 ?
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+          {
+            currentItems.map((gift) => (
+              <GiftsCard userMembershipId={userMembershipId} userCurrentPoints={pointsLeft} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
+            ))
+          }
+        </section>
+        :
+        <div className="w-full mb-10 bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-sm ">Inga gåvor matchar ditt filter.</div>
+      }
       <section className="mb-10 mt-10">
         <div className="flex">
           <Button icon={<ChevronLeft />} onClick={() => currentPage >= 2 && setCurrentPage(currentPage - 1)}>
