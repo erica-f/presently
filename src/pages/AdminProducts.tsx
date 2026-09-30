@@ -6,7 +6,7 @@ import { AdminHeader } from '../components/admin/AdminHeader'
 import { AdminNav } from '../components/admin/AdminNav'
 import { Button } from '../components/Button'
 import { adminApi } from '../lib/adminApi'
-import type { AdminCategory, AdminProduct, AdminProductInput } from '../types/admin'
+import type { AdminCategory, AdminMembershipPlan, AdminProduct, AdminProductInput } from '../types/admin'
 
 const emptyProductForm: AdminProductInput = {
     name: '',
@@ -18,16 +18,11 @@ const emptyProductForm: AdminProductInput = {
     isActive: true,
 }
 
-const tierNames: Record<number, string> = {
-    1: 'Simple',
-    2: 'Plus',
-    3: 'Signature',
-}
-
 export default function AdminProducts() {
     const [searchParams, setSearchParams] = useSearchParams()
     const [products, setProducts] = useState<AdminProduct[]>([])
     const [categories, setCategories] = useState<AdminCategory[]>([])
+    const [membershipPlans, setMembershipPlans] = useState<AdminMembershipPlan[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -53,16 +48,40 @@ export default function AdminProducts() {
         []
     )
 
+    const plansByLevel = useMemo(() => {
+        const map = new Map<number, AdminMembershipPlan>()
+        for (const plan of membershipPlans) {
+            map.set(plan.level, plan)
+        }
+        return map
+    }, [membershipPlans])
+
+    const getPlanName = useCallback(
+        (level: number, fallback?: string) => {
+            return plansByLevel.get(level)?.name ?? fallback ?? `Nivå ${level}`
+        },
+        [plansByLevel]
+    )
+
     const loadData = useCallback(async () => {
         setIsLoading(true)
         setError(null)
         try {
-            const [prods, cats] = await Promise.all([adminApi.getProducts(), adminApi.getCategories()])
+            const [prods, cats, plans] = await Promise.all([
+                adminApi.getProducts(),
+                adminApi.getCategories(),
+                adminApi.getMembershipPlans(),
+            ])
             setProducts(prods)
             setCategories(cats)
+            setMembershipPlans(plans)
             if (cats.length > 0 && emptyProductForm.categoryId === 1) emptyProductForm.categoryId = cats[0].id
+            if (plans.length > 0 && emptyProductForm.minimumMembershipPlanLevel === 1) {
+                emptyProductForm.minimumMembershipPlanLevel = plans[0].level
+                emptyProductForm.pointCost = plans[0].monthlyPoints
+            }
         } catch (err) {
-            console.error('Failed to load products/categories:', err)
+            console.error('Failed to load products/categories/plans:', err)
             setError(err instanceof Error ? err.message : 'Kunde inte läsa in produktdata.')
         } finally {
             setIsLoading(false)
@@ -71,17 +90,18 @@ export default function AdminProducts() {
 
     useEffect(() => {
         let isMounted = true
-        Promise.all([adminApi.getProducts(), adminApi.getCategories()])
-            .then(([prods, cats]) => {
+        Promise.all([adminApi.getProducts(), adminApi.getCategories(), adminApi.getMembershipPlans()])
+            .then(([prods, cats, plans]) => {
                 if (isMounted) {
                     setProducts(prods)
                     setCategories(cats)
+                    setMembershipPlans(plans)
                     setIsLoading(false)
                 }
             })
             .catch((err) => {
                 if (isMounted) {
-                    console.error('Failed to load products/categories:', err)
+                    console.error('Failed to load products/categories/plans:', err)
                     setError(err instanceof Error ? err.message : 'Kunde inte läsa in produktdata.')
                     setIsLoading(false)
                 }
@@ -369,10 +389,12 @@ export default function AdminProducts() {
                         className="rounded-control border border-border bg-background px-3 py-2 text-xs font-medium text-foreground focus:border-primary focus:outline-none cursor-pointer"
                         aria-label="Filtrera efter medlemsnivå"
                     >
-                        <option value="all">Alla nivåer</option>
-                        <option value="1">Simple (Nivå 1)</option>
-                        <option value="2">Plus (Nivå 2)</option>
-                        <option value="3">Signature (Nivå 3)</option>
+                        <option value="all">Alla medlemsnivåer</option>
+                        {membershipPlans.map((plan) => (
+                            <option key={plan.id} value={plan.level}>
+                                {plan.name} (Nivå {plan.level})
+                            </option>
+                        ))}
                     </select>
 
                     <select
@@ -475,7 +497,7 @@ export default function AdminProducts() {
                                                 </td>
                                                 <td className="px-4 py-4 whitespace-nowrap">
                                                     <span className="text-xs font-medium text-foreground">
-                                                        {tierNames[p.minimumMembershipPlanLevel] ?? 'Simple'}
+                                                        {p.membershipPlanName ?? getPlanName(p.minimumMembershipPlanLevel)}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-4 whitespace-nowrap text-xs font-semibold text-foreground">
@@ -565,7 +587,7 @@ export default function AdminProducts() {
                                                 <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                                                     <span className="font-semibold text-foreground">{p.pointCost} p</span>
                                                     <span className="text-muted-foreground">-</span>
-                                                    <span className="text-muted-foreground">{tierNames[p.minimumMembershipPlanLevel] ?? 'Simple'}</span>
+                                                    <span className="text-muted-foreground">{p.membershipPlanName ?? getPlanName(p.minimumMembershipPlanLevel)}</span>
                                                     <span className="text-muted-foreground">-</span>
                                                     <span className="text-muted-foreground">{p.orderCount} order</span>
                                                 </div>
@@ -665,14 +687,17 @@ export default function AdminProducts() {
                                         value={productForm.minimumMembershipPlanLevel}
                                         onChange={(e) => {
                                             const newLevel = Number(e.target.value)
-                                            const suggestedPoints = newLevel === 3 ? 600 : newLevel === 2 ? 300 : 100
+                                            const plan = plansByLevel.get(newLevel)
+                                            const suggestedPoints = plan?.monthlyPoints ?? (newLevel * 100)
                                             setProductForm({ ...productForm, minimumMembershipPlanLevel: newLevel, pointCost: suggestedPoints })
                                         }}
                                         className="rounded-control border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
                                     >
-                                        <option value={1}>Simple (Nivå 1)</option>
-                                        <option value={2}>Plus (Nivå 2)</option>
-                                        <option value={3}>Signature (Nivå 3)</option>
+                                        {membershipPlans.map((plan) => (
+                                            <option key={plan.id} value={plan.level}>
+                                                {plan.name} (Nivå {plan.level})
+                                            </option>
+                                        ))}
                                     </select>
                                 </label>
                             </div>
@@ -680,11 +705,20 @@ export default function AdminProducts() {
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <label className="flex flex-col gap-1 text-xs font-medium text-foreground">
                                     Poängpris
-                                    <select value={productForm.pointCost} onChange={(e) => setProductForm({ ...productForm, pointCost: Number(e.target.value) })} className="rounded-control border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none">
-                                        <option value={100}>100 p (Simple - Nivå 1)</option>
-                                        <option value={300}>300 p (Plus - Nivå 2)</option>
-                                        <option value={600}>600 p (Signature - Nivå 3)</option>
-                                    </select>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        step={10}
+                                        value={productForm.pointCost}
+                                        onChange={(e) => setProductForm({ ...productForm, pointCost: Math.max(0, Number(e.target.value)) })}
+                                        className="rounded-control border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                                        required
+                                    />
+                                    {membershipPlans.length > 0 && (
+                                        <span className="text-[11px] text-muted-foreground">
+                                            Nivåvärden: {membershipPlans.map((pl) => `${pl.name} (${pl.monthlyPoints} p)`).join(', ')}
+                                        </span>
+                                    )}
                                 </label>
 
                                 <label className="flex flex-col gap-1 text-xs font-medium text-foreground">

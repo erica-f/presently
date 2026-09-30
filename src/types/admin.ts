@@ -32,7 +32,7 @@ export interface RecentGiftActivityItem {
     id: string
     recipient: string
     city: string
-    membershipLevel: 'Simple' | 'Plus' | 'Signature'
+    membershipLevel: string
     giftName: string
     points: number
     timestamp: string
@@ -45,7 +45,7 @@ export interface RecentProductChangeItem {
     sku: string
     category: string
     points: number
-    tier?: 'Signature' | 'Plus' | 'Simple'
+    tier?: string
     hasEngraving?: boolean
     timestamp: string
     status: 'Aktiv' | 'Utkast' | 'Pausad'
@@ -150,6 +150,15 @@ export interface AdminUserUpdateInput {
     isActive: boolean
 }
 
+export interface AdminMembershipPlan {
+    id: number
+    name: string
+    level: number
+    monthlyPoints: number
+    price: number
+    isActive: boolean
+}
+
 export interface AdminCategory {
     id: number
     name: string
@@ -166,6 +175,7 @@ export interface AdminProduct {
     categoryName: string
     pointCost: number
     minimumMembershipPlanLevel: number
+    membershipPlanName?: string
     isActive: boolean
     createdAt: string
     updatedAt: string

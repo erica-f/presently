@@ -1,6 +1,14 @@
-import type { AdminCategory, AdminOrder, AdminOverviewResponse, AdminProduct, AdminProductInput, AdminUser, AdminUserUpdateInput } from '../types/admin'
+import type { AdminCategory, AdminMembershipPlan, AdminOrder, AdminOverviewResponse, AdminProduct, AdminProductInput, AdminUser, AdminUserUpdateInput } from '../types/admin'
 
 export const adminApi = {
+    async getMembershipPlans(): Promise<AdminMembershipPlan[]> {
+        const response = await fetch('/api/admin/membership-plans', { credentials: 'include' })
+        const payload = (await response.json().catch(() => ({}))) as { plans?: AdminMembershipPlan[]; error?: string }
+        if (!response.ok) throw new Error(payload.error ?? 'Kunde inte läsa in medlemskapsplaner.')
+
+        return payload.plans ?? []
+    },
+
     async getOverview(): Promise<AdminOverviewResponse> {
         const response = await fetch('/api/admin/overview', { credentials: 'include' })
         const payload = (await response.json().catch(() => ({}))) as Partial<AdminOverviewResponse> & { error?: string }

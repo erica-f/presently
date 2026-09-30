@@ -129,9 +129,11 @@ adminRouter.get('/overview', async (_req: Request, res: Response) => {
                     p.is_active,
                     p.created_at,
                     p.updated_at,
-                    c.label AS category_label
+                    c.label AS category_label,
+                    mp.name AS membership_plan_name
                 FROM products p
                 LEFT JOIN categories c ON c.id = p.category_id
+                LEFT JOIN membership_plans mp ON mp.level = p.minimum_membership_plan_level
                 ORDER BY COALESCE(p.updated_at, p.created_at) DESC, p.id DESC
                 LIMIT 6
             `),
@@ -229,7 +231,7 @@ adminRouter.get('/overview', async (_req: Request, res: Response) => {
         const recentChanges = (recentProductRows as Record<string, unknown>[]).map((product) => {
             const pid = Number(product.id)
             const level = Number(product.minimum_membership_plan_level ?? 1)
-            const tier: 'Signature' | 'Plus' | 'Simple' = level === 3 ? 'Signature' : level === 2 ? 'Plus' : 'Simple'
+            const tier = String(product.membership_plan_name ?? `Nivå ${level}`)
             const title = String(product.name ?? 'Gåva')
             const hasEngraving = title.toLowerCase().includes('gravyr') || title.toLowerCase().includes('graverat')
 
@@ -525,6 +527,24 @@ adminRouter.delete('/users/:id', async (req: Request, res: Response) => {
     }
 })
 
+adminRouter.get('/membership-plans', async (_req: Request, res: Response) => {
+    try {
+        const rows = await db.query('SELECT id, name, level, monthly_points, price, is_active FROM membership_plans ORDER BY level ASC')
+        const plans = (rows as Record<string, unknown>[]).map((row) => ({
+            id: Number(row.id),
+            name: String(row.name ?? ''),
+            level: Number(row.level ?? 1),
+            monthlyPoints: Number(row.monthly_points ?? 0),
+            price: Number(row.price ?? 0),
+            isActive: Number(row.is_active) === 1,
+        }))
+        res.json({ plans })
+    } catch (error) {
+        console.error('Failed to fetch membership plans:', error)
+        res.status(500).json({ error: 'Kunde inte läsa in medlemskapsplaner.' })
+    }
+})
+
 adminRouter.get('/categories', async (_req: Request, res: Response) => {
     try {
         const rows = await db.query('SELECT id, name, label FROM categories ORDER BY label ASC')
@@ -561,9 +581,11 @@ adminRouter.get('/products', async (req: Request, res: Response) => {
                 p.updated_at,
                 c.label AS category_label,
                 c.name AS category_name,
+                mp.name AS membership_plan_name,
                 COALESCE(oi.order_count, 0) AS order_count
             FROM products p
             LEFT JOIN categories c ON c.id = p.category_id
+            LEFT JOIN membership_plans mp ON mp.level = p.minimum_membership_plan_level
             LEFT JOIN (
                 SELECT product_id, COUNT(*) AS order_count
                 FROM gift_order_items
@@ -584,7 +606,7 @@ adminRouter.get('/products', async (req: Request, res: Response) => {
             params.push(categoryId)
         }
 
-        if (tier && [1, 2, 3].includes(tier)) {
+        if (tier && Number.isInteger(tier) && tier > 0) {
             sql += ` AND p.minimum_membership_plan_level = ?`
             params.push(tier)
         }
@@ -609,6 +631,7 @@ adminRouter.get('/products', async (req: Request, res: Response) => {
             categoryName: String(prod.category_name ?? ''),
             pointCost: Number(prod.point_cost ?? 0),
             minimumMembershipPlanLevel: Number(prod.minimum_membership_plan_level ?? 1),
+            membershipPlanName: String(prod.membership_plan_name ?? `Nivå ${prod.minimum_membership_plan_level ?? 1}`),
             isActive: Number(prod.is_active) === 1,
             createdAt: prod.created_at ? new Date(String(prod.created_at)).toISOString() : '',
             updatedAt: prod.updated_at ? new Date(String(prod.updated_at)).toISOString() : '',
