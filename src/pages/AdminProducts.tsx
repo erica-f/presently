@@ -722,7 +722,7 @@ export default function AdminProducts() {
                                     </div>
                                 </div>
                                 <span className="text-[11px] text-muted-foreground">
-                                    Ange lokal sökväg (t.ex. images/product_01_thumb.webp).
+                                    Ange lokal sökväg (t.ex. images/product_001_thumb.webp).
                                 </span>
                             </div>
 
