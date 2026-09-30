@@ -9,7 +9,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
     const available = gift.minimum_membership_plan_level <= userMembershipId ? true : false;
     const productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_level));
     const userMembership = confirmExistence(memberships.find(item => item.level == userMembershipId));
-
+   
     return (
         <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
             <div>
@@ -53,7 +53,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                                 :
                                 <div className="w-full">
                                     <div className="flex items-center justify-between text-[11px] text-[#607469] mb-1.5">
-                                        <span>Poängframsteg</span>
+                                        <span>Poängstatus</span>
                                         <span className="font-medium text-[#193927]">{userCurrentPoints} / {gift.point_cost} p ({Math.round((userCurrentPoints / gift.point_cost) * 100)}%)
                                         </span>
                                     </div>
@@ -75,7 +75,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                                 <div className="leading-relaxed">
                                     <span className="font-semibold text-[#3b2e11]">Låst för Presently {userMembership.name}.</span>
                                     <p className="text-[11px] text-[#735e31] mt-0.5">
-                                        Denna gåva kräver {productMembership.name}-medlemskap för personlig anpassning och gravyr.
+                                        Denna gåva kräver {productMembership.name}-medlemskap.
                                     </p>
                                 </div>
                             </div>

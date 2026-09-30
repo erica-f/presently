@@ -19,6 +19,7 @@ const Gifts = () => {
   const [selectedCat, setSelectedCat] = useState<number | string>(0);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileData | null>(null)
+  const [cartPoints, setCartPoints] = useState(0)
 
   //divide products in pages
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,12 +46,13 @@ const Gifts = () => {
       setLoading(true);
       setError('');
       try {
-        const [list, categoryList, membershipList, profileData] = await Promise.all([getList('gifts'), getList('categories'), getList('memberships'), profileApi.get()]);
+        const [list, categoryList, membershipList, profileData, cartData] = await Promise.all([getList('gifts'), getList('categories'), getList('memberships'), profileApi.get(), getList('cart')]);
         setGifts(list);
         setAllGifts(list);
         setCategories(categoryList);
         setMemberships(membershipList);
         setProfile(profileData);
+        setCartPoints(cartData.pointTotal);
       } catch (err) {
         if (err instanceof ProfileApiError && err.status === 401) {
           handleUnauthorized();
@@ -66,6 +68,7 @@ const Gifts = () => {
 
   const userMembershipId = Number(profile?.plan?.level ?? 0);
   const userMembership = !loading && !error ? confirmExistence(memberships.find(item => item.level == userMembershipId)) : { id: 0, name: '', level: 0 };
+  const pointsLeft = profile?.pointBalance ? profile?.pointBalance - cartPoints : 0 
 
   //Filter product by category or membership 
   const filterGifts = (item: number | string, type: string) => {
@@ -136,11 +139,12 @@ const Gifts = () => {
 
         <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-[#edf3ef] relative z-10">
           <div className="text-left md:text-right">
-            <div className="text-xs font-medium text-[#6b7c73] uppercase tracking-wider">Ditt poängsaldo</div>
+            <div className="text-xs font-medium text-[#6b7c73] uppercase tracking-wider">Tillgängliga poäng</div>
             <div className="flex items-baseline md:justify-end gap-1.5">
-              <span className="text-2xl sm:text-3xl font-bold text-[#193927] tracking-tight">{profile?.pointBalance}</span>
+              <span className="text-2xl sm:text-3xl font-bold text-[#193927] tracking-tight">{pointsLeft} / {profile?.pointBalance}</span>
               <span className="text-sm font-semibold text-[#bb9b56]">p</span>
             </div>
+            <span className="text-xs text-muted-foreground" >{cartPoints} poäng används redan av gåvor i kundvagnen</span>
           </div>
           <div className="h-9 w-px bg-[#e4ede7] hidden sm:block"></div>
           {userMembershipId < 3 &&
@@ -194,7 +198,7 @@ const Gifts = () => {
       </section>
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
         {currentItems.map((gift) => (
-          <GiftsCard userMembershipId={userMembershipId} userCurrentPoints={profile?.pointBalance ?? 0} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
+          <GiftsCard userMembershipId={userMembershipId} userCurrentPoints={pointsLeft} gift={gift} memberships={memberships} category={confirmExistence(categories.find(item => item.id == gift.category_id))} key={gift.id} />
         ))
         }
       </section>
@@ -231,7 +235,7 @@ const Gifts = () => {
               Vill du kunna välja skräddarsydda {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor?
             </h2>
             <p className="text-sm sm:text-base text-[#d8e5df] leading-relaxed mb-6 font-light">
-              Som <strong className="text-white font-medium">{userMembership.name}-medlem</strong> sparar du dina {profile?.pointBalance} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong> behåller du självklart alla dina intjänade poäng och låser upp handgjord gravyr, obegränsade sparade mottagare och våra mest exklusiva kureringar.
+              Som <strong className="text-white font-medium">{userMembership.name}-medlem</strong> sparar du dina {profile?.pointBalance} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong> behåller du självklart alla dina intjänade poäng och låser upp tillgång till obegränsade sparade mottagare samt våra mest exklusiva kureringar.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
