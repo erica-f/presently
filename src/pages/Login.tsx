@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, Navigate } from 'react-router'
 import { useAuth } from '../contexts/useAuth';
 import { Button } from '../components/Button'
 import { Gift, AtSign, Eye, EyeOff, LockKeyhole, Star, ArrowRight } from 'lucide-react'
@@ -36,9 +36,6 @@ const Login = () => {
     }
 
     useEffect(() => {
-        if (auth.isLoggedIn) {
-            navigate("/");
-        }
         let isCurrent = true
         const loadFeaturedGifts = async () => {
             try {
@@ -62,8 +59,9 @@ const Login = () => {
         return () => {
             isCurrent = false
         }
-    }, [auth.isLoggedIn])
-
+    }, [])
+    if (auth.isLoggedIn) return <Navigate to="/" />
+    
     return (
         <div className="flex flex-1 flex-col justify-center bg-warm-cream antialiased selection:bg-brand-light selection:text-brand">
 
