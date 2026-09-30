@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AlertCircle, Gift, RefreshCw, ShieldCheck, ShoppingBag, Users } from 'lucide-react'
 import { AdminBreadcrumbs } from '../components/admin/AdminBreadcrumbs'
 import { AdminHeader } from '../components/admin/AdminHeader'
+import { AdminNav } from '../components/admin/AdminNav'
 import { AdminMembershipDistribution } from '../components/admin/AdminMembershipDistribution'
 import { AdminOperationalStatus } from '../components/admin/AdminOperationalStatus'
 import { AdminRecentActivity } from '../components/admin/AdminRecentActivity'
@@ -11,6 +13,7 @@ import { adminApi } from '../lib/adminApi'
 import type { AdminOverviewResponse, AdminStatItem, RecentProductChangeItem } from '../types/admin'
 
 const Admin = () => {
+    const navigate = useNavigate()
     const [overview, setOverview] = useState<AdminOverviewResponse | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -49,12 +52,8 @@ const Admin = () => {
         }
     }, [])
 
-    const handleAddProduct = () => {
-        console.log('Add new product clicked')
-    }
-
     const handleEditChange = (item: RecentProductChangeItem) => {
-        console.log('Edit product change:', item)
+        navigate(`/admin/products?edit=${item.id}`)
     }
 
     const statItems: AdminStatItem[] | undefined = useMemo(() => {
@@ -96,7 +95,9 @@ const Admin = () => {
         <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-4 py-8 sm:gap-10 sm:px-6 sm:py-10 lg:px-8">
             <AdminBreadcrumbs />
 
-            <AdminHeader onAddProduct={handleAddProduct} />
+            <AdminHeader />
+
+            <AdminNav />
 
             {error && (
                 <div
