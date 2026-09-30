@@ -1,4 +1,4 @@
-import { ChevronDown, LogOut, Menu, ShoppingBag, UserRound } from 'lucide-react'
+import { ChevronDown, LogOut, Menu, ShieldCheck, ShoppingBag, UserRound } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { getNavigationLinks } from '../config/siteNavigation'
@@ -9,14 +9,17 @@ import { profileApi } from '../lib/profileApi'
 export function SiteHeader() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [profileName, setProfileName] = useState('Mitt konto')
+    const [profileRole, setProfileRole] = useState<string | null>(null)
     const [cartCount, setCartCount] = useState(0)
     const [isProfileOpen, setIsProfileOpen] = useState(false)
     const [isMobileOpen, setIsMobileOpen] = useState(false)
     const profileMenuRef = useRef<HTMLDivElement>(null)
-    const mobileMenuRef = useRef<HTMLDivElement>(null)
+    const mobileMenuRef = useRef<HTMLElement>(null)
+    const mobileButtonRef = useRef<HTMLButtonElement>(null)
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const location = useLocation()
-    const { isLoggedIn, loading, logout } = useAuth()
+    const { isLoggedIn, isAdmin: authIsAdmin, loading, logout } = useAuth()
+    const isAdmin = authIsAdmin || profileRole === 'admin'
     const headerLinks = loading ? [] : getNavigationLinks('header', isLoggedIn)
     const menuLinks = headerLinks.filter((link) => link.style === 'link')
     const profileLink = headerLinks.find((link) => link.display === 'profile-menu')
@@ -35,7 +38,13 @@ export function SiteHeader() {
         const handleClickOutside = (event: MouseEvent) => {
             const target = event.target as Node
             if (profileMenuRef.current && !profileMenuRef.current.contains(target)) setIsProfileOpen(false)
-            if (mobileMenuRef.current && !mobileMenuRef.current.contains(target)) setIsMobileOpen(false)
+            if (
+                mobileMenuRef.current &&
+                !mobileMenuRef.current.contains(target) &&
+                !mobileButtonRef.current?.contains(target)
+            ) {
+                setIsMobileOpen(false)
+            }
         }
 
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -87,6 +96,9 @@ export function SiteHeader() {
             if (!isCurrent) return
             const name = [profile.user.firstName, profile.user.lastName].filter(Boolean).join(' ')
             setProfileName(name || profile.user.email || 'Mitt konto')
+            if (profile.user.role) {
+                setProfileRole(profile.user.role)
+            }
         }).catch(() => undefined)
         updateCartCount()
         window.addEventListener(cartUpdatedEvent, updateCartCount)
@@ -119,12 +131,7 @@ export function SiteHeader() {
                     </Link>}
 
                     {profileLink && (
-                        <div
-                            ref={profileMenuRef}
-                            className="relative"
-                            onMouseEnter={handleProfileMouseEnter}
-                            onMouseLeave={handleProfileMouseLeave}
-                        >
+                        <div ref={profileMenuRef} className="relative" onMouseEnter={handleProfileMouseEnter} onMouseLeave={handleProfileMouseLeave}>
                             <button
                                 aria-expanded={isProfileOpen}
                                 aria-haspopup="true"
@@ -134,10 +141,7 @@ export function SiteHeader() {
                             >
                                 <UserRound aria-hidden="true" className="size-4" />
                                 <span className="max-w-36 truncate">{profileName}</span>
-                                <ChevronDown
-                                    aria-hidden="true"
-                                    className={`size-3.5 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`}
-                                />
+                                <ChevronDown aria-hidden="true" className={`size-3.5 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {isProfileOpen && (
                                 <div className="absolute right-0 z-20 mt-2 w-48 rounded-card border border-border bg-surface p-1.5 shadow-card" role="menu">
@@ -150,6 +154,17 @@ export function SiteHeader() {
                                         <UserRound aria-hidden="true" className="size-4" />
                                         {profileLink.label}
                                     </Link>
+                                    {isAdmin && (
+                                        <Link
+                                            className="flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-foreground no-underline hover:bg-secondary"
+                                            onClick={() => setIsProfileOpen(false)}
+                                            role="menuitem"
+                                            to="/admin"
+                                        >
+                                            <ShieldCheck aria-hidden="true" className="size-4 text-primary" />
+                                            Admin
+                                        </Link>
+                                    )}
                                     {logoutLink && (
                                         <button
                                             className="flex w-full items-center gap-2 rounded-control px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-secondary"
@@ -169,18 +184,23 @@ export function SiteHeader() {
                         </div>
                     )}
                 </div>
-                <div ref={mobileMenuRef} className="relative md:hidden">
+                <div className="md:hidden">
                     <button
+                        ref={mobileButtonRef}
                         aria-expanded={isMobileOpen}
                         aria-label={isMobileOpen ? 'Stäng meny' : 'Öppna meny'}
-                        className="grid size-10 cursor-pointer list-none place-items-center rounded-full border border-border text-primary hover:bg-secondary"
+                        className="grid size-10 cursor-pointer list-none place-items-center rounded-full border border-border text-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                         onClick={() => setIsMobileOpen((prev) => !prev)}
                         type="button"
                     >
                         <Menu aria-hidden="true" className="size-5" strokeWidth={1.8} />
                     </button>
                     {isMobileOpen && (
-                        <nav aria-label="Mobilmeny" className="absolute top-full right-0 left-0 z-10 mt-2 grid gap-0.5 rounded-2xl border border-border bg-surface p-2.5 shadow-card">
+                        <nav
+                            ref={mobileMenuRef}
+                            aria-label="Mobilmeny"
+                            className="absolute top-full right-0 left-0 z-10 mt-2 grid gap-0.5 rounded-2xl border border-border bg-surface p-2.5 shadow-card"
+                        >
                             {headerLinks.map((item) =>
                                 item.action === 'logout' ? (
                                     <button
@@ -196,15 +216,16 @@ export function SiteHeader() {
                                         {item.label}
                                     </button>
                                 ) : (
-                                    <Link
-                                        className="rounded-lg px-3.5 py-2.5 text-foreground no-underline hover:bg-secondary"
-                                        key={item.label}
-                                        onClick={() => setIsMobileOpen(false)}
-                                        to={item.path}
-                                    >
+                                    <Link className="rounded-lg px-3.5 py-2.5 text-foreground no-underline hover:bg-secondary" key={item.label} onClick={() => setIsMobileOpen(false)} to={item.path}>
                                         {item.label}
                                     </Link>
                                 )
+                            )}
+                            {isAdmin && (
+                                <Link className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 font-medium text-foreground no-underline hover:bg-secondary" onClick={() => setIsMobileOpen(false)} to="/admin">
+                                    <ShieldCheck aria-hidden="true" className="size-4 text-primary" />
+                                    Admin
+                                </Link>
                             )}
                         </nav>
                     )}

@@ -15,10 +15,11 @@ loginRouter.post("/", async (req, res) => {
         return
     }
     try {
-        const [user] = await db.query(`SELECT id, email, password_hash FROM users WHERE email = '${email}'`);
-        if (user.password_hash === password) {
+        const [user] = await db.query(`SELECT id, email, password_hash, role FROM users WHERE email = ?`, [email]);
+        if (user && user.password_hash === password) {
             req.session.userId = user.id;
-            res.json({ "success": true })
+            req.session.role = user.role ?? 'user';
+            res.json({ "success": true, "role": user.role ?? 'user' })
         } else {
             res.json({ "success": false })
         }

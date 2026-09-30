@@ -1,6 +1,10 @@
-export const toAssetUrl = (imageUrl: string) => {
-    if (/^(?:[a-z]+:)?\/\//i.test(imageUrl) || imageUrl.startsWith('/') || imageUrl.startsWith('data:')) return imageUrl
-    return `/${imageUrl}`
+export const toAssetUrl = (url: string | null | undefined): string => {
+    if (!url || typeof url !== 'string' || !url.trim()) return ''
+    const trimmed = url.trim()
+    if (/^(?:[a-z]+:)?\/\//i.test(trimmed) || trimmed.startsWith('/') || trimmed.startsWith('data:')) {
+        return trimmed
+    }
+    return `/${trimmed}`
 }
 
 export const shuffled = <T,>(items: T[]) => {
