@@ -47,7 +47,7 @@ const defaultActivities: RecentGiftActivityItem[] = [
 
 export function AdminRecentActivity({
     activities = defaultActivities,
-    historyUrl = '/admin',
+    historyUrl = '/admin/orders',
 }: AdminRecentActivityProps) {
     return (
         <section
