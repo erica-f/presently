@@ -95,7 +95,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                             <span>Visa gåva</span>
                         </Button>
                     :
-                    <Button variant="secondary" className="w-full cursor-pointer" icon={<ArrowRight />} iconPosition='right'>
+                    <Button href={`/gifts/${gift.id}`} variant="secondary" className="w-full cursor-pointer" icon={<ArrowRight />} iconPosition='right'>
                         <span>{productMembership ? 'Uppgradera till ' + productMembership.name : 'Uppgradera ditt medlemskap'}</span>
                     </Button>
                 }

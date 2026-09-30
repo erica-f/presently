@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth } from '../contexts/useAuth';
 import { Button } from '../components/Button'
-import { Gift, AtSign, Eye, EyeOff, Lock, LockKeyhole, Star } from 'lucide-react'
+import { Gift, AtSign, Eye, EyeOff, LockKeyhole, Star, ArrowRight } from 'lucide-react'
 import { getFeaturedGifts } from '../lib/giftsApi'
 import type { FeaturedGift } from '../types/gifts'
 
@@ -151,7 +151,7 @@ const Login = () => {
                                         className="w-full"
                                         onClick={() => login()}>
                                         <span>Logga in</span>
-                                        <Lock className="size-4" />
+                                        <ArrowRight className="size-4" />
                                     </Button>
                                 </div>
                             </form>
