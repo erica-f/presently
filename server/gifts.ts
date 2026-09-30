@@ -1,12 +1,11 @@
 import express, { type Request, type Response } from 'express';
 import { db } from './db.js';
+import {authenticated} from './middleware/authenticated.js'
 
 const gifts = express.Router();
+gifts.use(authenticated);
 
-gifts.get("/", async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ message: 'Not logged in' });
-    }
+gifts.get("/", async (_req: Request, res: Response) => {
     try {
         const connect = await db.query(`SELECT * FROM products WHERE is_active = 1`);
         res.json(connect);
