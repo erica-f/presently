@@ -11,6 +11,7 @@ import AdminRoute from './utils/AdminRoute'
 import Admin from './pages/Admin'
 import AdminUsers from './pages/AdminUsers'
 import AdminProducts from './pages/AdminProducts'
+import AdminOrders from './pages/AdminOrders'
 import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
 import { ScrollToHash } from './utils/scroll'
@@ -25,6 +26,7 @@ function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+                    <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
                     <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
                     <Route path="/admin/products" element={<AdminRoute><AdminProducts /></AdminRoute>} />
                     <Route path="/checkout/success/:paymentId" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
