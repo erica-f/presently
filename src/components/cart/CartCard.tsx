@@ -49,12 +49,12 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
 
     return (
         <div className="flex flex-col sm:flex-row gap-4 items-start mb-5" key={item.id}>
-            <img src={'/' + item.thumbnail_image_url} alt={item.name} className="w-24 h-24 rounded-xl object-cover border border-[#e6ded3] shrink-0" />
+            <img src={'/' + item.thumbnail_image_url} alt={item.name} className="w-24 h-24 rounded-xl object-cover border border-border shrink-0" />
             <div className="space-y-1.5 flex-1">
                 <div className="items-center gap-2 grid grid-cols-2">
                     <div>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#f5eee1] text-[#b89047]">{membership.name}</span>
-                        <span className="ml-1 text-xs font-bold text-[#1a3b2b]">{item.point_cost}</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent-muted text-accent">{membership.name}</span>
+                        <span className="ml-1 text-xs font-bold ">{item.point_cost}</span>
                     </div>
                     <span className="justify-self-end flex items-center">
                         <Button variant="ghost" onClick={() => { updateAmount('minus') }} icon={<Minus />} > </Button>
@@ -63,8 +63,8 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
                     </span>
                     {!success && <span>Kunde inte uppdatera antal gåvor</span>}
                 </div>
-                <h3 className="text-lg text-[#1a3b2b]">{item.name}</h3>
-                <p className="text-xs text-[#68736c]">
+                <h3 className="text-lg text-primary">{item.name}</h3>
+                <p className="text-xs text-muted-foreground">
                     {item.description}
                 </p>
             </div>

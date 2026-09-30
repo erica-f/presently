@@ -43,7 +43,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                     {available ?
                         <div className="mt-4 pt-3 border-t border-[#f0f5f2] flex items-center justify-between text-xs text-muted-foreground">
                             {pointsLeft >= 0 &&
-                                <span className="flex items-center gap-1 text-muted-foreground">
+                                <span className="flex items-center gap-1 text-primary">
                                    <Gift className='size-3'/>
                                     Presentinslagning ingår
                                 </span>
