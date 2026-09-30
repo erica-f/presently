@@ -126,9 +126,9 @@ const Admin = () => {
                             <div key={i} className="h-36 rounded-card border border-border bg-surface/60" />
                         ))}
                     </div>
-                    <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
-                        <div className="h-64 rounded-card border border-border bg-surface/60 lg:col-span-7" />
-                        <div className="h-64 rounded-card border border-border bg-surface/60 lg:col-span-5" />
+                    <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+                        <div className="h-64 rounded-card border border-border bg-surface/60" />
+                        <div className="h-64 rounded-card border border-border bg-surface/60" />
                     </div>
                     <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
                         <div className="h-80 rounded-card border border-border bg-surface/60" />
@@ -139,16 +139,9 @@ const Admin = () => {
                 <>
                     <AdminStatsGrid stats={statItems} />
 
-                    <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
-                        <AdminMembershipDistribution
-                            className="lg:col-span-7"
-                            totalActive={overview?.distribution.totalActive}
-                            tiers={overview?.distribution.tiers}
-                        />
-                        <AdminOperationalStatus
-                            className="lg:col-span-5"
-                            metrics={overview?.operationalStatus.metrics}
-                        />
+                    <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+                        <AdminMembershipDistribution totalActive={overview?.distribution.totalActive} tiers={overview?.distribution.tiers} />
+                        <AdminOperationalStatus metrics={overview?.operationalStatus.metrics} />
                     </div>
 
                     <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
