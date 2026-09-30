@@ -812,4 +812,206 @@ adminRouter.delete('/products/:id', async (req: Request, res: Response) => {
     }
 })
 
+adminRouter.get('/orders', async (req: Request, res: Response) => {
+    try {
+        const search = typeof req.query.search === 'string' ? req.query.search.trim().toLowerCase() : ''
+        const status = typeof req.query.status === 'string' ? req.query.status.trim() : 'all'
+
+        let sql = `
+            SELECT 
+                o.id,
+                o.user_id,
+                o.status,
+                o.recipient_name,
+                o.recipient_address_line_1,
+                o.recipient_address_line_2,
+                o.recipient_postal_code,
+                o.recipient_city,
+                o.recipient_country_code,
+                o.total_points,
+                o.sent_at,
+                o.created_at,
+                o.updated_at,
+                o.paper_type,
+                o.message,
+                o.signed,
+                u.first_name AS buyer_first_name,
+                u.last_name AS buyer_last_name,
+                u.email AS buyer_email,
+                COALESCE(mp.name, 'Simple') AS membership_level
+            FROM gift_orders o
+            LEFT JOIN users u ON u.id = o.user_id
+            LEFT JOIN subscriptions s ON s.user_id = o.user_id AND s.status = 'active'
+            LEFT JOIN membership_plans mp ON mp.id = s.membership_plan_id
+            WHERE 1=1
+        `
+        const params: unknown[] = []
+
+        if (status === 'pending') {
+            sql += ` AND o.sent_at IS NULL AND o.status != 'cancelled'`
+        } else if (status === 'sent' || status === 'completed') {
+            sql += ` AND (o.sent_at IS NOT NULL OR o.status = 'completed')`
+        }
+
+        if (search) {
+            const cleanSearch = search.replace(/^#/, '').trim()
+            sql += ` AND (
+                LOWER(o.recipient_name) LIKE ? OR
+                LOWER(o.recipient_city) LIKE ? OR
+                LOWER(COALESCE(u.first_name, '')) LIKE ? OR
+                LOWER(COALESCE(u.last_name, '')) LIKE ? OR
+                LOWER(COALESCE(u.email, '')) LIKE ? OR
+                LOWER(COALESCE(o.message, '')) LIKE ? OR
+                LOWER(COALESCE(o.signed, '')) LIKE ? OR
+                o.id = ?
+            )`
+            const pattern = `%${cleanSearch}%`
+            const orderIdNum = Number.isInteger(Number(cleanSearch)) ? Number(cleanSearch) : -1
+            params.push(pattern, pattern, pattern, pattern, pattern, pattern, pattern, orderIdNum)
+        }
+
+        sql += ` ORDER BY o.created_at DESC, o.id DESC`
+
+        const orderRows = (await db.query(sql, params)) as Record<string, unknown>[]
+        const orderIds = orderRows.map((r) => Number(r.id)).filter(Boolean)
+
+        const itemsByOrderId = new Map<number, Array<{
+            id: number
+            productId: number
+            productName: string
+            thumbnailImageUrl: string | null
+            quantity: number
+            unitPointCost: number
+            linePointTotal: number
+        }>>()
+
+        if (orderIds.length > 0) {
+            const itemRows = (await db.query(`
+                SELECT 
+                    oi.id,
+                    oi.gift_order_id,
+                    oi.product_id,
+                    oi.product_name_snapshot,
+                    oi.quantity,
+                    oi.unit_point_cost,
+                    oi.line_point_total,
+                    p.thumbnail_image_url
+                FROM gift_order_items oi
+                LEFT JOIN products p ON p.id = oi.product_id
+                WHERE oi.gift_order_id IN (${orderIds.map(() => '?').join(',')})
+                ORDER BY oi.id ASC
+            `, orderIds)) as Record<string, unknown>[]
+
+            for (const item of itemRows) {
+                const oid = Number(item.gift_order_id)
+                const list = itemsByOrderId.get(oid) ?? []
+                list.push({
+                    id: Number(item.id),
+                    productId: Number(item.product_id),
+                    productName: String(item.product_name_snapshot ?? 'Gåva'),
+                    thumbnailImageUrl: item.thumbnail_image_url ? String(item.thumbnail_image_url).startsWith('http') || String(item.thumbnail_image_url).startsWith('/') ? String(item.thumbnail_image_url) : `/${String(item.thumbnail_image_url)}` : null,
+                    quantity: Number(item.quantity ?? 1),
+                    unitPointCost: Number(item.unit_point_cost ?? 0),
+                    linePointTotal: Number(item.line_point_total ?? 0),
+                })
+                itemsByOrderId.set(oid, list)
+            }
+        }
+
+        const orders = orderRows.map((row) => {
+            const oid = Number(row.id)
+            const isSent = row.sent_at !== null && row.sent_at !== undefined
+            const rawStatus = String(row.status ?? 'pending')
+            const statusVal: 'pending' | 'completed' | 'cancelled' =
+                rawStatus === 'cancelled' ? 'cancelled' : isSent || rawStatus === 'completed' ? 'completed' : 'pending'
+
+            return {
+                id: oid,
+                orderNumber: String(oid).padStart(4, '0'),
+                userId: Number(row.user_id),
+                buyerName: `${String(row.buyer_first_name ?? '')} ${String(row.buyer_last_name ?? '')}`.trim() || 'Okänd beställare',
+                buyerEmail: String(row.buyer_email ?? ''),
+                membershipLevel: String(row.membership_level ?? 'Simple'),
+                recipientName: String(row.recipient_name ?? ''),
+                recipientAddress: {
+                    line1: String(row.recipient_address_line_1 ?? ''),
+                    line2: row.recipient_address_line_2 ? String(row.recipient_address_line_2) : null,
+                    postalCode: String(row.recipient_postal_code ?? ''),
+                    city: String(row.recipient_city ?? ''),
+                    countryCode: String(row.recipient_country_code ?? 'SE'),
+                },
+                paperType: String(row.paper_type ?? 'forest'),
+                message: row.message ? String(row.message) : null,
+                signed: row.signed ? String(row.signed) : null,
+                totalPoints: Number(row.total_points ?? 0),
+                status: statusVal,
+                isSent,
+                sentAt: row.sent_at ? new Date(String(row.sent_at)).toISOString() : null,
+                formattedSentAt: row.sent_at ? formatSwedishDate(row.sent_at as Date | string) : null,
+                createdAt: row.created_at ? new Date(String(row.created_at)).toISOString() : '',
+                formattedCreatedAt: formatSwedishDate(row.created_at as Date | string),
+                items: itemsByOrderId.get(oid) ?? [],
+            }
+        })
+
+        res.json({ orders })
+    } catch (error) {
+        console.error('Failed to fetch admin orders:', error)
+        res.status(500).json({ error: 'Kunde inte läsa in gåvohistoriken.' })
+    }
+})
+
+adminRouter.put('/orders/:id/delivery', async (req: Request, res: Response) => {
+    try {
+        const orderId = Number(req.params.id)
+        if (!Number.isInteger(orderId) || orderId <= 0) {
+            res.status(400).json({ error: 'Ogiltigt order-ID.' })
+            return
+        }
+
+        const [existing] = await db.query('SELECT id, status, sent_at FROM gift_orders WHERE id = ?', [orderId])
+        if (!existing) {
+            res.status(404).json({ error: 'Beställningen hittades inte.' })
+            return
+        }
+
+        const { isSent } = req.body ?? {}
+        const willBeSent = Boolean(isSent)
+
+        if (willBeSent) {
+            await db.query(`
+                UPDATE gift_orders 
+                SET status = 'completed', sent_at = NOW(), updated_at = NOW() 
+                WHERE id = ?
+            `, [orderId])
+        } else {
+            await db.query(`
+                UPDATE gift_orders 
+                SET status = 'pending', sent_at = NULL, updated_at = NOW() 
+                WHERE id = ?
+            `, [orderId])
+        }
+
+        const [updated] = await db.query('SELECT id, status, sent_at FROM gift_orders WHERE id = ?', [orderId])
+
+        res.json({
+            success: true,
+            message: willBeSent
+                ? 'Beställningen har markerats som skickad.'
+                : 'Beställningen har återställts till bearbetning.',
+            order: {
+                id: orderId,
+                orderNumber: String(orderId).padStart(4, '0'),
+                status: updated.status,
+                isSent: willBeSent,
+                sentAt: updated.sent_at ? new Date(String(updated.sent_at)).toISOString() : null,
+                formattedSentAt: updated.sent_at ? formatSwedishDate(updated.sent_at as Date | string) : null,
+            },
+        })
+    } catch (error) {
+        console.error('Failed to update delivery status:', error)
+        res.status(500).json({ error: 'Kunde inte uppdatera leveransstatus.' })
+    }
+})
+
 export default adminRouter
