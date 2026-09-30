@@ -5,6 +5,7 @@ import type { AdminHeaderProps } from '../../types/admin'
 export function AdminHeader({
     title = 'Översikt',
     description = 'Operativ sammanfattning av användare, aktiva medlemskap, gåvoaktivitet och produktkatalog.',
+    action,
     onAddProduct,
 }: AdminHeaderProps) {
     return (
@@ -18,11 +19,15 @@ export function AdminHeader({
                 </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-                <Button variant="primary" icon={<Plus className="size-4" />} onClick={onAddProduct}>
-                    Lägg till produkt
-                </Button>
-            </div>
+            {(action || onAddProduct) && (
+                <div className="flex flex-wrap items-center gap-3 shrink-0">
+                    {action ?? (
+                        <Button variant="primary" icon={<Plus className="size-4" />} onClick={onAddProduct}>
+                            Lägg till produkt
+                        </Button>
+                    )}
+                </div>
+            )}
         </header>
     )
 }
