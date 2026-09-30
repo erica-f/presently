@@ -12,6 +12,7 @@ import CheckoutSuccess from './pages/CheckoutSuccess'
 import Register from './pages/Register'
 import MembershipOnboarding from './pages/MembershipOnboarding'
 import { ScrollToHash } from './utils/scroll'
+import MembershipProtectedRoute from './utils/membershipRoute'
 
 function App() {
     return (
@@ -26,10 +27,10 @@ function App() {
                     <Route path="/register/membership" element={<ProtectedRoute><MembershipOnboarding /></ProtectedRoute>} />
                     <Route path="/checkout/success/:paymentId" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
                     <Route path="/checkout/:plan" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                    <Route path="/gifts" element={<ProtectedRoute><Gifts /></ProtectedRoute>} />
-                    <Route path="/gifts/:id" element={<ProtectedRoute><GiftDetails /></ProtectedRoute>} />
-                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                    <Route path="/profile/:section" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/gifts" element={<ProtectedRoute><MembershipProtectedRoute><Gifts /></MembershipProtectedRoute></ProtectedRoute>} />
+                    <Route path="/gifts/:id" element={<ProtectedRoute><MembershipProtectedRoute><GiftDetails /></MembershipProtectedRoute></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><MembershipProtectedRoute><Profile /></MembershipProtectedRoute></ProtectedRoute>} />
+                    <Route path="/profile/:section" element={<ProtectedRoute><MembershipProtectedRoute><Profile /></MembershipProtectedRoute></ProtectedRoute>} />
                 </Routes>
                 <SiteFooter />
             </div>
