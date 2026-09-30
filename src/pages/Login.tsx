@@ -25,7 +25,7 @@ const Login = () => {
             setType('password')
         }
     }
-     const login = async () => {
+    const login = async () => {
         try {
             await logInRequest(email, password);
             auth.login();
@@ -36,8 +36,10 @@ const Login = () => {
     }
 
     useEffect(() => {
+        if (auth.isLoggedIn) {
+            navigate("/");
+        }
         let isCurrent = true
-
         const loadFeaturedGifts = async () => {
             try {
                 const products = await getFeaturedGifts()
@@ -60,7 +62,7 @@ const Login = () => {
         return () => {
             isCurrent = false
         }
-    }, [])
+    }, [auth.isLoggedIn])
 
     return (
         <div className="flex flex-1 flex-col justify-center bg-warm-cream antialiased selection:bg-brand-light selection:text-brand">
