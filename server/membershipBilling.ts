@@ -39,7 +39,7 @@ export async function getPlans() {
 
 export async function getPlanByRoute(routePlan: number) {
     const plans = await getPlans()
-    return plans[routePlan - 1] ?? null
+    return plans.find((plan) => Number(plan.id) === routePlan) ?? null
 }
 
 async function subscriptionForUser(userId: UserId, connection: PoolConnection | typeof db = db) {
