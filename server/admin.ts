@@ -6,7 +6,7 @@ const adminRouter = express.Router()
 export const requireAdmin: RequestHandler = async (req, res, next) => {
     const userId = req.session.userId
     if (!userId) {
-        res.status(401).json({ error: 'Inloggning krävs' })
+        res.status(401).json({ error: 'Din admin-session har löpt ut. Logga in igen.' })
         return
     }
 
@@ -157,7 +157,7 @@ adminRouter.get('/overview', async (_req: Request, res: Response) => {
         const premiumProducts = Number(productStats.premium_products ?? 0)
         const categoriesCount = Number(catStats.category_count ?? 0)
         const tierColorMap: Record<number, 'sage' | 'primary' | 'gold'> = { 1: 'sage', 2: 'primary', 3: 'gold', }
-        const tierDescMap: Record<number, string> = { 1: 'Tillgång till basutbudet bland gåvosortimentet.', 2: 'Utökat gåvosortiment och fler månatliga poäng.', 3: 'Exklusiva gåvor och ännu fler förmåner.'}
+        const tierDescMap: Record<number, string> = { 1: 'Tillgång till basutbudet bland gåvosortimentet.', 2: 'Utökat gåvosortiment och fler månatliga poäng.', 3: 'Exklusiva gåvor och ännu fler förmåner.' }
 
         const tiers = (planRows as Record<string, unknown>[]).map((plan) => {
             const level = Number(plan.level ?? 1)
@@ -309,6 +309,506 @@ adminRouter.get('/overview', async (_req: Request, res: Response) => {
     } catch (error) {
         console.error('Admin overview failed:', error)
         res.status(500).json({ error: 'Kunde inte läsa in översiktsdata för administration.' })
+    }
+})
+
+adminRouter.get('/users', async (req: Request, res: Response) => {
+    try {
+        const search = typeof req.query.search === 'string' ? req.query.search.trim().toLowerCase() : ''
+        const role = typeof req.query.role === 'string' ? req.query.role.trim() : 'all'
+        const status = typeof req.query.status === 'string' ? req.query.status.trim() : 'all'
+
+        let sql = `
+            SELECT 
+                u.id,
+                u.email,
+                u.first_name,
+                u.last_name,
+                u.role,
+                u.is_active,
+                u.created_at,
+                u.updated_at,
+                s.status AS subscription_status,
+                mp.name AS plan_name,
+                mp.level AS plan_level,
+                COALESCE(pt.balance, 0) AS point_balance,
+                COALESCE(orders.order_count, 0) AS order_count
+            FROM users u
+            LEFT JOIN subscriptions s ON s.user_id = u.id AND s.status = 'active'
+            LEFT JOIN membership_plans mp ON mp.id = s.membership_plan_id
+            LEFT JOIN (
+                SELECT user_id, SUM(points) AS balance
+                FROM point_transactions
+                GROUP BY user_id
+            ) pt ON pt.user_id = u.id
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) AS order_count
+                FROM gift_orders
+                GROUP BY user_id
+            ) orders ON orders.user_id = u.id
+            WHERE 1=1
+        `
+        const params: unknown[] = []
+
+        if (search) {
+            sql += ` AND (LOWER(u.first_name) LIKE ? OR LOWER(u.last_name) LIKE ? OR LOWER(u.email) LIKE ? OR CONCAT(LOWER(u.first_name), ' ', LOWER(u.last_name)) LIKE ?)`
+            const pattern = `%${search}%`
+            params.push(pattern, pattern, pattern, pattern)
+        }
+
+        if (role === 'admin' || role === 'user') {
+            sql += ` AND u.role = ?`
+            params.push(role)
+        }
+
+        if (status === 'active') {
+            sql += ` AND u.is_active = 1`
+        } else if (status === 'inactive') {
+            sql += ` AND u.is_active = 0`
+        }
+
+        sql += ` ORDER BY u.created_at DESC, u.id DESC`
+
+        const rows = await db.query(sql, params)
+
+        const users = (rows as Record<string, unknown>[]).map((user) => ({
+            id: Number(user.id),
+            email: String(user.email ?? ''),
+            firstName: String(user.first_name ?? ''),
+            lastName: String(user.last_name ?? ''),
+            role: (user.role === 'admin' ? 'admin' : 'user') as 'admin' | 'user',
+            isActive: Number(user.is_active) === 1,
+            createdAt: user.created_at ? new Date(String(user.created_at)).toISOString() : '',
+            updatedAt: user.updated_at ? new Date(String(user.updated_at)).toISOString() : '',
+            formattedCreated: formatSwedishDate(user.created_at as Date | string),
+            subscriptionStatus: user.subscription_status ? String(user.subscription_status) : null,
+            planName: user.plan_name ? String(user.plan_name) : null,
+            planLevel: user.plan_level !== null && user.plan_level !== undefined ? Number(user.plan_level) : null,
+            pointBalance: Number(user.point_balance ?? 0),
+            orderCount: Number(user.order_count ?? 0),
+        }))
+
+        res.json({ users })
+    } catch (error) {
+        console.error('Failed to fetch admin users:', error)
+        res.status(500).json({ error: 'Kunde inte läsa in medlemslistan.' })
+    }
+})
+
+adminRouter.put('/users/:id', async (req: Request, res: Response) => {
+    try {
+        const targetId = Number(req.params.id)
+        if (!Number.isInteger(targetId) || targetId <= 0) {
+            res.status(400).json({ error: 'Ogiltigt användar-ID' })
+            return
+        }
+
+        const currentUserId = Number(res.locals.userId)
+        const { firstName, lastName, email, role, isActive } = req.body ?? {}
+
+        if (typeof email !== 'string' || !email.includes('@') || !email.includes('.')) {
+            res.status(400).json({ error: 'Ange en giltig e-postadress.' })
+            return
+        }
+
+        if (typeof firstName !== 'string' || firstName.trim().length === 0) {
+            res.status(400).json({ error: 'Förnamn krävs.' })
+            return
+        }
+
+        if (typeof lastName !== 'string' || lastName.trim().length === 0) {
+            res.status(400).json({ error: 'Efternamn krävs.' })
+            return
+        }
+
+        if (role !== 'user' && role !== 'admin') {
+            res.status(400).json({ error: 'Roll måste vara antingen användare eller administratör.' })
+            return
+        }
+
+        if (targetId === currentUserId && role !== 'admin') {
+            res.status(400).json({ error: 'Du kan inte ta bort din egen administratörsroll.' })
+            return
+        }
+
+        if (targetId === currentUserId && isActive === false) {
+            res.status(400).json({ error: 'Du kan inte inaktivera ditt eget konto.' })
+            return
+        }
+
+        const [existing] = await db.query('SELECT id FROM users WHERE id = ?', [targetId])
+        if (!existing) {
+            res.status(404).json({ error: 'Användaren hittades inte.' })
+            return
+        }
+
+        const [emailConflict] = await db.query('SELECT id FROM users WHERE email = ? AND id != ?', [email.trim().toLowerCase(), targetId])
+        if (emailConflict) {
+            res.status(409).json({ error: 'E-postadressen används redan av ett annat konto.' })
+            return
+        }
+
+        const activeVal = isActive === false || isActive === 0 ? 0 : 1
+
+        await db.query(
+            `UPDATE users 
+             SET first_name = ?, last_name = ?, email = ?, role = ?, is_active = ?, updated_at = NOW() 
+             WHERE id = ?`,
+            [firstName.trim(), lastName.trim(), email.trim().toLowerCase(), role, activeVal, targetId]
+        )
+
+        res.json({
+            success: true,
+            message: 'Användaren har uppdaterats.',
+            user: {
+                id: targetId,
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                email: email.trim().toLowerCase(),
+                role,
+                isActive: activeVal === 1,
+            }
+        })
+    } catch (error) {
+        console.error('Failed to update admin user:', error)
+        res.status(500).json({ error: 'Kunde inte uppdatera användaren.' })
+    }
+})
+
+adminRouter.delete('/users/:id', async (req: Request, res: Response) => {
+    try {
+        const targetId = Number(req.params.id)
+        if (!Number.isInteger(targetId) || targetId <= 0) {
+            res.status(400).json({ error: 'Ogiltigt användar-ID' })
+            return
+        }
+
+        const currentUserId = Number(res.locals.userId)
+        if (targetId === currentUserId) {
+            res.status(400).json({ error: 'Du kan inte radera ditt eget administratörskonto.' })
+            return
+        }
+
+        const [existing] = await db.query('SELECT id, email, first_name, last_name FROM users WHERE id = ?', [targetId])
+        if (!existing) {
+            res.status(404).json({ error: 'Användaren hittades inte.' })
+            return
+        }
+
+        const conn = await db.getConnection()
+        try {
+            await conn.beginTransaction()
+            await conn.query('DELETE FROM cart_items WHERE cart_id IN (SELECT id FROM carts WHERE user_id = ?)', [targetId])
+            await conn.query('DELETE FROM carts WHERE user_id = ?', [targetId])
+            await conn.query('DELETE FROM gift_order_items WHERE gift_order_id IN (SELECT id FROM gift_orders WHERE user_id = ?)', [targetId])
+            await conn.query('DELETE FROM gift_orders WHERE user_id = ?', [targetId])
+            await conn.query('DELETE FROM point_transactions WHERE user_id = ?', [targetId])
+            await conn.query('DELETE FROM payments WHERE user_id = ?', [targetId])
+            await conn.query('DELETE FROM subscriptions WHERE user_id = ?', [targetId])
+            await conn.query('DELETE FROM contacts WHERE user_id = ?', [targetId])
+            await conn.query('DELETE FROM users WHERE id = ?', [targetId])
+            await conn.commit()
+        } catch (err) {
+            await conn.rollback()
+            throw err
+        } finally {
+            conn.release()
+        }
+
+        res.json({
+            success: true,
+            message: `Kontot för ${existing.first_name} ${existing.last_name} (${existing.email}) har raderats permanent.`
+        })
+    } catch (error) {
+        console.error('Failed to delete admin user:', error)
+        res.status(500).json({ error: 'Kunde inte radera användarkontot.' })
+    }
+})
+
+adminRouter.get('/categories', async (_req: Request, res: Response) => {
+    try {
+        const rows = await db.query('SELECT id, name, label FROM categories ORDER BY label ASC')
+        const categories = (rows as Record<string, unknown>[]).map((cat) => ({
+            id: Number(cat.id),
+            name: String(cat.name ?? ''),
+            label: String(cat.label ?? cat.name ?? ''),
+        }))
+        res.json({ categories })
+    } catch (error) {
+        console.error('Failed to fetch categories:', error)
+        res.status(500).json({ error: 'Kunde inte läsa in kategorier.' })
+    }
+})
+
+adminRouter.get('/products', async (req: Request, res: Response) => {
+    try {
+        const search = typeof req.query.search === 'string' ? req.query.search.trim().toLowerCase() : ''
+        const categoryId = req.query.category_id ? Number(req.query.category_id) : null
+        const status = typeof req.query.status === 'string' ? req.query.status.trim() : 'all'
+        const tier = req.query.tier ? Number(req.query.tier) : null
+
+        let sql = `
+            SELECT 
+                p.id,
+                p.name,
+                p.description,
+                p.thumbnail_image_url,
+                p.category_id,
+                p.point_cost,
+                p.minimum_membership_plan_level,
+                p.is_active,
+                p.created_at,
+                p.updated_at,
+                c.label AS category_label,
+                c.name AS category_name,
+                COALESCE(oi.order_count, 0) AS order_count
+            FROM products p
+            LEFT JOIN categories c ON c.id = p.category_id
+            LEFT JOIN (
+                SELECT product_id, COUNT(*) AS order_count
+                FROM gift_order_items
+                GROUP BY product_id
+            ) oi ON oi.product_id = p.id
+            WHERE 1=1
+        `
+        const params: unknown[] = []
+
+        if (search) {
+            sql += ` AND (LOWER(p.name) LIKE ? OR LOWER(COALESCE(p.description, '')) LIKE ?)`
+            const pattern = `%${search}%`
+            params.push(pattern, pattern)
+        }
+
+        if (categoryId && Number.isInteger(categoryId) && categoryId > 0) {
+            sql += ` AND p.category_id = ?`
+            params.push(categoryId)
+        }
+
+        if (tier && [1, 2, 3].includes(tier)) {
+            sql += ` AND p.minimum_membership_plan_level = ?`
+            params.push(tier)
+        }
+
+        if (status === 'active') {
+            sql += ` AND p.is_active = 1`
+        } else if (status === 'inactive') {
+            sql += ` AND p.is_active = 0`
+        }
+
+        sql += ` ORDER BY p.id DESC`
+
+        const rows = await db.query(sql, params)
+
+        const products = (rows as Record<string, unknown>[]).map((prod) => ({
+            id: Number(prod.id),
+            name: String(prod.name ?? ''),
+            description: prod.description ? String(prod.description) : null,
+            thumbnailImageUrl: prod.thumbnail_image_url ? String(prod.thumbnail_image_url) : null,
+            categoryId: Number(prod.category_id ?? 0),
+            categoryLabel: String(prod.category_label ?? prod.category_name ?? 'Okänd kategori'),
+            categoryName: String(prod.category_name ?? ''),
+            pointCost: Number(prod.point_cost ?? 0),
+            minimumMembershipPlanLevel: Number(prod.minimum_membership_plan_level ?? 1),
+            isActive: Number(prod.is_active) === 1,
+            createdAt: prod.created_at ? new Date(String(prod.created_at)).toISOString() : '',
+            updatedAt: prod.updated_at ? new Date(String(prod.updated_at)).toISOString() : '',
+            formattedUpdated: formatSwedishDate((prod.updated_at ?? prod.created_at) as Date | string),
+            orderCount: Number(prod.order_count ?? 0),
+        }))
+
+        res.json({ products })
+    } catch (error) {
+        console.error('Failed to fetch admin products:', error)
+        res.status(500).json({ error: 'Kunde inte läsa in produktlistan.' })
+    }
+})
+
+adminRouter.post('/products', async (req: Request, res: Response) => {
+    try {
+        const { name, description, thumbnailImageUrl, categoryId, pointCost, minimumMembershipPlanLevel, isActive } = req.body ?? {}
+
+        if (typeof name !== 'string' || name.trim().length < 2) {
+            res.status(400).json({ error: 'Produktnamn måste vara minst 2 tecken.' })
+            return
+        }
+
+        const catId = Number(categoryId)
+        if (!Number.isInteger(catId) || catId <= 0) {
+            res.status(400).json({ error: 'Vänligen välj en giltig kategori.' })
+            return
+        }
+
+        const [catExists] = await db.query('SELECT id FROM categories WHERE id = ?', [catId])
+        if (!catExists) {
+            res.status(400).json({ error: 'Vald kategori existerar inte.' })
+            return
+        }
+
+        const points = Number(pointCost)
+        if (![100, 300, 600].includes(points)) {
+            res.status(400).json({ error: 'Poängpris måste vara 100 (Simple), 300 (Plus) eller 600 (Signature).' })
+            return
+        }
+
+        const level = Number(minimumMembershipPlanLevel ?? 1)
+        if (![1, 2, 3].includes(level)) {
+            res.status(400).json({ error: 'Lägsta medlemsnivå måste vara 1 (Simple), 2 (Plus) eller 3 (Signature).' })
+            return
+        }
+
+        const activeVal = isActive === false || isActive === 0 ? 0 : 1
+        const descVal = typeof description === 'string' ? description.trim() : null
+        const imgVal = typeof thumbnailImageUrl === 'string' && thumbnailImageUrl.trim().length > 0 ? thumbnailImageUrl.trim() : null
+
+        const insertResult = await db.query(
+            `INSERT INTO products (name, description, thumbnail_image_url, category_id, point_cost, minimum_membership_plan_level, is_active, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [name.trim(), descVal, imgVal, catId, points, level, activeVal]
+        ) as { insertId?: unknown }
+
+        const productId = Number(insertResult.insertId)
+
+        if (imgVal && productId > 0) {
+            await db.query(
+                `INSERT INTO product_images (product_id, image_url, sort_order) VALUES (?, ?, 0)`,
+                [productId, imgVal]
+            ).catch((imgErr) => console.warn('Could not insert product_image thumbnail:', imgErr))
+        }
+
+        res.status(201).json({
+            success: true,
+            message: 'Produkten har skapats.',
+            productId,
+        })
+    } catch (error) {
+        console.error('Failed to create admin product:', error)
+        res.status(500).json({ error: 'Kunde inte skapa produkten.' })
+    }
+})
+
+adminRouter.put('/products/:id', async (req: Request, res: Response) => {
+    try {
+        const productId = Number(req.params.id)
+        if (!Number.isInteger(productId) || productId <= 0) {
+            res.status(400).json({ error: 'Ogiltigt produkt-ID.' })
+            return
+        }
+
+        const [existing] = await db.query('SELECT id FROM products WHERE id = ?', [productId])
+        if (!existing) {
+            res.status(404).json({ error: 'Produkten hittades inte.' })
+            return
+        }
+
+        const { name, description, thumbnailImageUrl, categoryId, pointCost, minimumMembershipPlanLevel, isActive } = req.body ?? {}
+
+        if (typeof name !== 'string' || name.trim().length < 2) {
+            res.status(400).json({ error: 'Produktnamn måste vara minst 2 tecken.' })
+            return
+        }
+
+        const catId = Number(categoryId)
+        if (!Number.isInteger(catId) || catId <= 0) {
+            res.status(400).json({ error: 'Vänligen välj en giltig kategori.' })
+            return
+        }
+
+        const [catExists] = await db.query('SELECT id FROM categories WHERE id = ?', [catId])
+        if (!catExists) {
+            res.status(400).json({ error: 'Vald kategori existerar inte.' })
+            return
+        }
+
+        const points = Number(pointCost)
+        if (![100, 300, 600].includes(points)) {
+            res.status(400).json({ error: 'Poängpris måste vara 100 (Simple), 300 (Plus) eller 600 (Signature).' })
+            return
+        }
+
+        const level = Number(minimumMembershipPlanLevel ?? 1)
+        if (![1, 2, 3].includes(level)) {
+            res.status(400).json({ error: 'Lägsta medlemsnivå måste vara 1, 2 eller 3.' })
+            return
+        }
+
+        const activeVal = isActive === false || isActive === 0 ? 0 : 1
+        const descVal = typeof description === 'string' ? description.trim() : null
+        const imgVal = typeof thumbnailImageUrl === 'string' && thumbnailImageUrl.trim().length > 0 ? thumbnailImageUrl.trim() : null
+
+        await db.query(
+            `UPDATE products
+             SET name = ?, description = ?, thumbnail_image_url = ?, category_id = ?, point_cost = ?, minimum_membership_plan_level = ?, is_active = ?, updated_at = NOW()
+             WHERE id = ?`,
+            [name.trim(), descVal, imgVal, catId, points, level, activeVal, productId]
+        )
+
+        if (imgVal) {
+            const [firstImg] = await db.query('SELECT id FROM product_images WHERE product_id = ? AND sort_order = 0', [productId])
+            if (firstImg) {
+                await db.query('UPDATE product_images SET image_url = ? WHERE id = ?', [imgVal, firstImg.id])
+            } else {
+                await db.query('INSERT INTO product_images (product_id, image_url, sort_order) VALUES (?, ?, 0)', [productId, imgVal])
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Produkten har uppdaterats.',
+            productId,
+        })
+    } catch (error) {
+        console.error('Failed to update admin product:', error)
+        res.status(500).json({ error: 'Kunde inte uppdatera produkten.' })
+    }
+})
+
+adminRouter.delete('/products/:id', async (req: Request, res: Response) => {
+    try {
+        const productId = Number(req.params.id)
+        if (!Number.isInteger(productId) || productId <= 0) {
+            res.status(400).json({ error: 'Ogiltigt produkt-ID.' })
+            return
+        }
+
+        const [product] = await db.query('SELECT id, name FROM products WHERE id = ?', [productId])
+        if (!product) {
+            res.status(404).json({ error: 'Produkten hittades inte.' })
+            return
+        }
+
+        const [orderItemUsage] = await db.query('SELECT COUNT(*) AS count FROM gift_order_items WHERE product_id = ?', [productId])
+        const hasOrders = Number(orderItemUsage?.count ?? 0) > 0
+
+        if (hasOrders) {
+            await db.query('UPDATE products SET is_active = 0, updated_at = NOW() WHERE id = ?', [productId])
+            await db.query('DELETE FROM cart_items WHERE product_id = ?', [productId])
+
+            res.json({
+                success: true,
+                archived: true,
+                message: `"${product.name}" har tidigare beställningar och inaktiverades därför i butiken istället för att tas bort helt.`
+            })
+            return
+        }
+
+        const conn = await db.getConnection()
+        try {
+            await conn.beginTransaction()
+            await conn.query('DELETE FROM cart_items WHERE product_id = ?', [productId])
+            await conn.query('DELETE FROM product_images WHERE product_id = ?', [productId])
+            await conn.query('DELETE FROM products WHERE id = ?', [productId])
+            await conn.commit()
+        } catch (err) {
+            await conn.rollback()
+            throw err
+        } finally {
+            conn.release()
+        }
+
+        res.json({ success: true, deleted: true, message: `"${product.name}" har raderats permanent.` })
+    } catch (error) {
+        console.error('Failed to delete admin product:', error)
+        res.status(500).json({ error: 'Kunde inte radera produkten.' })
     }
 })
 
