@@ -1,3 +1,4 @@
+import type { LayoutDashboard } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 export interface AdminStatItem {
@@ -92,6 +93,7 @@ export interface AdminBreadcrumbsProps {
 export interface AdminHeaderProps {
     title?: string
     description?: string
+    action?: ReactNode
     onAddProduct?: () => void
 }
 
@@ -121,4 +123,70 @@ export interface AdminRecentChangesProps {
 
 export interface AdminStatsGridProps {
     stats?: AdminStatItem[]
+}
+
+export interface AdminUser {
+    id: number
+    email: string
+    firstName: string
+    lastName: string
+    role: 'admin' | 'user'
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
+    formattedCreated: string
+    subscriptionStatus: string | null
+    planName: string | null
+    planLevel: number | null
+    pointBalance: number
+    orderCount: number
+}
+
+export interface AdminUserUpdateInput {
+    firstName: string
+    lastName: string
+    email: string
+    role: 'admin' | 'user'
+    isActive: boolean
+}
+
+export interface AdminCategory {
+    id: number
+    name: string
+    label: string
+}
+
+export interface AdminProduct {
+    id: number
+    name: string
+    description: string | null
+    thumbnailImageUrl: string | null
+    categoryId: number
+    categoryLabel: string
+    categoryName: string
+    pointCost: number
+    minimumMembershipPlanLevel: number
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
+    formattedUpdated: string
+    orderCount: number
+}
+
+export interface AdminProductInput {
+    name: string
+    description: string
+    thumbnailImageUrl: string
+    categoryId: number
+    pointCost: number
+    minimumMembershipPlanLevel: number
+    isActive: boolean
+}
+
+export interface AdminNavTab {
+    id: string
+    label: string
+    href: string
+    icon: typeof LayoutDashboard
+    isActive: (pathname: string) => boolean
 }
