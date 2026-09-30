@@ -124,54 +124,54 @@ const CartDelivery = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
                 <section className="lg:col-span-7 space-y-6">
                     {(userMembershipLevel == 2 || userMembershipLevel == 3) &&
-                        <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
+                        <div className="p-6 rounded-2xl bg-surface border border-border shadow-xs">
                             <div className="flex items-center justify-between pb-5">
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-9 h-9 rounded-full bg-brand-goldBg border border-brand-gold/30 flex items-center justify-center text-brand-gold">
+                                    <div className="w-9 h-9 rounded-full  border border-primary flex items-center justify-center text-brand-gold">
                                         <Users className="size-5" />
                                     </div>
                                     <div>
-                                        <h2 className="text-base font-semibold text-brand-forest">Dina sparade kontakter</h2>
-                                        {userMembership?.level == 2 && <p className="text-xs text-brand-textMuted">Spara 3 kontakter med {userMembership?.name}</p>}
-                                        {userMembership?.level == 3 && <p className="text-xs text-brand-textMuted">Obegränsad adressbok i {userMembership?.name}</p>}
+                                        <h2 className="text-base font-semibold text-primary">Dina sparade kontakter</h2>
+                                        {userMembership?.level == 2 && <p className="text-xs text-muted-foreground">Spara 3 kontakter med {userMembership?.name}</p>}
+                                        {userMembership?.level == 3 && <p className="text-xs text-muted-foreground">Obegränsad adressbok i {userMembership?.name}</p>}
                                     </div>
                                 </div>
                             </div>
 
                             <div className="mb-3">
                                 {contacts?.map(contact => (
-                                    <label className={selectedContact == contact.id ? `relative p-4 mb-2 rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} key={contact.id as number} onClick={() => (setSelectedContact(contact.id as number), logContact(contact))}>
+                                    <label className={selectedContact == contact.id ? `relative p-4 mb-2 rounded-xl border-2 border-primary bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-border bg-surface hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} key={contact.id as number} onClick={() => (setSelectedContact(contact.id as number), logContact(contact))}>
                                         <div className="flex w-full items-center space-x-3.5">
                                             <input type="radio" className="appearance-none" />
-                                            <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <div className="w-10 h-10 rounded-full text-primary font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
                                                 {contact.firstName.charAt(0)}{contact.lastName.charAt(0)}
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-center space-x-2">
-                                                    <h3 className="text-sm font-semibold text-brand-textMain">{contact.firstName} {contact.lastName}</h3>
+                                                    <h3 className="text-sm font-semibold text-primary">{contact.firstName} {contact.lastName}</h3>
                                                 </div>
-                                                <p className="text-xs text-brand-textMuted mt-1">{`${contact.address}, ${contact.postalCode} ${contact.city}`}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">{`${contact.address}, ${contact.postalCode} ${contact.city}`}</p>
                                             </div>
                                             {selectedContact == contact.id && <CircleCheckBig />}
                                         </div>
                                     </label>
                                 ))}
-                                <label className={selectedContact == 0 ? `relative p-4 mb-2  rounded-xl border-2 border-brand-forest bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-brand-border bg-white hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} onClick={() => setSelectedContact(0)}>
+                                <label className={selectedContact == 0 ? `relative p-4 mb-2 rounded-xl border-2 border-primary bg-[#f9fbf9] flex items-start justify-between cursor-pointer transition-all shadow-sm` : `relative p-4 mb-2 rounded-xl border border-border bg-surface hover:border-brand-forest/40 flex items-start justify-between cursor-pointer transition-all`} onClick={() => setSelectedContact(0)}>
                                     <div className="flex w-full items-center space-x-3.5">
                                         <input type="radio" className="appearance-none" />
-                                        <div className="w-10 h-10 rounded-full bg-brand-sand text-brand-forest font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <div className="w-10 h-10 rounded-full text-primary font-medium text-sm flex items-center justify-center flex-shrink-0 mt-0.5">
 
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center space-x-2">
-                                                <h3 className="text-sm font-semibold text-brand-textMain">Engångskontakt (fyll i nedan)</h3>
+                                                <h3 className="text-sm font-semibold text-primary">Engångskontakt (fyll i nedan)</h3>
                                             </div>
                                         </div>
                                         {selectedContact == 0 && <CircleCheckBig />}
                                     </div>
                                 </label>
                             </div>
-                            <div className="p-3.5 rounded-xl bg-brand-goldBg/60 border border-brand-gold/20 text-xs text-[#5c4921] flex items-center space-x-2.5">
+                            <div className="p-3.5 rounded-xl bg-accent/60 border border-accent/20 text-xs text-warning flex items-center space-x-2.5">
                                 <Star />
                                 {userMembershipLevel == 2 &&
                                     <span>{userMembership?.name}-medlemskap: Spara enkelt ner dina tre favoritkontakter. Du kan när som helst uppgradera ditt medlemskap till {confirmExistence(profile?.availablePlans?.find(item => item.level == 3)).name} för obegränsat med kontakter.</span>
@@ -183,26 +183,26 @@ const CartDelivery = () => {
                         </div>
                     }
                     {(selectedContact == 0 || userMembershipLevel == 1) &&
-                        <div className="p-6 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
+                        <div className="p-6 rounded-2xl bg-surface border border-border shadow-xs">
                             <div className="pt-1">
-                                <div className="group border border-brand-border rounded-xl p-3.5 bg-transparent">
-                                    <div className="flex items-center justify-between pb-5 mb-6 border-b border-brand-borderLight">
+                                <div className="group border border-primary rounded-xl p-3.5 bg-transparent">
+                                    <div className="flex items-center justify-between pb-5 mb-6 border-b border-primary">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-9 h-9 rounded-full bg-brand-sand flex items-center justify-center text-brand-forest">
+                                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-primary">
                                                 <UserRound className="size-5" />
                                             </div>
                                             <div>
-                                                <h2 className="text-base font-semibold text-brand-forest">Mottagarens uppgifter</h2>
+                                                <h2 className="text-base font-semibold text-primary">Mottagarens uppgifter</h2>
                                             </div>
                                         </div>
-                                        <span className="text-xs font-medium text-brand-textSubtle bg-[#f7f5f0] px-2.5 py-1 rounded-md">Engångssändning</span>
+                                        <span className="text-xs font-medium text-muted-foreground bg-surface-muted px-2.5 py-1 rounded-md">Engångssändning</span>
                                     </div>
 
                                     <form className="space-y-4">
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
-                                                <label htmlFor="first-name" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                <label htmlFor="first-name" className="block text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">
                                                     Förnamn *
                                                 </label>
                                                 <input
@@ -211,13 +211,13 @@ const CartDelivery = () => {
                                                     value={contactDetails.firstName}
                                                     onChange={e => (validityCheck(e), saveContact('firstName', e.target.value))}
                                                     placeholder="Elin"
-                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    className="w-full px-4 py-3 border border-primary rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     required
                                                     pattern="[A-Öa-ö\-\s]*$"
                                                 />
                                             </div>
                                             <div>
-                                                <label htmlFor="last-name" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                <label htmlFor="last-name" className="block text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">
                                                     Efternamn *
                                                 </label>
                                                 <input
@@ -226,14 +226,14 @@ const CartDelivery = () => {
                                                     value={contactDetails.lastName}
                                                     onChange={e => (validityCheck(e), saveContact('lastName', e.target.value))}
                                                     placeholder="Sundström"
-                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    className="w-full px-4 py-3 border border-primary rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     required
                                                     pattern="[A-Öa-ö\-\s]*$"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label htmlFor="address" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                            <label htmlFor="address" className="block text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">
                                                 Gatuadress &amp; ev. lägenhetsnummer *
                                             </label>
                                             <input
@@ -242,14 +242,14 @@ const CartDelivery = () => {
                                                 value={contactDetails.address}
                                                 onChange={e => (validityCheck(e), saveContact('address', e.target.value))}
                                                 placeholder="Storgatan 14B, lgh 1201"
-                                                className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                className="w-full px-4 py-3 border border-primary rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 required
                                                 pattern="[A-Öa-ö0-9\-\s]*$"
                                             />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
-                                                <label htmlFor="postal-code" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                <label htmlFor="postal-code" className="block text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">
                                                     Postnummer *
                                                 </label>
                                                 <input
@@ -258,13 +258,13 @@ const CartDelivery = () => {
                                                     value={contactDetails.postalCode}
                                                     onChange={e => (validityCheck(e), saveContact('postalCode', e.target.value))}
                                                     placeholder="411 24"
-                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    className="w-full px-4 py-3 border border-primary rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     required
                                                     pattern="[0-9]{3}\s[0-9]{2}"
                                                 />
                                             </div>
                                             <div>
-                                                <label htmlFor="city" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                <label htmlFor="city" className="block text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">
                                                     Ort *
                                                 </label>
                                                 <input
@@ -273,7 +273,7 @@ const CartDelivery = () => {
                                                     value={contactDetails.city}
                                                     onChange={e => (validityCheck(e), saveContact('city', e.target.value))}
                                                     placeholder="Göteborg"
-                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    className="w-full px-4 py-3 border border-primary rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     required
                                                     pattern="[A-Öa-ö\-\s]*$"
                                                 />
@@ -281,7 +281,7 @@ const CartDelivery = () => {
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div>
-                                                <label htmlFor="phone" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                <label htmlFor="phone" className="block text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">
                                                     Telefonnummer
                                                 </label>
                                                 <input
@@ -290,12 +290,12 @@ const CartDelivery = () => {
                                                     value={contactDetails.phone}
                                                     onChange={e => (validityCheck(e), saveContact('phone', e.target.value))}
                                                     placeholder="073 123 456 78"
-                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    className="w-full px-4 py-3 border border-primary rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                     pattern="[0-9]{10}"
                                                 />
                                             </div>
                                             <div>
-                                                <label htmlFor="email" className="block text-xs font-semibold text-brand-textMain uppercase tracking-wider mb-1.5">
+                                                <label htmlFor="email" className="block text-xs font-semibold text-primary uppercase tracking-wider mb-1.5">
                                                     Email
                                                 </label>
                                                 <input
@@ -304,17 +304,17 @@ const CartDelivery = () => {
                                                     value={contactDetails.email}
                                                     onChange={e => (validityCheck(e), saveContact('email', e.target.value))}
                                                     placeholder="Elin@mail.com"
-                                                    className="w-full px-4 py-3 bg-[#fdfcf9] border border-brand-border rounded-xl text-brand-textMain placeholder:text-brand-textSubtle focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
+                                                    className="w-full px-4 py-3 border border-primary rounded-xl placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-forest focus:border-transparent transition-all text-sm font-medium"
                                                 />
                                             </div>
                                         </div>
                                         {userMembershipLevel == 1 &&
-                                            <div className="mt-6 p-4 rounded-xl bg-brand-goldBg border border-brand-gold/20 flex items-start space-x-3.5">
-                                                <div className="mt-0.5 w-5 h-5 rounded-full bg-brand-gold/15 text-brand-gold flex items-center justify-center flex-shrink-0">
-                                                    <Info />
+                                            <div className="mt-6 p-4 rounded-xl bg-surface-muted border border-primary flex items-start space-x-3.5">
+                                                <div className="mt-0.5 w-5 h-5 rounded-full text-warning flex items-center justify-center flex-shrink-0">
+                                                    <Info className="stroke-muted-foreground"/>
                                                 </div>
-                                                <div className="text-xs leading-relaxed text-[#5c4921]">
-                                                    <p className="font-medium text-[#483713]">På en högre nivå kan du spara dina favoritkontakter. Du kan när som helst uppgradera ditt medlemskap.</p>
+                                                <div className="text-xs leading-relaxed text-muted-foreground">
+                                                    <p className="font-medium">På en högre nivå kan du spara dina favoritkontakter. Du kan när som helst uppgradera ditt medlemskap.</p>
                                                 </div>
                                             </div>
                                         }
@@ -338,24 +338,24 @@ const CartDelivery = () => {
                 </section>
 
                 <section className="lg:col-span-5 space-y-6">
-                    <section className="p-6 sm:p-7 rounded-2xl bg-white border border-[#e6ded3] shadow-xs">
+                    <section className="p-6 sm:p-7 rounded-2xl bg-surface border border-border shadow-xs">
                         <div className="flex items-start justify-between gap-3 mb-4">
                             <div>
-                                <h3 className="text-base sm:text-lg text-[#1a3b2b] mb-1">Personlig hälsning</h3>
-                                <p className="text-xs sm:text-sm text-[#68736c]">
+                                <h3 className="text-base sm:text-lg text-primary mb-1">Personlig hälsning</h3>
+                                <p className="text-xs sm:text-sm text-muted-foreground">
                                     Trycks på ett matt, präglat bomullskort och läggs i gåvoasken tillsammans med din gåva.
                                 </p>
                             </div>
-                            <div className="w-9 h-9 rounded-full bg-[#f4efe6] text-[#244d36] flex items-center justify-center shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-surface-muted text-primary flex items-center justify-center shrink-0">
                                 <Mail className="size-4" />
                             </div>
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-xs font-semibold text-[#1a3b2b] uppercase tracking-wider mb-2">Kortdesign</label>
+                            <label className="block text-xs font-semibold text-primary uppercase tracking-wider mb-2">Kortdesign</label>
                             <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                 {paperList.map((type) => (
-                                    <label className={paperType == `${type.key}` ? `relative flex flex-col items-center justify-center p-2 rounded-xl border-2 border-[#244d36] ${paperColors} text-center cursor-pointer` : "relative flex flex-col items-center justify-center p-2 rounded-xl border border-[#e6ded3] hover:border-[#244d36]/40 bg-white text-center cursor-pointer"} key={type.key}>
+                                    <label className={paperType == `${type.key}` ? `relative flex flex-col items-center justify-center p-2 rounded-xl border-2 border-primary ${paperColors} text-center cursor-pointer` : "relative flex flex-col items-center justify-center p-2 rounded-xl border border-border hover:border-[#244d36]/40 bg-surface text-center cursor-pointer"} key={type.key}>
                                         <input type="radio" name={type.key} checked={paperType == type.key} onChange={() => setPaperType(type.key)} className="appearance-none" />
                                         <span className="text-xs font-semibold flex items-center gap-2">{type.name} </span>
                                     </label>
@@ -366,25 +366,25 @@ const CartDelivery = () => {
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between text-xs">
-                                <label htmlFor="personal_message" className="font-medium text-[#1a3b2b]">Ditt meddelande</label>
-                                <span className="text-[#68736c]" id="char-counter"><span className="font-semibold text-[#1a3b2b]">{signsUsed}</span> / 300 tecken</span>
+                                <label htmlFor="personal_message" className="font-medium text-primary">Ditt meddelande</label>
+                                <span className="text-muted-foreground" id="char-counter"><span className="font-semibold text-muted-foreground">{signsUsed}</span> / 300 tecken</span>
                             </div>
                             <textarea
                                 id="personal_message"
                                 rows={4}
-                                className="w-full p-4 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent"
+                                className="w-full p-4 rounded-xl border border-border text-muted-foreground text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent"
                                 placeholder="Skriv din hälsning här..."
                                 value={personalMessage}
                                 onChange={(e) => (setPersonalMessage(e.target.value), setSignsUsed(e.target.value.length))}
                                 maxLength={300}
                             />
 
-                            <div className="flex items-center justify-between pt-1 text-xs text-[#68736c]">
-                                <span>Avsändare som trycks på kortet: <strong className="text-[#1a3b2b] font-medium">{nameToUse}</strong></span>
+                            <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground">
+                                <span>Avsändare som trycks på kortet: <strong className="text-primary font-medium">{nameToUse}</strong></span>
                                 <button type="button" className="text-[#244d36] hover:underline" onClick={() => setIsVisible(!isVisible)}>Ändra namn</button>
                             </div>
                             <div className={isVisible ? 'flex items-end justify-end' : 'invisible flex justify-end'} >
-                                <input type="text" value={nameToUse} onChange={e => setNameToUse(e.target.value)} className="p-2 rounded-xl border border-[#d6cbbe] bg-[#fdfbf7] text-[#1a3b2b] text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent" />
+                                <input type="text" value={nameToUse} onChange={e => setNameToUse(e.target.value)} className="p-2 rounded-xl border border-border text-muted-foreground text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#244d36] focus:border-transparent" />
                             </div>
                         </div>
                     </section>

@@ -241,7 +241,7 @@ function LandingPage() {
                     {!featuredGiftsLoading && !featuredGiftsError && featuredProducts.length > 0 && (
                         <div className="grid gap-6 md:grid-cols-3">
                             {featuredProducts.map((product) => (
-                                <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e5ede8] bg-white shadow-sm transition-all duration-300 hover:shadow-md" key={product.id}>
+                                <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e5ede8] bg-surface shadow-sm transition-all duration-300 hover:shadow-md" key={product.id}>
                                     <div>
                                         <div className="relative flex aspect-[4/3] overflow-hidden bg-[#f5f1eb]">
                                             <img

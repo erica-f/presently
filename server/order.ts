@@ -37,7 +37,7 @@ order.post('/', async (req: Request<object, unknown, BodyDetails>, res) => {
     const { delivery, message, cart, pointCostSum } = req.body
 
     if (cart.length <= 0) {
-        res.status(400).json({ message: 'Inga gåvor i varukorgen' })
+        res.status(400).json({ message: 'Beställningen kunde inte slutföras. Inga gåvor ligger i varukorgen.' })
         return
     }
     const requiredContactFields: (keyof Contact)[] = [
@@ -51,11 +51,11 @@ order.post('/', async (req: Request<object, unknown, BodyDetails>, res) => {
         field => delivery[field].trim() !== ''
     );
     if (!oneTimeContactComplete) {
-        res.status(400).json({ message: 'Mottagaruppgifter saknas' })
+        res.status(400).json({ message: 'Beställningen kunde inte slutföras. Mottagaruppgifter saknas.' })
         return
     }
     if (pointCostSum <= 0) {
-        res.status(400).json({ message: 'Ingen poängkostnad angiven' })
+        res.status(400).json({ message: 'Beställningen kunde inte slutföras. Ingen poängkostnad angiven.' })
         return
     }
 

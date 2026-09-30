@@ -9,9 +9,9 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
     const available = gift.minimum_membership_plan_level <= userMembershipId ? true : false;
     const productMembership = confirmExistence(memberships.find(item => item.level == gift.minimum_membership_plan_level));
     const userMembership = confirmExistence(memberships.find(item => item.level == userMembershipId));
-
+   
     return (
-        <article className="group bg-white rounded-2xl border border-[#e5ede8] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
+        <article className="group bg-surface rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
             <div>
                 <div className="relative aspect-[4/3] bg-[#f5f1eb] overflow-hidden flex">
                     <img
@@ -24,37 +24,37 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                             Presently {productMembership.name}
                         </span>
                     </div>
-                    <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-xl shadow-sm border border-[#e5ede8]">
-                        <span className="text-base font-bold text-[#193927]">{gift.point_cost}</span>
-                        <span className="text-xs font-semibold text-[#bb9b56] ml-0.5">p</span>
+                    <div className="absolute bottom-3 right-3 bg-surface backdrop-blur-sm px-3 py-1 rounded-xl shadow-sm border border-border">
+                        <span className="text-base font-bold text-primary">{gift.point_cost}</span>
+                        <span className="text-xs font-semibold text-accent ml-0.5">p</span>
                     </div>
                 </div>
 
                 <div className="p-5">
-                    <div className="flex items-center justify-between text-xs text-[#708278] mb-1.5">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
                         <span>{category.label}</span>
                     </div>
-                    <h2 className="text-lg font-semibold text-[#193927] group-hover:text-[#244d36] transition-colors line-clamp-1">
+                    <h2 className="text-lg font-semibold text-[#193927] group-hover:text-primary transition-colors line-clamp-1">
                         {gift.name}
                     </h2>
-                    <p className="text-xs text-[#52655c] mt-2 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
                         {gift.description}
                     </p>
                     {available ?
-                        <div className="mt-4 pt-3 border-t border-[#f0f5f2] flex items-center justify-between text-xs text-[#52655c]">
+                        <div className="mt-4 pt-3 border-t border-[#f0f5f2] flex items-center justify-between text-xs text-muted-foreground">
                             {pointsLeft >= 0 &&
-                                <span className="flex items-center gap-1 text-[#3b5e4c]">
+                                <span className="flex items-center gap-1 text-primary">
                                    <Gift className='size-3'/>
                                     Presentinslagning ingår
                                 </span>
                             }
                             {pointsLeft >= 0 ?
-                                <span className="font-medium text-[#193927]">Saldo efter beställning: {pointsLeft} p</span>
+                                <span className="font-medium text-primary">Saldo efter beställning: {pointsLeft} p</span>
                                 :
                                 <div className="w-full">
-                                    <div className="flex items-center justify-between text-[11px] text-[#607469] mb-1.5">
-                                        <span>Poängframsteg</span>
-                                        <span className="font-medium text-[#193927]">{userCurrentPoints} / {gift.point_cost} p ({Math.round((userCurrentPoints / gift.point_cost) * 100)}%)
+                                    <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+                                        <span>Poängstatus</span>
+                                        <span className="font-medium text-primary">{userCurrentPoints} / {gift.point_cost} p ({Math.round((userCurrentPoints / gift.point_cost) * 100)}%)
                                         </span>
                                     </div>
                                     <div className="w-full bg-[#e8efe9] h-1.5 rounded-full overflow-hidden">
@@ -69,13 +69,13 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
 
                         </div>
                         :
-                        <div className="mt-4 p-3 bg-[#fbf8f2] border border-[#eedfc1] rounded-xl text-xs text-[#5c4a22]">
+                        <div className="mt-4 p-3 bg-[#fbf8f2] border border-[#eedfc1] rounded-xl text-xs text-foreground">
                             <div className="flex items-start gap-2">
                                 <Lock className="size-4"/>
                                 <div className="leading-relaxed">
-                                    <span className="font-semibold text-[#3b2e11]">Låst för Presently {userMembership.name}.</span>
-                                    <p className="text-[11px] text-[#735e31] mt-0.5">
-                                        Denna gåva kräver {productMembership.name}-medlemskap för personlig anpassning och gravyr.
+                                    <span className="font-semibold text-primary-active">Låst för Presently {userMembership.name}.</span>
+                                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                                        Denna gåva kräver {productMembership.name}-medlemskap.
                                     </p>
                                 </div>
                             </div>
@@ -95,7 +95,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                             <span>Visa gåva</span>
                         </Button>
                     :
-                    <Button variant="secondary" className="w-full cursor-pointer" icon={<ArrowRight />} iconPosition='right'>
+                    <Button href={`/gifts/${gift.id}`} variant="secondary" className="w-full cursor-pointer" icon={<ArrowRight />} iconPosition='right'>
                         <span>{productMembership ? 'Uppgradera till ' + productMembership.name : 'Uppgradera ditt medlemskap'}</span>
                     </Button>
                 }
