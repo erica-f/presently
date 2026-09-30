@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShoppingBag, Users } from 'lucide-react'
+import { Gift, LayoutDashboard, ShoppingBag, Users } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import type { AdminNavTab } from '../../types/admin'
 
@@ -9,6 +9,13 @@ const adminTabs: AdminNavTab[] = [
         href: '/admin',
         icon: LayoutDashboard,
         isActive: (pathname) => pathname === '/admin' || pathname === '/admin/',
+    },
+    {
+        id: 'orders',
+        label: 'Gåvohistorik',
+        href: '/admin/orders',
+        icon: Gift,
+        isActive: (pathname) => pathname.startsWith('/admin/orders'),
     },
     {
         id: 'users',
