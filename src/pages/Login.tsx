@@ -1,14 +1,18 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { useAuth } from '../contexts/useAuth';
 import { Button } from '../components/Button'
 import { Gift, AtSign, Eye, EyeOff, Lock, LockKeyhole, Star } from 'lucide-react'
-
+import { getFeaturedGifts } from '../lib/giftsApi'
+import type { FeaturedGift } from '../types/gifts'
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [type, setType] = useState('password');
+    const [featuredProducts, setFeaturedProducts] = useState<FeaturedGift[]>([])
+    const [featuredGiftsLoading, setFeaturedGiftsLoading] = useState(true)
+    const [featuredGiftsError, setFeaturedGiftsError] = useState(false)
     const navigate = useNavigate();
     const auth = useAuth()
 
@@ -44,6 +48,33 @@ const Login = () => {
         }
     }
 
+    useEffect(() => {
+        let isCurrent = true
+
+        const loadFeaturedGifts = async () => {
+            try {
+                const products = await getFeaturedGifts()
+                if (isCurrent) {
+                    setFeaturedProducts(products)
+                }
+            } catch {
+                if (isCurrent) {
+                    setFeaturedGiftsError(true)
+                }
+            } finally {
+                if (isCurrent) {
+                    setFeaturedGiftsLoading(false)
+                }
+            }
+        }
+
+        void loadFeaturedGifts()
+
+        return () => {
+            isCurrent = false
+        }
+    }, [])
+
     return (
         <div className="flex flex-1 flex-col justify-center bg-warm-cream antialiased selection:bg-brand-light selection:text-brand">
 
@@ -55,7 +86,7 @@ const Login = () => {
 
                             <div className="flex items-center gap-2 mb-8">
                                 <div className="w-8 h-8 rounded-full bg-brand-light flex items-center justify-center text-brand">
-                                    <Gift className="size-5 stroke-(--accent)"/>
+                                    <Gift className="size-5 stroke-(--accent)" />
                                 </div>
                                 <span className="text-xs font-semibold uppercase tracking-wider text-warm-muted">Presently-konto</span>
                             </div>
@@ -83,7 +114,7 @@ const Login = () => {
                                             required
                                         />
                                         <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-warm-muted/70">
-                                           <AtSign className="size-4"/>
+                                            <AtSign className="size-4" />
                                         </div>
                                     </div>
                                 </div>
@@ -108,8 +139,8 @@ const Login = () => {
                                             required
                                         />
                                         <button type="button" className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-warm-muted hover:text-warm-text transition-colors" onClick={toggleVisibility}>
-                                            {type == 'password' ? <Eye className="size-4"/> : <EyeOff className="size-4"/>}
-                                            
+                                            {type == 'password' ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+
                                         </button>
                                     </div>
                                 </div>
@@ -120,7 +151,7 @@ const Login = () => {
                                         className="w-full"
                                         onClick={() => login()}>
                                         <span>Logga in</span>
-                                        <Lock className="size-4"/>
+                                        <Lock className="size-4" />
                                     </Button>
                                 </div>
                             </form>
@@ -133,12 +164,11 @@ const Login = () => {
                                     </a>
                                 </p>
                             </div>
-
                         </div>
 
                         <div className="mt-8 pt-4 flex items-center justify-center gap-6 text-xs text-warm-muted/80">
                             <span className="inline-flex items-center gap-1.5">
-                                 <LockKeyhole  className="size-3"/>
+                                <LockKeyhole className="size-3" />
                                 Krypterad inloggning
                             </span>
                             <span className="w-1 h-1 rounded-full bg-warm-muted/40"></span>
@@ -147,37 +177,50 @@ const Login = () => {
                     </div>
 
                     <div className="lg:col-span-5 bg-surface-muted border-t lg:border-t-0 lg:border-l border-border p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
-
                         <div className="absolute -top-16 -right-16 w-52 h-52 bg-brand/5 rounded-full blur-3xl pointer-events-none"></div>
-
                         <div className="relative z-10">
-                            <div className="relative rounded-2xl overflow-hidden shadow-sm border border-border/80 group">
-                                <img
-                                    src="https://lh3.googleusercontent.com/aida/AEtjO1U9x8OdFO7i3rIjIIQJOgl0Gnn13DtS_r3Cs4q2uotDy1RRs3fqMiRteMp--uDenFGMWX0WW7D_wC6EiFtMaFmNMKOuRs-wHXsRnelLU_jBBH5Zd50YXPCFz3OIyMa00QvOwd8a_PhTg8AFizoHVQoZMGcizS2IX42jjw9bVnnb3kfbXSKXTivONeOYJQQe5HWVoFIojmn1K8KzA8E0-G4XMDKLGGie6yrBmwGC8Evg8uqyorGOWKEA7b4"
-                                    alt="Presentlys kurerade gåvobord i mjukt morgonljus"
-                                    className="w-full h-56 sm:h-64 object-cover transform group-hover:scale-102 transition-transform duration-700 ease-out"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-
-                                <div className="absolute bottom-3 left-3 right-3 text-white">
-                                    <span className="inline-block px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-medium tracking-wide mb-1">
-                                        Månadens gåvoutval
-                                    </span>
-                                    <p className="text-xs font-medium text-white/95 truncate">
-                                        Handplockade delikatesser & skandinavisk keramik
-                                    </p>
-                                </div>
-                            </div>
+                            {featuredGiftsLoading && <p className="text-sm text-muted-foreground">Laddar gåvor...</p>}
+                            {!featuredGiftsLoading && featuredGiftsError && <p className="text-sm text-muted-foreground">Gåvorna kunde inte laddas just nu.</p>}
+                            {!featuredGiftsLoading && !featuredGiftsError && featuredProducts.length === 0 && <p className="text-sm text-muted-foreground">Det finns inga gåvor att visa just nu.</p>}
+                            {!featuredGiftsLoading && !featuredGiftsError && featuredProducts.length > 0 && (
+                                <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e5ede8] bg-white shadow-sm transition-all duration-300 hover:shadow-md">
+                                    <div>
+                                        <div className="relative flex aspect-[4/3] overflow-hidden bg-[#f5f1eb]">
+                                            <img
+                                                src={featuredProducts[0].imageUrl}
+                                                alt={featuredProducts[0].name}
+                                                className="m-auto h-50 w-50 object-contain object-center transition-transform duration-500 group-hover:scale-105"
+                                                loading="lazy"
+                                            />
+                                            <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
+                                                <span className="inline-flex items-center rounded-full bg-[#193927]/80 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-md">
+                                                    Gåvoutval
+                                                </span>
+                                            </div>
+                                            <div className="absolute bottom-3 right-3 rounded-xl border border-[#e5ede8] bg-white/95 px-3 py-1 shadow-sm backdrop-blur-sm">
+                                                <span className="text-base font-bold text-[#193927]">{featuredProducts[0].points}</span>
+                                                <span className="ml-0.5 text-xs font-semibold text-[#bb9b56]">p</span>
+                                            </div>
+                                        </div>
+                                        <div className="p-5">
+                                            <div className="mb-1.5 flex items-center justify-between text-xs text-[#708278]">
+                                                <span>{featuredProducts[0].category}</span>
+                                            </div>
+                                            <h3 className="line-clamp-1 text-lg font-semibold text-[#193927] transition-colors group-hover:text-[#244d36]">{featuredProducts[0].name}</h3>
+                                        </div>
+                                    </div>
+                                </article>
+                            )}
                         </div>
 
                         <div className="relative z-10 mt-8 space-y-4">
                             <div className="p-4 rounded-2xl bg-white/70 backdrop-blur-sm border border-border/60">
                                 <div className="flex items-center gap-1.5 text-brand-gold mb-2">
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)"/>
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)"/>
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)"/>
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)"/>
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)"/>
+                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
+                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
+                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
+                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
+                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
                                 </div>
                                 <p className="text-xs italic text-warm-text leading-relaxed">
                                     ”Presently gör det rofyllt att minnas födelsedagar och alltid ha en vacker gåva redo i tid.”
