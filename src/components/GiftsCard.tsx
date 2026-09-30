@@ -11,7 +11,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
     const userMembership = confirmExistence(memberships.find(item => item.level == userMembershipId));
    
     return (
-        <article className="group bg-white rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
+        <article className="group bg-surface rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between" key={gift.id}>
             <div>
                 <div className="relative aspect-[4/3] bg-[#f5f1eb] overflow-hidden flex">
                     <img
@@ -24,7 +24,7 @@ const GiftsCard = ({ userMembershipId, userCurrentPoints, gift, memberships, cat
                             Presently {productMembership.name}
                         </span>
                     </div>
-                    <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-xl shadow-sm border border-border">
+                    <div className="absolute bottom-3 right-3 bg-surface backdrop-blur-sm px-3 py-1 rounded-xl shadow-sm border border-border">
                         <span className="text-base font-bold text-primary">{gift.point_cost}</span>
                         <span className="text-xs font-semibold text-accent ml-0.5">p</span>
                     </div>

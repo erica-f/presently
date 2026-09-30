@@ -183,7 +183,7 @@ const Login = () => {
                             {!featuredGiftsLoading && featuredGiftsError && <p className="text-sm text-muted-foreground">Gåvorna kunde inte laddas just nu.</p>}
                             {!featuredGiftsLoading && !featuredGiftsError && featuredProducts.length === 0 && <p className="text-sm text-muted-foreground">Det finns inga gåvor att visa just nu.</p>}
                             {!featuredGiftsLoading && !featuredGiftsError && featuredProducts.length > 0 && (
-                                <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e5ede8] bg-white shadow-sm transition-all duration-300 hover:shadow-md">
+                                <article className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-[#e5ede8] bg-surface shadow-sm transition-all duration-300 hover:shadow-md">
                                     <div>
                                         <div className="relative flex aspect-[4/3] overflow-hidden bg-[#f5f1eb]">
                                             <img

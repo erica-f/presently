@@ -27,6 +27,7 @@ const CheckoutGifts = () => {
   const [pointCostSum, setPointCostSum] = useState(0);
 
   const [refresh, setRefresh] = useState(false);
+  const paperColors = message.type == 'forest' ? 'bg-[#5f8971]/70' : message.type == 'warm' ? 'bg-[#e3d9c9]/80' : 'bg-[#fdf9f9]'
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,11 +54,11 @@ const CheckoutGifts = () => {
 
   const checkOut = async () => {
     try {
-        const result = await createOrder(delivery, message, cart, pointCostSum);
-        console.log(result);
-        if(result.success) {
-          navigate("/cart/checkout/success", {state: result})
-        }
+      const result = await createOrder(delivery, message, cart, pointCostSum);
+      console.log(result);
+      if (result.success) {
+        navigate("/cart/checkout/success", { state: result })
+      }
     } catch (err) {
       if (err instanceof GiftsApiError && err.status === 401) {
         handleUnauthorized();
@@ -76,7 +77,7 @@ const CheckoutGifts = () => {
   if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
     <p className="text-muted-foreground" role="status">Laddar detaljer...</p>
   </main>
-  if(cart.length <= 0) return <Navigate to="/cart" />;
+  if (cart.length <= 0) return <Navigate to="/cart" />;
   if (error) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
     <div className="border border-danger/30 bg-surface p-6">
       <h1 className="text-2xl text-foreground">Kunde inte hämta detaljer</h1>
@@ -145,7 +146,7 @@ const CheckoutGifts = () => {
               </h2>
             </div>
 
-            <div className="p-5 rounded-xl border border-border relative">
+            <div className={`p-5 rounded-xl border border-border relative ${paperColors}`}>
               <div className="text-center mb-2">
                 <span className="text-[10px] uppercase tracking-widest text-accent">Design: {message.type}</span>
               </div>
