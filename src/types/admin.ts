@@ -183,6 +183,45 @@ export interface AdminProductInput {
     isActive: boolean
 }
 
+export interface AdminOrderItem {
+    id: number
+    productId: number
+    productName: string
+    thumbnailImageUrl: string | null
+    quantity: number
+    unitPointCost: number
+    linePointTotal: number
+}
+
+export interface AdminOrder {
+    id: number
+    orderNumber: string
+    userId: number
+    buyerName: string
+    buyerEmail: string
+    membershipLevel: string
+    recipientName: string
+    recipientAddress: {
+        line1: string
+        line2?: string | null
+        postalCode: string
+        city: string
+        countryCode: string
+    }
+    paperType: string
+    message: string | null
+    signed: string | null
+    totalPoints: number
+    status: 'pending' | 'completed' | 'cancelled'
+    isSent: boolean
+    sentAt: string | null
+    formattedSentAt: string | null
+    createdAt: string
+    formattedCreatedAt: string
+    items: AdminOrderItem[]
+}
+
+
 export interface AdminNavTab {
     id: string
     label: string
