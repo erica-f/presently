@@ -47,7 +47,7 @@ export function AdminStatsGrid({ stats = defaultStats }: AdminStatsGridProps) {
                     </div>
 
                     <div className="mt-4">
-                        <p className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                        <p className="text-3xl font-bold text-foreground sm:text-4xl">
                             {stat.value}
                         </p>
                         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">

@@ -49,7 +49,7 @@ const defaultChanges: RecentProductChangeItem[] = [
 export function AdminRecentChanges({
     changes = defaultChanges,
     onEdit,
-    manageAllUrl = '/gifts',
+    manageAllUrl = '/admin/products',
 }: AdminRecentChangesProps) {
     return (
         <section aria-labelledby="recent-products-title" className="flex h-full flex-col justify-between rounded-card border border-border bg-surface p-6 shadow-card">
@@ -111,7 +111,7 @@ export function AdminRecentChanges({
                                         {item.status}
                                     </span>
 
-                                    <button type="button" onClick={() => onEdit?.(item)} className="inline-flex cursor-pointer items-center gap-1 rounded-control border border-border bg-surface px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary active:bg-secondary/40">
+                                    <button type="button" onClick={() => onEdit?.(item)} className="inline-flex cursor-pointer items-center gap-1 rounded-control border border-border bg-surface px-2.5 py-2 text-xs font-medium text-foreground transition-colors hover:border-primary hover:text-primary active:bg-secondary/40">
                                         <Pencil className="size-3 text-muted-foreground" aria-hidden="true" />
                                         <span>Redigera</span>
                                     </button>
