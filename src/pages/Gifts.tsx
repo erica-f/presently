@@ -113,42 +113,42 @@ const Gifts = () => {
 
   return (
     <main className="w-full max-w-7xl mx-auto mb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
-      <section className="mb-10 bg-white border border-[#e4ede7] rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
-        <div className="absolute -right-8 -top-12 w-48 h-48 bg-[#effcf9] rounded-full blur-2xl pointer-events-none"></div>
+      <section className="mb-10 bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
+        <div className="absolute -right-8 -top-12 w-48 h-48 bg-ring/20 rounded-full blur-2xl pointer-events-none"></div>
 
         <div className="flex items-start sm:items-center gap-4 relative z-10">
-          <div className="w-12 h-12 rounded-xl bg-[#244d36] text-[#bb9b56] flex items-center justify-center shrink-0 shadow-inner">
-            <UserStar className="size-5 stroke-(--accent)" />
+          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-inner">
+            <UserStar className="size-5 stroke-accent" />
           </div>
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span className="text-xs font-semibold tracking-wider uppercase text-[#3b5e4c]">Inloggad som</span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#effcf9] text-[#244d36] border border-[#d4ede4]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#244d36] mr-1.5"></span>
+              <span className="text-xs font-semibold tracking-wider uppercase text-primary">Inloggad som</span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-ring/40 text-primary">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary-active mr-1.5"></span>
                 Presently {userMembership.name}
               </span>
             </div>
             <p className="text-sm text-[#506359] mt-0.5">
-              Du har tillgång till gåvor i nivåerna <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 1)).name}</strong>
+              Du har tillgång till gåvor i nivåerna <strong className="text-foreground-muted font-semibold">{confirmExistence(memberships.find(item => item.level == 1)).name}</strong>
               {
-                userMembershipId == 2 ? <span> och <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong>.</span> : userMembershipId == 3 ? <span>, <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong> samt <strong className="text-[#193927] font-semibold">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong>.</span> : '.'
+                userMembershipId == 2 ? <span> och <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong>.</span> : userMembershipId == 3 ? <span>, <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong> samt <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong>.</span> : '.'
               }
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-[#edf3ef] relative z-10">
+        <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-border relative z-10">
           <div className="text-left md:text-right">
-            <div className="text-xs font-medium text-[#6b7c73] uppercase tracking-wider">Tillgängliga poäng</div>
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Tillgängliga poäng</div>
             <div className="flex items-baseline md:justify-end gap-1.5">
-              <span className="text-2xl sm:text-3xl font-bold text-[#193927] tracking-tight">{pointsLeft} / {profile?.pointBalance}</span>
-              <span className="text-sm font-semibold text-[#bb9b56]">p</span>
+              <span className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">{pointsLeft} / {profile?.pointBalance}</span>
+              <span className="text-sm font-semibold text-accent">p</span>
             </div>
             <span className="text-xs text-muted-foreground" >{cartPoints} poäng används redan av gåvor i kundvagnen</span>
           </div>
           <div className="h-9 w-px bg-[#e4ede7] hidden sm:block"></div>
           {userMembershipId < 3 &&
-            <a href="#signature-info" className="text-xs font-semibold text-[#244d36] hover:text-[#bb9b56] transition-colors flex items-center gap-1 group py-1.5 px-3 rounded-lg hover:bg-[#effcf9]">
+            <a href="#signature-info" className="text-xs font-semibold text-primary hover:text-accent transition-colors flex items-center gap-1 group py-1.5 px-3 rounded-lg">
               <span>Om {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor</span>
               <ChevronRight className="size-4" />
             </a>
@@ -157,10 +157,10 @@ const Gifts = () => {
       </section>
 
       <header className="mb-10 text-left max-w-3xl">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#193927] tracking-tight mb-3">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-primary tracking-tight mb-3">
           Gåvor
         </h1>
-        <p className="text-base sm:text-lg text-[#55695f] leading-relaxed">
+        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
           Välj en genomtänkt gåva till någon du bryr dig om. Alla gåvor paketeras för hand i återvunnet premiumpapper med handskrivet kort och levereras direkt till mottagaren.
         </p>
       </header>
@@ -185,7 +185,7 @@ const Gifts = () => {
 
           <div className="flex items-center gap-3 shrink-0">
             <div className="relative">
-              <select className="appearance-none bg-white border border-[#e4ede7] text-sm text-[#3f4e46] py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-[#244d36] cursor-pointer" onChange={(e) => { setLevel(e.target.value); filterGifts(e.target.value, 'level') }} value={level}>
+              <select className="appearance-none bg-surface border border-border text-sm text-primary py-2 pl-3.5 pr-8 rounded-xl focus:outline-none focus:border-ring cursor-pointer" onChange={(e) => { setLevel(e.target.value); filterGifts(e.target.value, 'level') }} value={level}>
                 <option value="0">Gåvonivå</option>
                 <option value="1">{confirmExistence(memberships.find(item => item.level == 1)).name}</option>
                 <option value="2">{confirmExistence(memberships.find(item => item.level == 2)).name}</option>
@@ -223,29 +223,29 @@ const Gifts = () => {
         </div>
       </section>
       {userMembershipId < 3 &&
-        <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-white relative overflow-hidden shadow-lg" id="signature-info">
+        <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-primary-foreground relative overflow-hidden shadow-lg" id="signature-info">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#bb9b56]/10 transform skew-x-12 pointer-events-none"></div>
 
           <div className="max-w-2xl relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#bb9b56] text-xs font-semibold mb-4 border border-white/10">
-              <Star className="size-3 fill-(--accent) stroke-(--accent)" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-accent text-xs font-semibold mb-4 border border-white/10">
+              <Star className="size-3 fill-accent stroke-accent" />
               <span>Presently Medlemsförmåner</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight mb-3">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-primary-foreground tracking-tight mb-3">
               Vill du kunna välja skräddarsydda {confirmExistence(memberships.find(item => item.level == 3)).name}-gåvor?
             </h2>
-            <p className="text-sm sm:text-base text-[#d8e5df] leading-relaxed mb-6 font-light">
-              Som <strong className="text-white font-medium">{userMembership.name}-medlem</strong> sparar du dina {profile?.pointBalance} poäng säkert varje månad. När du uppgraderar till <strong className="text-[#bb9b56] font-medium">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong> behåller du självklart alla dina intjänade poäng och låser upp tillgång till obegränsade sparade mottagare samt våra mest exklusiva kureringar.
+            <p className="text-sm sm:text-base leading-relaxed mb-6 font-light">
+              Som <strong className="font-medium">{userMembership.name}-medlem</strong> sparar du dina {profile?.pointBalance} poäng säkert varje månad. När du uppgraderar till <strong className="text-accent font-medium">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong> behåller du självklart alla dina intjänade poäng och låser upp tillgång till obegränsade sparade mottagare samt våra mest exklusiva kureringar.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
               <a href="/checkout/3">
-                <button className="bg-[#bb9b56] hover:bg-[#a88a48] font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-md flex items-center gap-2" >
+                <button className="bg-accent hover:bg-warning font-semibold px-6 py-3 rounded-xl text-sm transition-colors shadow-md flex items-center gap-2" >
                   <span>Uppgradera medlemskap</span>
                   <ArrowRight className="size-4" />
                 </button>
               </a>
-              <a href="/#medlemskap" className="text-sm font-medium text-[#d8e5df] hover:text-white underline underline-offset-4 transition-colors">
+              <a href="/#medlemskap" className="text-sm font-medium text-primary-foreground hover:text-white underline underline-offset-4 transition-colors">
                 Jämför alla medlemsnivåer
               </a>
             </div>
