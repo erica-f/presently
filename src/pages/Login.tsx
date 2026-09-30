@@ -5,6 +5,7 @@ import { Button } from '../components/Button'
 import { Gift, AtSign, Eye, EyeOff, LockKeyhole, Star, ArrowRight } from 'lucide-react'
 import { getFeaturedGifts } from '../lib/giftsApi'
 import type { FeaturedGift } from '../types/gifts'
+import { logInRequest, LogInError } from '../lib/loginApi'
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -15,6 +16,7 @@ const Login = () => {
     const [featuredGiftsError, setFeaturedGiftsError] = useState(false)
     const navigate = useNavigate();
     const auth = useAuth()
+    const [error, setError] = useState('');
 
     const toggleVisibility = () => {
         if (type === 'password') {
@@ -23,28 +25,13 @@ const Login = () => {
             setType('password')
         }
     }
-    async function login() {
+     const login = async () => {
         try {
-            const login = {
-                email: email,
-                password: password
-            }
-            const url = `/api/login`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify(login)
-            });
-            const data = await response.json();
-            if (data.success) {
-                auth.login();
-                navigate("/");
-            }
+            await logInRequest(email, password);
+            auth.login();
+            navigate("/");
         } catch (error) {
-            console.log("Couldn't log in: " + error);
+            setError(error instanceof LogInError ? error.message : 'Kunde inte ladda logga in');
         }
     }
 
@@ -154,6 +141,9 @@ const Login = () => {
                                         <ArrowRight className="size-4" />
                                     </Button>
                                 </div>
+                                {error &&
+                                    <div className="text-warning">{error}</div>
+                                }
                             </form>
 
                             <div className="mt-8 text-center pt-6 border-t border-border/60">
