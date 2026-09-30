@@ -79,27 +79,27 @@ const Login = () => {
         <div className="flex flex-1 flex-col justify-center bg-warm-cream antialiased selection:bg-brand-light selection:text-brand">
 
             <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 my-auto">
-                <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
+                <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[580px]">
 
                     <div className="lg:col-span-7 p-8 sm:p-12 lg:p-14 flex flex-col justify-between">
                         <div className="max-w-md w-full mx-auto">
 
                             <div className="flex items-center gap-2 mb-8">
-                                <div className="w-8 h-8 rounded-full bg-brand-light flex items-center justify-center text-brand">
-                                    <Gift className="size-5 stroke-(--accent)" />
+                                <div className="w-8 h-8 rounded-full bg-brand-light flex items-center justify-center text-primary">
+                                    <Gift className="size-5 stroke-accent" />
                                 </div>
-                                <span className="text-xs font-semibold uppercase tracking-wider text-warm-muted">Presently-konto</span>
+                                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Presently-konto</span>
                             </div>
 
                             <div className="mb-8">
-                                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-warm-text mb-2">
+                                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary mb-2">
                                     Logga in
                                 </h1>
                             </div>
 
                             <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
                                 <div>
-                                    <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-warm-muted mb-2">
+                                    <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-primary mb-2">
                                         E-postadress
                                     </label>
                                     <div className="relative">
@@ -110,10 +110,10 @@ const Login = () => {
                                             placeholder="namn@exempel.se"
                                             value={email}
                                             onChange={e => setEmail(e.target.value)}
-                                            className="w-full px-4 py-3 text-sm bg-warm-cream/40 border border-border rounded-xl text-warm-text placeholder:text-warm-muted/60 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+                                            className="w-full px-4 py-3 text-sm bg-surface-muted border border-border rounded-xl text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
                                             required
                                         />
-                                        <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-warm-muted/70">
+                                        <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-muted-foreground">
                                             <AtSign className="size-4" />
                                         </div>
                                     </div>
@@ -121,10 +121,10 @@ const Login = () => {
 
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-warm-muted">
+                                        <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                             Lösenord
                                         </label>
-                                        <a href="#glomt-losenord" className="text-xs font-medium text-brand hover:text-brand-dark transition-colors focus:outline-none focus:underline">
+                                        <a href="#glomt-losenord" className="text-xs font-medium text-primary hover:text-brand-dark transition-colors focus:outline-none focus:underline">
                                             Glömt lösenord?
                                         </a>
                                     </div>
@@ -135,10 +135,10 @@ const Login = () => {
                                             name="password"
                                             placeholder="••••••••••••"
                                             value={password} onChange={e => setPassword(e.target.value)}
-                                            className="w-full px-4 py-3 text-sm bg-warm-cream/40 border border-border rounded-xl text-warm-text placeholder:text-warm-muted/60 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+                                            className="w-full px-4 py-3 text-sm bg-surface-muted border border-border rounded-xl text-muted-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
                                             required
                                         />
-                                        <button type="button" className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-warm-muted hover:text-warm-text transition-colors" onClick={toggleVisibility}>
+                                        <button type="button" className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-muted-foreground transition-colors" onClick={toggleVisibility}>
                                             {type == 'password' ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
 
                                         </button>
@@ -157,21 +157,21 @@ const Login = () => {
                             </form>
 
                             <div className="mt-8 text-center pt-6 border-t border-border/60">
-                                <p className="text-sm text-warm-muted">
+                                <p className="text-sm text-muted-foreground">
                                     Har du inget konto?
-                                    <a href="#skapa-konto" className="font-semibold text-brand hover:text-brand-dark transition-colors ml-1 focus:outline-none focus:underline">
+                                    <a href="#skapa-konto" className="font-semibold text-primary hover:text-primary-hover transition-colors ml-1 focus:outline-none focus:underline">
                                         Skapa konto
                                     </a>
                                 </p>
                             </div>
                         </div>
 
-                        <div className="mt-8 pt-4 flex items-center justify-center gap-6 text-xs text-warm-muted/80">
+                        <div className="mt-8 pt-4 flex items-center justify-center gap-6 text-xs text-muted-foreground">
                             <span className="inline-flex items-center gap-1.5">
                                 <LockKeyhole className="size-3" />
                                 Krypterad inloggning
                             </span>
-                            <span className="w-1 h-1 rounded-full bg-warm-muted/40"></span>
+                            <span className="w-1 h-1 rounded-full text-muted-foreground"></span>
                             <span>Svensk gåvoservice</span>
                         </div>
                     </div>
@@ -214,22 +214,22 @@ const Login = () => {
                         </div>
 
                         <div className="relative z-10 mt-8 space-y-4">
-                            <div className="p-4 rounded-2xl bg-white/70 backdrop-blur-sm border border-border/60">
-                                <div className="flex items-center gap-1.5 text-brand-gold mb-2">
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
-                                    <Star className="size-3 fill-(--accent) stroke-(--accent)" />
+                            <div className="p-4 rounded-2xl bg-[#f5f1eb] backdrop-blur-sm border border-border">
+                                <div className="flex items-center gap-1.5 text-foreground mb-2">
+                                    <Star className="size-3 fill-accent stroke-accent" />
+                                    <Star className="size-3 fill-accent stroke-accent" />
+                                    <Star className="size-3 fill-accent stroke-accent" />
+                                    <Star className="size-3 fill-accent stroke-accent" />
+                                    <Star className="size-3 fill-accent stroke-accent" />
                                 </div>
-                                <p className="text-xs italic text-warm-text leading-relaxed">
+                                <p className="text-xs italic text-muted-foreground leading-relaxed">
                                     ”Presently gör det rofyllt att minnas födelsedagar och alltid ha en vacker gåva redo i tid.”
                                 </p>
                             </div>
 
                             <div className="pt-2">
-                                <h2 className="text-sm font-semibold text-warm-text">Skicka gåvor utan krångel.</h2>
-                                <p className="text-xs text-warm-muted mt-1 leading-normal">
+                                <h2 className="text-sm font-semibold text-primary">Skicka gåvor utan krångel.</h2>
+                                <p className="text-xs text-muted-foreground mt-1 leading-normal">
                                     Dina månatliga poäng brinner aldrig inne och sparas tryggt i ditt konto månad efter månad.
                                 </p>
                             </div>
