@@ -1,4 +1,4 @@
-import type { AdminCategory, AdminOverviewResponse, AdminProduct, AdminProductInput, AdminUser, AdminUserUpdateInput } from '../types/admin'
+import type { AdminCategory, AdminOrder, AdminOverviewResponse, AdminProduct, AdminProductInput, AdminUser, AdminUserUpdateInput } from '../types/admin'
 
 export const adminApi = {
     async getOverview(): Promise<AdminOverviewResponse> {
@@ -105,4 +105,30 @@ export const adminApi = {
 
         return { message: payload.message ?? 'Produkten togs bort framgångsrikt.', archived: payload.archived, deleted: payload.deleted }
     },
+
+    async getOrders(params?: { search?: string; status?: string }): Promise<AdminOrder[]> {
+        const query = new URLSearchParams()
+        if (params?.search) query.set('search', params.search)
+        if (params?.status && params.status !== 'all') query.set('status', params.status)
+
+        const qs = query.toString()
+        const response = await fetch(`/api/admin/orders${qs ? `?${qs}` : ''}`, { credentials: 'include' })
+        const payload = (await response.json().catch(() => ({}))) as { orders?: AdminOrder[]; error?: string }
+        if (!response.ok) throw new Error(payload.error ?? 'Kunde inte läsa in gåvohistoriken.')
+
+        return payload.orders ?? []
+    },
+
+    async updateOrderDelivery(orderId: number, isSent: boolean): Promise<{ message: string; order: Partial<AdminOrder> }> {
+        const response = await fetch(`/api/admin/orders/${orderId}/delivery`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ isSent }),
+        })
+        const payload = (await response.json().catch(() => ({}))) as { message?: string; order?: Partial<AdminOrder>; error?: string }
+        if (!response.ok) throw new Error(payload.error ?? 'Kunde inte uppdatera leveransstatus.')
+
+        return { message: payload.message ?? 'Leveransstatus uppdaterades.', order: payload.order ?? {} }
+    }
 }
