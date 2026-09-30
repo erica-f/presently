@@ -20,6 +20,7 @@ const CheckoutGifts = () => {
   const [message] = useState(location && location.message);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [orderError, setOrderError] = useState('');
   const handleUnauthorized = useLoginStatus();
   const [cart, setCart] = useState<CartInfo[]>([]);
   const [memberships, setMemberships] = useState<Membership[]>([]);
@@ -44,7 +45,7 @@ const CheckoutGifts = () => {
           handleUnauthorized();
           return
         }
-        setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda gåvor');
+        setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda bekräftelsedetaljerna');
       } finally {
         setLoading(false);
       }
@@ -55,7 +56,6 @@ const CheckoutGifts = () => {
   const checkOut = async () => {
     try {
       const result = await createOrder(delivery, message, cart, pointCostSum);
-      console.log(result);
       if (result.success) {
         navigate("/cart/checkout/success", { state: result })
       }
@@ -64,14 +64,13 @@ const CheckoutGifts = () => {
         handleUnauthorized();
         return
       }
-      setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda gåvor');
+      setOrderError(err instanceof GiftsApiError ? err.message : 'Kunde inte skapa ordern');
     } finally {
       setLoading(false);
     }
   }
 
   const pointsLeft = (currentPoints?.pointBalance ?? 0) - pointCostSum;
-  console.log(cart.length);
   if (location === null) return <Navigate to="/cart" />;
 
   if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
@@ -174,6 +173,9 @@ const CheckoutGifts = () => {
               >
                 <span>Skicka gåvan</span>
               </Button>
+              {orderError &&
+                <div className="text-warning">{orderError}</div>
+              }
               <Link to="/cart/delivery">
                 <Button
                   variant='secondary'
