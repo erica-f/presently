@@ -177,7 +177,7 @@ async function gifts(userId: string | number) {
             recipient: first(order, ['recipient_name', 'recipient', 'shipping_name'], 'Mottagare'),
             status: first(order, ['status', 'order_status'], 'Skickad'),
             items: lines.map((item) => ({
-                name: first(item, ['product_name', 'name', 'gift_name'], 'Gåva'),
+                name: first(item, ['product_name_snapshot', 'product_name', 'name', 'gift_name'], 'Gåva'),
                 quantity: numberValue(first(item, ['quantity', 'qty'], 1), 1),
                 points: numberValue(first(item, ['points', 'points_spent', 'unit_points', 'price_points'])),
             })),
