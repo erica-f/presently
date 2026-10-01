@@ -27,9 +27,13 @@ const Login = () => {
     }
     const login = async () => {
         try {
-            await logInRequest(email, password);
-            auth.login();
-            navigate("/");
+            const result = await logInRequest(email, password);
+            if (!result.success) {
+                setError('Fel lösenord eller e-postadress')
+            } else {
+                auth.login();
+                navigate("/");
+            }
         } catch (error) {
             setError(error instanceof LogInError ? error.message : 'Kunde inte ladda logga in');
         }
@@ -61,7 +65,7 @@ const Login = () => {
         }
     }, [])
     if (auth.isLoggedIn) return <Navigate to="/" />
-    
+
     return (
         <div className="flex flex-1 flex-col justify-center bg-warm-cream antialiased selection:bg-brand-light selection:text-brand">
 
