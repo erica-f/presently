@@ -15,7 +15,7 @@ loginRouter.post("/", async (req, res) => {
         return
     }
     try {
-        const [user] = await db.query(`SELECT id, email, password_hash, role FROM users WHERE email = ?`, [email]);
+        const [user] = await db.query(`SELECT id, email, password_hash, role FROM users WHERE email = ? AND is_active = 1`, [email]);
         if (user && user.password_hash === password) {
             req.session.userId = user.id;
             req.session.role = user.role ?? 'user';

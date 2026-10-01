@@ -22,7 +22,7 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
                 const result = await deleteItem(item.product_id, newAmount);
                 setSuccess(result.success);
             } else {
-                const result = await addToCart(item.product_id, newAmount);
+                const result = await addToCart(item.product_id, 1);
                 setSuccess(result.success);
             }
             refresh(previous => !previous)

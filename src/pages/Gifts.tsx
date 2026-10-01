@@ -129,7 +129,7 @@ const Gifts = () => {
               </span>
             </div>
             <p className="text-sm text-[#506359] mt-0.5">
-              Du har tillgång till gåvor i nivåerna <strong className="text-foreground-muted font-semibold">{confirmExistence(memberships.find(item => item.level == 1)).name}</strong>
+              Du har tillgång till gåvor i nivåerna <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 1)).name}</strong>
               {
                 userMembershipId == 2 ? <span> och <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong>.</span> : userMembershipId == 3 ? <span>, <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 2)).name}</strong> samt <strong className="text-foreground font-semibold">{confirmExistence(memberships.find(item => item.level == 3)).name}</strong>.</span> : '.'
               }
@@ -144,7 +144,7 @@ const Gifts = () => {
               <span className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">{pointsLeft} / {profile?.pointBalance}</span>
               <span className="text-sm font-semibold text-accent">p</span>
             </div>
-            <span className="text-xs text-muted-foreground" >{cartPoints} poäng används redan av gåvor i kundvagnen</span>
+            <span className="text-xs text-muted-foreground" >{cartPoints} poäng används av gåvor i kundvagnen</span>
           </div>
           <div className="h-9 w-px bg-[#e4ede7] hidden sm:block"></div>
           {userMembershipId < 3 &&
@@ -207,26 +207,28 @@ const Gifts = () => {
         :
         <div className="w-full mb-10 bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-sm ">Inga gåvor matchar ditt filter.</div>
       }
-      <section className="mb-10 mt-10">
-        <div className="flex">
-          <Button icon={<ChevronLeft />} onClick={() => currentPage >= 2 && setCurrentPage(currentPage - 1)}>
-            Föregående
-          </Button>
-          {pages.map(page => (
-            <Button
-              variant={currentPage == page + 1 ? 'primary' : 'secondary'}
-              className="ml-1 cursor-pointer"
-              onClick={() => setCurrentPage(page + 1)}
-              key={page + 1}
-            >
-              {page + 1}
+      {pages.length > 1 &&
+        <section className="mb-10 mt-10">
+          <div className="flex">
+            <Button icon={<ChevronLeft />} onClick={() => currentPage >= 2 && setCurrentPage(currentPage - 1)}>
+              Föregående
             </Button>
-          ))}
-          <Button icon={<ChevronRight />} iconPosition='right' onClick={() => currentPage <= pages.length - 1 && setCurrentPage(currentPage + 1)}>
-            Nästa
-          </Button>
-        </div>
-      </section>
+            {pages.map(page => (
+              <Button
+                variant={currentPage == page + 1 ? 'primary' : 'secondary'}
+                className="ml-1 cursor-pointer ml-2 mr-2"
+                onClick={() => setCurrentPage(page + 1)}
+                key={page + 1}
+              >
+                {page + 1}
+              </Button>
+            ))}
+            <Button icon={<ChevronRight />} iconPosition='right' onClick={() => currentPage <= pages.length - 1 && setCurrentPage(currentPage + 1)}>
+              Nästa
+            </Button>
+          </div>
+        </section>
+      }
       {userMembershipId < 3 &&
         <section className="mt-16 bg-gradient-to-r from-[#244d36] to-[#173324] rounded-3xl p-8 sm:p-10 text-primary-foreground relative overflow-hidden shadow-lg" id="signature-info">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[#bb9b56]/10 transform skew-x-12 pointer-events-none"></div>
