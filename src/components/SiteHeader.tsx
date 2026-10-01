@@ -8,7 +8,7 @@ import { profileApi } from '../lib/profileApi'
 
 export function SiteHeader() {
     const [isScrolled, setIsScrolled] = useState(false)
-    const [profileName, setProfileName] = useState('Mitt konto')
+    const [profileName, setProfileName] = useState<string | null>(null)
     const [profileRole, setProfileRole] = useState<string | null>(null)
     const [cartCount, setCartCount] = useState(0)
     const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -18,8 +18,8 @@ export function SiteHeader() {
     const mobileButtonRef = useRef<HTMLButtonElement>(null)
     const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const location = useLocation()
-    const { isLoggedIn, isAdmin: authIsAdmin, loading, logout } = useAuth()
-    const isAdmin = authIsAdmin || profileRole === 'admin'
+    const { isLoggedIn, isAdmin: authIsAdmin, role: authRole, loading, logout } = useAuth()
+    const isAdmin = Boolean(authIsAdmin || authRole === 'admin' || profileRole === 'admin')
     const headerLinks = loading ? [] : getNavigationLinks('header', isLoggedIn)
     const menuLinks = headerLinks.filter((link) => link.style === 'link')
     const profileLink = headerLinks.find((link) => link.display === 'profile-menu')
@@ -32,6 +32,15 @@ export function SiteHeader() {
         setPrevPathname(location.pathname)
         setIsProfileOpen(false)
         setIsMobileOpen(false)
+    }
+
+    const [prevIsLoggedIn, setPrevIsLoggedIn] = useState(isLoggedIn)
+    if (prevIsLoggedIn !== isLoggedIn) {
+        setPrevIsLoggedIn(isLoggedIn)
+        if (!isLoggedIn) {
+            setProfileName(null)
+            setProfileRole(null)
+        }
     }
 
     useEffect(() => {
@@ -74,7 +83,7 @@ export function SiteHeader() {
         if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current)
         closeTimeoutRef.current = setTimeout(() => {
             setIsProfileOpen(false)
-        }, 150)
+        }, 250)
     }
 
     useEffect(() => {
@@ -99,7 +108,7 @@ export function SiteHeader() {
             if (profile.user.role) {
                 setProfileRole(profile.user.role)
             }
-        }).catch(() => undefined)
+        }).catch(() => { if (isCurrent) setProfileName('Mitt konto') })
         updateCartCount()
         window.addEventListener(cartUpdatedEvent, updateCartCount)
 
@@ -116,51 +125,65 @@ export function SiteHeader() {
                     <img alt="Presently" className="block h-10 w-auto" src="/presently-logo.svg" />
                 </Link>
                 <nav aria-label="Huvudmeny" className="hidden items-center gap-5 md:flex lg:gap-10">
-                    {menuLinks.map((item) => <Link className="text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-primary" key={item.label} to={item.path}>{item.label}</Link>)}
+                    {menuLinks.map((item, index) => (
+                        <Link className="animate-header-item text-sm font-medium text-muted-foreground no-underline transition-colors hover:text-primary" key={item.label} style={{ animationDelay: `${index * 50}ms` }} to={item.path}>
+                            {item.label}
+                        </Link>
+                    ))}
                 </nav>
-                <div className="hidden items-center gap-2 md:flex">
-                    {actionLinks.map((item) => (
-                        <Link className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold no-underline transition-colors ${item.style === 'primary' ? 'bg-primary text-primary-foreground hover:bg-primary-hover' : 'text-primary hover:bg-secondary'}`} key={item.label} to={item.path}>
+                <div className="hidden min-h-10 items-center gap-2 md:flex">
+                    {actionLinks.map((item, index) => (
+                        <Link
+                            className={`animate-header-item inline-flex min-h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold no-underline transition-colors ${item.style === 'primary' ? 'bg-primary text-primary-foreground hover:bg-primary-hover' : 'text-primary hover:bg-secondary'}`}
+                            key={item.label}
+                            style={{ animationDelay: `${index * 60}ms` }}
+                            to={item.path}
+                        >
                             {item.label}
                         </Link>
                     ))}
 
-                    {cartLink && <Link aria-label={`${cartLink.label}, ${cartCount} varor`} className="relative grid size-10 place-items-center rounded-full text-primary no-underline hover:bg-secondary" to={cartLink.path}>
-                        <ShoppingBag aria-hidden="true" className="size-5" />
-                        {cartCount > 0 && <span className="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] leading-5 text-primary-foreground">{cartCount}</span>}
-                    </Link>}
+                    {cartLink && (
+                        <Link aria-label={`${cartLink.label}, ${cartCount} varor`} className="animate-header-item relative grid size-10 place-items-center rounded-full text-primary no-underline hover:bg-secondary" style={{ animationDelay: '0ms' }} to={cartLink.path}>
+                            <ShoppingBag aria-hidden="true" className="size-5" />
+                            {cartCount > 0 && (
+                                <span key={cartCount} className="animate-header-badge absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-semibold leading-5 text-primary-foreground">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                    )}
 
                     {profileLink && (
                         <div ref={profileMenuRef} className="relative" onMouseEnter={handleProfileMouseEnter} onMouseLeave={handleProfileMouseLeave}>
                             <button
                                 aria-expanded={isProfileOpen}
                                 aria-haspopup="true"
-                                className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full px-3 text-sm font-semibold text-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                                aria-label={profileName ? `Profilmeny för ${profileName}` : 'Profilmeny'}
+                                className="animate-header-item flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full px-3 text-sm font-semibold text-primary hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                                style={{ animationDelay: cartLink ? '60ms' : '0ms' }}
                                 onClick={() => setIsProfileOpen((prev) => !prev)}
                                 type="button"
                             >
-                                <UserRound aria-hidden="true" className="size-4" />
-                                <span className="max-w-36 truncate">{profileName}</span>
-                                <ChevronDown aria-hidden="true" className={`size-3.5 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
+                                <UserRound aria-hidden="true" className="size-4 shrink-0" />
+                                {profileName ? (
+                                    <span key="name" className="animate-header-item max-w-36 truncate">{profileName}</span>
+                                ) : (
+                                    <>
+                                        <span aria-hidden="true" className="h-3.5 w-20 animate-pulse rounded-full bg-primary/15 motion-reduce:animate-none"/>
+                                        <span className="sr-only">Laddar profil...</span>
+                                    </>
+                                )}
+                                <ChevronDown aria-hidden="true" className={`size-3.5 shrink-0 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {isProfileOpen && (
-                                <div className="absolute right-0 z-20 mt-2 w-48 rounded-card border border-border bg-surface p-1.5 shadow-card" role="menu">
-                                    <Link
-                                        className="flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-foreground no-underline hover:bg-secondary"
-                                        onClick={() => setIsProfileOpen(false)}
-                                        role="menuitem"
-                                        to={profileLink.path}
-                                    >
+                                <div className="animate-header-dropdown absolute right-0 z-20 mt-2 w-48 origin-top-right rounded-card border border-border bg-surface p-1.5 shadow-card" role="menu">
+                                    <Link className="flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-foreground no-underline hover:bg-secondary" onClick={() => setIsProfileOpen(false)} role="menuitem" to={profileLink.path}>
                                         <UserRound aria-hidden="true" className="size-4" />
                                         {profileLink.label}
                                     </Link>
                                     {isAdmin && (
-                                        <Link
-                                            className="flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-foreground no-underline hover:bg-secondary"
-                                            onClick={() => setIsProfileOpen(false)}
-                                            role="menuitem"
-                                            to="/admin"
-                                        >
+                                        <Link className="flex items-center gap-2 rounded-control px-3 py-2 text-sm font-medium text-foreground no-underline hover:bg-secondary" onClick={() => setIsProfileOpen(false)} role="menuitem" to="/admin">
                                             <ShieldCheck aria-hidden="true" className="size-4 text-primary" />
                                             Admin
                                         </Link>
@@ -196,16 +219,13 @@ export function SiteHeader() {
                         <Menu aria-hidden="true" className="size-5" strokeWidth={1.8} />
                     </button>
                     {isMobileOpen && (
-                        <nav
-                            ref={mobileMenuRef}
-                            aria-label="Mobilmeny"
-                            className="absolute top-full right-0 left-0 z-10 mt-2 grid gap-0.5 rounded-2xl border border-border bg-surface p-2.5 shadow-card"
-                        >
-                            {headerLinks.map((item) =>
+                        <nav ref={mobileMenuRef} aria-label="Mobilmeny" className="animate-header-dropdown absolute top-full right-0 left-0 z-10 mt-2 grid origin-top gap-0.5 rounded-2xl border border-border bg-surface p-2.5 shadow-card">
+                            {headerLinks.map((item, index) =>
                                 item.action === 'logout' ? (
                                     <button
-                                        className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-left text-foreground hover:bg-secondary"
+                                        className="animate-header-item flex items-center gap-2 rounded-lg px-3.5 py-2.5 text-left text-foreground hover:bg-secondary"
                                         key={item.label}
+                                        style={{ animationDelay: `${index * 30}ms` }}
                                         onClick={() => {
                                             setIsMobileOpen(false)
                                             void logout()
@@ -216,13 +236,24 @@ export function SiteHeader() {
                                         {item.label}
                                     </button>
                                 ) : (
-                                    <Link className="rounded-lg px-3.5 py-2.5 text-foreground no-underline hover:bg-secondary" key={item.label} onClick={() => setIsMobileOpen(false)} to={item.path}>
+                                    <Link
+                                        className="animate-header-item rounded-lg px-3.5 py-2.5 text-foreground no-underline hover:bg-secondary"
+                                        key={item.label}
+                                        style={{ animationDelay: `${index * 30}ms` }}
+                                        onClick={() => setIsMobileOpen(false)}
+                                        to={item.path}
+                                    >
                                         {item.label}
                                     </Link>
                                 )
                             )}
                             {isAdmin && (
-                                <Link className="flex items-center gap-2 rounded-lg px-3.5 py-2.5 font-medium text-foreground no-underline hover:bg-secondary" onClick={() => setIsMobileOpen(false)} to="/admin">
+                                <Link
+                                    className="animate-header-item flex items-center gap-2 rounded-lg px-3.5 py-2.5 font-medium text-foreground no-underline hover:bg-secondary"
+                                    style={{ animationDelay: `${headerLinks.length * 30}ms` }}
+                                    onClick={() => setIsMobileOpen(false)}
+                                    to="/admin"
+                                >
                                     <ShieldCheck aria-hidden="true" className="size-4 text-primary" />
                                     Admin
                                 </Link>
