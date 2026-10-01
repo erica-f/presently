@@ -1,75 +1,35 @@
-# React + TypeScript + Vite
+#Systemutveckling, kunskapskontroll 3 - Presently
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Grupp 1
 
-Currently, two official plugins are available:
+- Viktor Lindqvist - Adminsidor, detaljvy på produkter, header, footer, databasen
+- Hampus Andersson - Profilsidor, registrera medlem, checkout av abonnemang, landingssidan, design
+- Erica Friberg - Loginsidan, produktöversikt, kundvagn och checkout av vald gåva, deploy
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Projektbeskrivning
 
-## React Compiler
+Presently är en gåvotjänst, där du väljer nivå och betalar per månad. Du får då tillgång till ett urval av gåvor att skicka till vem du vill.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Beroende på nivå så får man olika många poäng och om du inte använt upp dem en månad så sparas de så att man kan använda vid ett senare tillfälle. 
 
-## Expanding the ESLint configuration
+Gåvorna är uppdelade i nivåer och kostar olika mycket poäng. I första nivån är du begränsad till nivå 1 gåvor, i två 1 och 2, i tre får du tillgång till alla. 
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+I nivå 2 och 3 kan man även spara ner kontakter för att snabbt lägga till dem vid checkout. Nivå 2 får spara upp till 3 kontakter, nivå 3 har en obegränsad mängd.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Tech stack
+**Frontend**
+- React
+- React Router
+- Tailwind CSS
+- TypeScript
+- Vite
+- Lucide-react
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+**Backend** 
+- Express
+- Typescript
+- MariaDB
 
-```
-
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+**Deploy**
+- Vercel
