@@ -1,12 +1,17 @@
 import type { AdminCategory, AdminMembershipPlan, AdminOrder, AdminOverviewResponse, AdminProduct, AdminProductInput, AdminUser, AdminUserUpdateInput } from '../types/admin'
 
+let cachedMembershipPlans: AdminMembershipPlan[] | null = null
+let cachedCategories: AdminCategory[] | null = null
+
 export const adminApi = {
-    async getMembershipPlans(): Promise<AdminMembershipPlan[]> {
+    async getMembershipPlans(forceRefresh = false): Promise<AdminMembershipPlan[]> {
+        if (!forceRefresh && cachedMembershipPlans) return cachedMembershipPlans
         const response = await fetch('/api/admin/membership-plans', { credentials: 'include' })
         const payload = (await response.json().catch(() => ({}))) as { plans?: AdminMembershipPlan[]; error?: string }
         if (!response.ok) throw new Error(payload.error ?? 'Kunde inte läsa in medlemskapsplaner.')
 
-        return payload.plans ?? []
+        cachedMembershipPlans = payload.plans ?? []
+        return cachedMembershipPlans
     },
 
     async getOverview(): Promise<AdminOverviewResponse> {
@@ -52,12 +57,14 @@ export const adminApi = {
         return { message: payload.message ?? 'Användarkontot raderades framgångsrikt.' }
     },
 
-    async getCategories(): Promise<AdminCategory[]> {
+    async getCategories(forceRefresh = false): Promise<AdminCategory[]> {
+        if (!forceRefresh && cachedCategories) return cachedCategories
         const response = await fetch('/api/admin/categories', { credentials: 'include' })
         const payload = (await response.json().catch(() => ({}))) as { categories?: AdminCategory[]; error?: string }
         if (!response.ok) throw new Error(payload.error ?? 'Kunde inte läsa in kategorier.')
 
-        return payload.categories ?? []
+        cachedCategories = payload.categories ?? []
+        return cachedCategories
     },
 
     async getProducts(params?: { search?: string; categoryId?: number; status?: string; tier?: number }): Promise<AdminProduct[]> {
