@@ -62,5 +62,7 @@ export const deleteItem = async (productId: number, quantity: number) => {
             data?.message ?? 'Något gick fel.', response.status
         );
     }
+    window.dispatchEvent(new CustomEvent(cartUpdatedEvent))
+
     return data;
 };
