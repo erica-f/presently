@@ -21,6 +21,7 @@ export interface CartCardType {
     membership: Membership
     refresh: Dispatch<SetStateAction<boolean>>
     pointsLeft: number
+    onUpdate: () => void
 }
 
 export interface CartPoints {

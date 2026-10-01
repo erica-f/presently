@@ -6,7 +6,7 @@ import useLoginStatus from "../../hooks/useLoginStatus";
 import { Plus, Minus } from 'lucide-react'
 
 
-const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
+const CartCard = ({ item, membership, refresh, pointsLeft, onUpdate }: CartCardType) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const handleUnauthorized = useLoginStatus();
@@ -18,6 +18,7 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
         const newAmount = change == 'minus' ? amount - 1 : amount + 1;
         setAmount(newAmount);
         try {
+            onUpdate();
             if (change == 'minus') {
                 const result = await deleteItem(item.product_id, newAmount);
                 setSuccess(result.success);
@@ -25,7 +26,7 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
                 const result = await addToCart(item.product_id, 1);
                 setSuccess(result.success);
             }
-            refresh(previous => !previous)
+           refresh(previous => !previous)
         } catch (err) {
             if (err instanceof CartApiError && err.status === 401) {
                 handleUnauthorized();
