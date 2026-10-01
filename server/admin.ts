@@ -1,7 +1,28 @@
 import express, { type Request, type Response, type RequestHandler } from 'express'
 import { db } from './db.js'
+import type { CacheEntry } from './types/cache.ts';
 
 const adminRouter = express.Router()
+const adminVerificationCache = new Map<number, { isAdmin: boolean; expiresAt: number }>()
+
+export function invalidateAdminCache(userId?: number) {
+    if (userId) {
+        adminVerificationCache.delete(userId)
+    } else {
+        adminVerificationCache.clear()
+    }
+}
+
+let cachedCategories: CacheEntry<Array<{ id: number; name: string; label: string }>> | null = null
+let cachedPlans: CacheEntry<Array<{ id: number; name: string; level: number; monthlyPoints: number; price: number; isActive: boolean }>> | null = null
+
+export function invalidateCategoriesCache() {
+    cachedCategories = null
+}
+
+export function invalidateMembershipPlansCache() {
+    cachedPlans = null
+}
 
 export const requireAdmin: RequestHandler = async (req, res, next) => {
     const userId = req.session.userId
@@ -10,12 +31,35 @@ export const requireAdmin: RequestHandler = async (req, res, next) => {
         return
     }
 
-    try {
-        const [user] = await db.query('SELECT role FROM users WHERE id = ?', [userId])
-        if (!user || user.role !== 'admin') {
+    const now = Date.now()
+    const cached = adminVerificationCache.get(userId)
+    if (cached && cached.expiresAt > now) {
+        if (!cached.isAdmin) {
             res.status(403).json({ error: 'Åtkomst nekad. Endast administratörer har tillgång.' })
             return
         }
+        res.locals.userId = userId
+        next()
+        return
+    }
+
+    if (req.session.role === 'admin') {
+        adminVerificationCache.set(userId, { isAdmin: true, expiresAt: now + 30_000 })
+        res.locals.userId = userId
+        next()
+        return
+    }
+
+    try {
+        const [user] = await db.query('SELECT role, is_active FROM users WHERE id = ?', [userId])
+        const isAdmin = Boolean(user && user.role === 'admin' && Number(user.is_active) === 1)
+        adminVerificationCache.set(userId, { isAdmin, expiresAt: now + 30_000 })
+
+        if (!isAdmin) {
+            res.status(403).json({ error: 'Åtkomst nekad. Endast administratörer har tillgång.' })
+            return
+        }
+        req.session.role = 'admin'
         res.locals.userId = userId
         next()
     } catch (err) {
@@ -51,30 +95,27 @@ function formatSwedishDate(dateVal: Date | string | null | undefined): string {
 adminRouter.get('/overview', async (_req: Request, res: Response) => {
     try {
         const [
-            userStatsRows,
-            subsStatsRows,
+            unifiedStatsRows,
             planRows,
-            orderStatsRows,
-            productStatsRows,
-            catStatsRows,
             recentOrderRows,
             recentProductRows,
         ] = await Promise.all([
             db.query(`
                 SELECT 
-                    COUNT(*) AS total_users,
-                    COALESCE(SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END), 0) AS active_users
-                FROM users
-            `),
-            db.query(`
-                SELECT
-                    COUNT(*) AS total_active_subscriptions,
-                    COALESCE(SUM(CASE WHEN mp.level = 1 THEN 1 ELSE 0 END), 0) AS simple_count,
-                    COALESCE(SUM(CASE WHEN mp.level = 2 THEN 1 ELSE 0 END), 0) AS plus_count,
-                    COALESCE(SUM(CASE WHEN mp.level = 3 THEN 1 ELSE 0 END), 0) AS signature_count
-                FROM subscriptions s
-                JOIN membership_plans mp ON mp.id = s.membership_plan_id
-                WHERE s.status = 'active'
+                    (SELECT COUNT(*) FROM users) AS total_users,
+                    (SELECT COALESCE(SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END), 0) FROM users) AS active_users,
+                    (SELECT COUNT(*) FROM subscriptions WHERE status = 'active') AS total_active_subscriptions,
+                    (SELECT COALESCE(SUM(CASE WHEN mp.level = 1 THEN 1 ELSE 0 END), 0) FROM subscriptions s JOIN membership_plans mp ON mp.id = s.membership_plan_id WHERE s.status = 'active') AS simple_count,
+                    (SELECT COALESCE(SUM(CASE WHEN mp.level = 2 THEN 1 ELSE 0 END), 0) FROM subscriptions s JOIN membership_plans mp ON mp.id = s.membership_plan_id WHERE s.status = 'active') AS plus_count,
+                    (SELECT COALESCE(SUM(CASE WHEN mp.level = 3 THEN 1 ELSE 0 END), 0) FROM subscriptions s JOIN membership_plans mp ON mp.id = s.membership_plan_id WHERE s.status = 'active') AS signature_count,
+                    (SELECT COUNT(*) FROM gift_orders) AS total_orders,
+                    (SELECT COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) FROM gift_orders) AS pending_orders,
+                    (SELECT COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) FROM gift_orders) AS completed_orders,
+                    (SELECT COUNT(*) FROM products) AS total_products,
+                    (SELECT COALESCE(SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END), 0) FROM products) AS active_products,
+                    (SELECT COALESCE(SUM(CASE WHEN is_active = 1 AND minimum_membership_plan_level = 1 THEN 1 ELSE 0 END), 0) FROM products) AS level_1_products,
+                    (SELECT COALESCE(SUM(CASE WHEN is_active = 1 AND minimum_membership_plan_level IN (2, 3) THEN 1 ELSE 0 END), 0) FROM products) AS premium_products,
+                    (SELECT COUNT(*) FROM categories) AS category_count
             `),
             db.query(`
                 SELECT
@@ -91,29 +132,21 @@ adminRouter.get('/overview', async (_req: Request, res: Response) => {
             `),
             db.query(`
                 SELECT
-                    COUNT(*) AS total_orders,
-                    COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) AS pending_orders,
-                    COALESCE(SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END), 0) AS completed_orders
-                FROM gift_orders
-            `),
-            db.query(`
-                SELECT
-                    COUNT(*) AS total_products,
-                    COALESCE(SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END), 0) AS active_products,
-                    COALESCE(SUM(CASE WHEN is_active = 1 AND minimum_membership_plan_level = 1 THEN 1 ELSE 0 END), 0) AS level_1_products,
-                    COALESCE(SUM(CASE WHEN is_active = 1 AND minimum_membership_plan_level IN (2, 3) THEN 1 ELSE 0 END), 0) AS premium_products
-                FROM products
-            `),
-            db.query(`SELECT COUNT(*) AS category_count FROM categories`),
-            db.query(`
-                SELECT
                     o.id,
                     o.recipient_name,
                     o.recipient_city,
                     o.status,
                     o.total_points,
                     o.created_at,
-                    COALESCE(mp.name, 'Simple') AS membership_level
+                    COALESCE(mp.name, 'Simple') AS membership_level,
+                    (
+                        SELECT GROUP_CONCAT(
+                            CONCAT(oi.product_name_snapshot, IF(oi.quantity > 1, CONCAT(' (', oi.quantity, ' st)'), ''))
+                            ORDER BY oi.id ASC SEPARATOR '||'
+                        )
+                        FROM gift_order_items oi
+                        WHERE oi.gift_order_id = o.id
+                    ) AS items_summary
                 FROM gift_orders o
                 LEFT JOIN subscriptions s ON s.user_id = o.user_id AND s.status = 'active'
                 LEFT JOIN membership_plans mp ON mp.id = s.membership_plan_id
@@ -139,26 +172,22 @@ adminRouter.get('/overview', async (_req: Request, res: Response) => {
             `),
         ])
 
-        const userStats = userStatsRows[0] ?? {}
-        const subsStats = subsStatsRows[0] ?? {}
-        const orderStats = orderStatsRows[0] ?? {}
-        const productStats = productStatsRows[0] ?? {}
-        const catStats = catStatsRows[0] ?? {}
-        const totalUsers = Number(userStats.total_users ?? 0)
-        const activeUsers = Number(userStats.active_users ?? 0)
-        const activeMemberships = Number(subsStats.total_active_subscriptions ?? 0)
-        const simpleMemberships = Number(subsStats.simple_count ?? 0)
-        const plusMemberships = Number(subsStats.plus_count ?? 0)
-        const signatureMemberships = Number(subsStats.signature_count ?? 0)
-        const totalOrders = Number(orderStats.total_orders ?? 0)
-        const pendingOrders = Number(orderStats.pending_orders ?? 0)
-        const completedOrders = Number(orderStats.completed_orders ?? 0)
-        const totalProducts = Number(productStats.total_products ?? 0)
-        const activeProducts = Number(productStats.active_products ?? 0)
-        const level1Products = Number(productStats.level_1_products ?? 0)
-        const premiumProducts = Number(productStats.premium_products ?? 0)
-        const categoriesCount = Number(catStats.category_count ?? 0)
-        const tierColorMap: Record<number, 'sage' | 'primary' | 'gold'> = { 1: 'sage', 2: 'primary', 3: 'gold', }
+        const statsRow = (unifiedStatsRows as Record<string, unknown>[])[0] ?? {}
+        const totalUsers = Number(statsRow.total_users ?? 0)
+        const activeUsers = Number(statsRow.active_users ?? 0)
+        const activeMemberships = Number(statsRow.total_active_subscriptions ?? 0)
+        const simpleMemberships = Number(statsRow.simple_count ?? 0)
+        const plusMemberships = Number(statsRow.plus_count ?? 0)
+        const signatureMemberships = Number(statsRow.signature_count ?? 0)
+        const totalOrders = Number(statsRow.total_orders ?? 0)
+        const pendingOrders = Number(statsRow.pending_orders ?? 0)
+        const completedOrders = Number(statsRow.completed_orders ?? 0)
+        const totalProducts = Number(statsRow.total_products ?? 0)
+        const activeProducts = Number(statsRow.active_products ?? 0)
+        const level1Products = Number(statsRow.level_1_products ?? 0)
+        const premiumProducts = Number(statsRow.premium_products ?? 0)
+        const categoriesCount = Number(statsRow.category_count ?? 0)
+        const tierColorMap: Record<number, 'sage' | 'primary' | 'gold'> = { 1: 'sage', 2: 'primary', 3: 'gold' }
         const tierDescMap: Record<number, string> = { 1: 'Tillgång till basutbudet bland gåvosortimentet.', 2: 'Utökat gåvosortiment och fler månatliga poäng.', 3: 'Exklusiva gåvor och ännu fler förmåner.' }
 
         const tiers = (planRows as Record<string, unknown>[]).map((plan) => {
@@ -178,32 +207,10 @@ adminRouter.get('/overview', async (_req: Request, res: Response) => {
             }
         })
 
-        const orderIds = (recentOrderRows as Record<string, unknown>[]).map((o) => Number(o.id)).filter(Boolean)
-        const itemsByOrderId = new Map<number, string[]>()
-
-        if (orderIds.length > 0) {
-            const itemRows = await db.query(
-                `SELECT gift_order_id, product_name_snapshot, quantity
-                 FROM gift_order_items
-                 WHERE gift_order_id IN (${orderIds.map(() => '?').join(',')})
-                 ORDER BY id ASC`,
-                orderIds,
-            )
-
-            for (const item of itemRows as Record<string, unknown>[]) {
-                const oid = Number(item.gift_order_id)
-                const name = String(item.product_name_snapshot ?? 'Gåva')
-                const qty = Number(item.quantity ?? 1)
-                const itemLabel = qty > 1 ? `${name} (${qty} st)` : name
-                const list = itemsByOrderId.get(oid) ?? []
-                list.push(itemLabel)
-                itemsByOrderId.set(oid, list)
-            }
-        }
-
         const recentActivity = (recentOrderRows as Record<string, unknown>[]).map((order) => {
             const oid = Number(order.id)
-            const items = itemsByOrderId.get(oid) ?? []
+            const rawSummary = typeof order.items_summary === 'string' ? order.items_summary.trim() : ''
+            const items = rawSummary ? rawSummary.split('||').filter(Boolean) : []
             let giftName = 'Gåvobeställning'
             if (items.length === 1) {
                 giftName = items[0]
@@ -333,21 +340,11 @@ adminRouter.get('/users', async (req: Request, res: Response) => {
                 s.status AS subscription_status,
                 mp.name AS plan_name,
                 mp.level AS plan_level,
-                COALESCE(pt.balance, 0) AS point_balance,
-                COALESCE(orders.order_count, 0) AS order_count
+                COALESCE((SELECT SUM(pt.points) FROM point_transactions pt WHERE pt.user_id = u.id), 0) AS point_balance,
+                COALESCE((SELECT COUNT(*) FROM gift_orders o WHERE o.user_id = u.id), 0) AS order_count
             FROM users u
             LEFT JOIN subscriptions s ON s.user_id = u.id AND s.status = 'active'
             LEFT JOIN membership_plans mp ON mp.id = s.membership_plan_id
-            LEFT JOIN (
-                SELECT user_id, SUM(points) AS balance
-                FROM point_transactions
-                GROUP BY user_id
-            ) pt ON pt.user_id = u.id
-            LEFT JOIN (
-                SELECT user_id, COUNT(*) AS order_count
-                FROM gift_orders
-                GROUP BY user_id
-            ) orders ON orders.user_id = u.id
             WHERE 1=1
         `
         const params: unknown[] = []
@@ -459,6 +456,8 @@ adminRouter.put('/users/:id', async (req: Request, res: Response) => {
             [firstName.trim(), lastName.trim(), email.trim().toLowerCase(), role, activeVal, targetId]
         )
 
+        invalidateAdminCache(targetId)
+
         res.json({
             success: true,
             message: 'Användaren har uppdaterats.',
@@ -517,6 +516,8 @@ adminRouter.delete('/users/:id', async (req: Request, res: Response) => {
             conn.release()
         }
 
+        invalidateAdminCache(targetId)
+
         res.json({
             success: true,
             message: `Kontot för ${existing.first_name} ${existing.last_name} (${existing.email}) har raderats permanent.`
@@ -529,6 +530,11 @@ adminRouter.delete('/users/:id', async (req: Request, res: Response) => {
 
 adminRouter.get('/membership-plans', async (_req: Request, res: Response) => {
     try {
+        if (cachedPlans && cachedPlans.expiresAt > Date.now()) {
+            res.json({ plans: cachedPlans.data })
+            return
+        }
+
         const rows = await db.query('SELECT id, name, level, monthly_points, price, is_active FROM membership_plans ORDER BY level ASC')
         const plans = (rows as Record<string, unknown>[]).map((row) => ({
             id: Number(row.id),
@@ -538,6 +544,8 @@ adminRouter.get('/membership-plans', async (_req: Request, res: Response) => {
             price: Number(row.price ?? 0),
             isActive: Number(row.is_active) === 1,
         }))
+
+        cachedPlans = { data: plans, expiresAt: Date.now() + 5 * 60 * 1000 }
         res.json({ plans })
     } catch (error) {
         console.error('Failed to fetch membership plans:', error)
@@ -547,12 +555,19 @@ adminRouter.get('/membership-plans', async (_req: Request, res: Response) => {
 
 adminRouter.get('/categories', async (_req: Request, res: Response) => {
     try {
+        if (cachedCategories && cachedCategories.expiresAt > Date.now()) {
+            res.json({ categories: cachedCategories.data })
+            return
+        }
+
         const rows = await db.query('SELECT id, name, label FROM categories ORDER BY label ASC')
         const categories = (rows as Record<string, unknown>[]).map((cat) => ({
             id: Number(cat.id),
             name: String(cat.name ?? ''),
             label: String(cat.label ?? cat.name ?? ''),
         }))
+
+        cachedCategories = { data: categories, expiresAt: Date.now() + 5 * 60 * 1000 }
         res.json({ categories })
     } catch (error) {
         console.error('Failed to fetch categories:', error)
@@ -582,15 +597,10 @@ adminRouter.get('/products', async (req: Request, res: Response) => {
                 c.label AS category_label,
                 c.name AS category_name,
                 mp.name AS membership_plan_name,
-                COALESCE(oi.order_count, 0) AS order_count
+                COALESCE((SELECT COUNT(*) FROM gift_order_items oi WHERE oi.product_id = p.id), 0) AS order_count
             FROM products p
             LEFT JOIN categories c ON c.id = p.category_id
             LEFT JOIN membership_plans mp ON mp.level = p.minimum_membership_plan_level
-            LEFT JOIN (
-                SELECT product_id, COUNT(*) AS order_count
-                FROM gift_order_items
-                GROUP BY product_id
-            ) oi ON oi.product_id = p.id
             WHERE 1=1
         `
         const params: unknown[] = []
@@ -861,7 +871,23 @@ adminRouter.get('/orders', async (req: Request, res: Response) => {
                 u.first_name AS buyer_first_name,
                 u.last_name AS buyer_last_name,
                 u.email AS buyer_email,
-                COALESCE(mp.name, 'Simple') AS membership_level
+                COALESCE(mp.name, 'Simple') AS membership_level,
+                (
+                    SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'id', oi.id,
+                            'productId', oi.product_id,
+                            'productName', oi.product_name_snapshot,
+                            'thumbnailImageUrl', p.thumbnail_image_url,
+                            'quantity', oi.quantity,
+                            'unitPointCost', oi.unit_point_cost,
+                            'linePointTotal', oi.line_point_total
+                        )
+                    )
+                    FROM gift_order_items oi
+                    LEFT JOIN products p ON p.id = oi.product_id
+                    WHERE oi.gift_order_id = o.id
+                ) AS items_json
             FROM gift_orders o
             LEFT JOIN users u ON u.id = o.user_id
             LEFT JOIN subscriptions s ON s.user_id = o.user_id AND s.status = 'active'
@@ -896,50 +922,6 @@ adminRouter.get('/orders', async (req: Request, res: Response) => {
         sql += ` ORDER BY o.created_at DESC, o.id DESC`
 
         const orderRows = (await db.query(sql, params)) as Record<string, unknown>[]
-        const orderIds = orderRows.map((r) => Number(r.id)).filter(Boolean)
-
-        const itemsByOrderId = new Map<number, Array<{
-            id: number
-            productId: number
-            productName: string
-            thumbnailImageUrl: string | null
-            quantity: number
-            unitPointCost: number
-            linePointTotal: number
-        }>>()
-
-        if (orderIds.length > 0) {
-            const itemRows = (await db.query(`
-                SELECT 
-                    oi.id,
-                    oi.gift_order_id,
-                    oi.product_id,
-                    oi.product_name_snapshot,
-                    oi.quantity,
-                    oi.unit_point_cost,
-                    oi.line_point_total,
-                    p.thumbnail_image_url
-                FROM gift_order_items oi
-                LEFT JOIN products p ON p.id = oi.product_id
-                WHERE oi.gift_order_id IN (${orderIds.map(() => '?').join(',')})
-                ORDER BY oi.id ASC
-            `, orderIds)) as Record<string, unknown>[]
-
-            for (const item of itemRows) {
-                const oid = Number(item.gift_order_id)
-                const list = itemsByOrderId.get(oid) ?? []
-                list.push({
-                    id: Number(item.id),
-                    productId: Number(item.product_id),
-                    productName: String(item.product_name_snapshot ?? 'Gåva'),
-                    thumbnailImageUrl: item.thumbnail_image_url ? String(item.thumbnail_image_url).startsWith('http') || String(item.thumbnail_image_url).startsWith('/') ? String(item.thumbnail_image_url) : `/${String(item.thumbnail_image_url)}` : null,
-                    quantity: Number(item.quantity ?? 1),
-                    unitPointCost: Number(item.unit_point_cost ?? 0),
-                    linePointTotal: Number(item.line_point_total ?? 0),
-                })
-                itemsByOrderId.set(oid, list)
-            }
-        }
 
         const orders = orderRows.map((row) => {
             const oid = Number(row.id)
@@ -947,6 +929,34 @@ adminRouter.get('/orders', async (req: Request, res: Response) => {
             const rawStatus = String(row.status ?? 'pending')
             const statusVal: 'pending' | 'completed' | 'cancelled' =
                 rawStatus === 'cancelled' ? 'cancelled' : isSent || rawStatus === 'completed' ? 'completed' : 'pending'
+
+            let rawItems: unknown[] = []
+            if (row.items_json) {
+                if (typeof row.items_json === 'string') {
+                    try {
+                        rawItems = JSON.parse(row.items_json)
+                    } catch {
+                        rawItems = []
+                    }
+                } else if (Array.isArray(row.items_json)) {
+                    rawItems = row.items_json
+                }
+            }
+
+            const items = (rawItems as Record<string, unknown>[]).map((item) => {
+                const thumb = item.thumbnailImageUrl ? String(item.thumbnailImageUrl) : null
+                const formattedThumb = thumb ? thumb.startsWith('http') || thumb.startsWith('/') ? thumb : `/${thumb}` : null
+
+                return {
+                    id: Number(item.id),
+                    productId: Number(item.productId),
+                    productName: String(item.productName ?? 'Gåva'),
+                    thumbnailImageUrl: formattedThumb,
+                    quantity: Number(item.quantity ?? 1),
+                    unitPointCost: Number(item.unitPointCost ?? 0),
+                    linePointTotal: Number(item.linePointTotal ?? 0),
+                }
+            })
 
             return {
                 id: oid,
@@ -973,7 +983,7 @@ adminRouter.get('/orders', async (req: Request, res: Response) => {
                 formattedSentAt: row.sent_at ? formatSwedishDate(row.sent_at as Date | string) : null,
                 createdAt: row.created_at ? new Date(String(row.created_at)).toISOString() : '',
                 formattedCreatedAt: formatSwedishDate(row.created_at as Date | string),
-                items: itemsByOrderId.get(oid) ?? [],
+                items,
             }
         })
 

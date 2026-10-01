@@ -16,7 +16,7 @@ export const db = mariadb.createPool({
     user: required('DB_USER'),
     password: required('DB_PASSWORD'),
     database: required('DB_NAME'),
-    connectionLimit: 5,
+    connectionLimit: 20,
     connectTimeout: 5000,
 });
 
@@ -26,6 +26,6 @@ export const options = {
     user: required('DB_USER'),
     password: required('DB_PASSWORD'),
     database: required('DB_NAME'),
-    connectionLimit: 5,
+    connectionLimit: 10,
     connectTimeout: 5000,
 }
