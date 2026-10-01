@@ -20,6 +20,7 @@ const CheckoutGifts = () => {
   const [message] = useState(location && location.message);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [orderError, setOrderError] = useState('');
   const handleUnauthorized = useLoginStatus();
   const [cart, setCart] = useState<CartInfo[]>([]);
@@ -29,10 +30,12 @@ const CheckoutGifts = () => {
 
   const [refresh, setRefresh] = useState(false);
   const paperColors = message.type == 'forest' ? 'bg-[#5f8971]/70' : message.type == 'warm' ? 'bg-[#e3d9c9]/80' : 'bg-[#fdf9f9]'
-
+  const onUpdate = () => {
+    setUpdating(true);
+  }
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setUpdating(true);
       setError('');
       try {
         const [data, membershipList, points] = await Promise.all([getList("cart"), getList('memberships'), profileApi.overview()]);
@@ -47,6 +50,7 @@ const CheckoutGifts = () => {
         }
         setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda bekräftelsedetaljerna');
       } finally {
+        setUpdating(false);
         setLoading(false);
       }
     }
@@ -103,7 +107,7 @@ const CheckoutGifts = () => {
               );
               if (!membership) return <div key={item.product_id}>Kunde inte hämta gåvan...</div>
               return (
-                <CartCard item={item} membership={membership} refresh={setRefresh} pointsLeft={pointsLeft} key={item.product_id} />
+                <CartCard item={item} membership={membership} refresh={setRefresh} pointsLeft={pointsLeft} onUpdate={onUpdate} key={item.product_id} />
               )
             })}
           </section>
@@ -170,8 +174,9 @@ const CheckoutGifts = () => {
                 icon={<ArrowRight />}
                 iconPosition="right"
                 onClick={() => checkOut()}
+                disabled={updating}
               >
-                <span>Skicka gåvan</span>
+                <span>{updating ? 'Uppdaterar..' : 'Skicka gåvan'}</span>
               </Button>
               {orderError &&
                 <div className="text-warning">{orderError}</div>

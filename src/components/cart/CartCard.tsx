@@ -6,7 +6,7 @@ import useLoginStatus from "../../hooks/useLoginStatus";
 import { Plus, Minus } from 'lucide-react'
 
 
-const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
+const CartCard = ({ item, membership, refresh, pointsLeft, onUpdate }: CartCardType) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const handleUnauthorized = useLoginStatus();
@@ -18,6 +18,7 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
         const newAmount = change == 'minus' ? amount - 1 : amount + 1;
         setAmount(newAmount);
         try {
+            onUpdate();
             if (change == 'minus') {
                 const result = await deleteItem(item.product_id, newAmount);
                 setSuccess(result.success);
@@ -25,7 +26,7 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
                 const result = await addToCart(item.product_id, 1);
                 setSuccess(result.success);
             }
-            refresh(previous => !previous)
+           refresh(previous => !previous)
         } catch (err) {
             if (err instanceof CartApiError && err.status === 401) {
                 handleUnauthorized();
@@ -37,9 +38,6 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
         }
     }
 
-    if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
-        <p className="text-muted-foreground" role="status">Laddar uppdatering</p>
-    </main>
     if (error) return
     <div className="flex flex-col sm:flex-row gap-4 items-start mb-5">
         <h3 className="text-lg text-[#1a3b2b]">Kunde inte hämta in produkten</h3>
@@ -56,11 +54,11 @@ const CartCard = ({ item, membership, refresh, pointsLeft }: CartCardType) => {
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-accent-muted text-accent">{membership.name}</span>
                         <span className="ml-1 text-xs font-bold ">{item.point_cost}</span>
                     </div>
-                    <span className="justify-self-end flex items-center">
-                        <Button variant="ghost" onClick={() => { updateAmount('minus') }} icon={<Minus />} > </Button>
-                        <span className="ml-2 mr-2">{amount}</span>
-                        <Button variant="ghost" onClick={() => { updateAmount('plus') }} icon={<Plus />} disabled={pointsLeft - item.point_cost >= 0 ? false : true} className="disabled:bg-transparent"> </Button>
-                    </span>
+                        <span className="justify-self-end flex items-center">
+                            <Button variant="ghost" onClick={() => { updateAmount('minus') }} icon={<Minus />} disabled={loading} className="disabled:bg-transparent disabled:hover:bg-transparent"> </Button>
+                            <span className="ml-2 mr-2">{amount}</span>
+                            <Button variant="ghost" onClick={() => { updateAmount('plus') }} icon={<Plus />} disabled={(pointsLeft - item.point_cost >= 0 ? false : true) || loading} className="disabled:bg-transparent disabled:hover:bg-transparent"> </Button>
+                        </span>
                     {!success && <span>Kunde inte uppdatera antal gåvor</span>}
                 </div>
                 <h3 className="text-lg text-primary">{item.name}</h3>

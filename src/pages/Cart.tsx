@@ -15,6 +15,7 @@ import SafetyInfo from '../components/cart/SafetyInfo';
 const Cart = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const handleUnauthorized = useLoginStatus();
   const [cart, setCart] = useState<CartInfo[]>([]);
   const [memberships, setMemberships] = useState<Membership[]>([]);
@@ -22,10 +23,13 @@ const Cart = () => {
   const [pointCostSum, setPointCostSum] = useState(0);
 
   const [refresh, setRefresh] = useState(false);
+  const onUpdate = () => {
+    setUpdating(true);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
+      setUpdating(true);
       setError('');
       try {
         const [data, membershipList, points] = await Promise.all([getList("cart"), getList('memberships'), profileApi.overview()]);
@@ -40,6 +44,7 @@ const Cart = () => {
         }
         setError(err instanceof GiftsApiError ? err.message : 'Kunde inte ladda gåvor');
       } finally {
+        setUpdating(false);
         setLoading(false);
       }
     }
@@ -82,7 +87,7 @@ const Cart = () => {
               );
               if (!membership) return <div key={item.product_id}>Kunde inte hämta gåvan...</div>
               return (
-                <CartCard item={item} membership={membership} refresh={setRefresh} pointsLeft={pointsLeft} key={item.product_id} />
+                <CartCard item={item} membership={membership} refresh={setRefresh} pointsLeft={pointsLeft} onUpdate={onUpdate} key={item.product_id} />
               )
             })}
           </section>
@@ -97,11 +102,11 @@ const Cart = () => {
               <Link to="/cart/delivery">
                 <Button
                   className="w-full"
-                  disabled={pointsLeft < 0 ? true : false}
+                  disabled={(pointsLeft < 0 ? true : false) || updating}
                   icon={<ArrowRight />}
                   iconPosition='right'
                 >
-                  <span>Välj mottagare</span>
+                  <span>{updating ? 'Uppdaterar..' : 'Välj mottagare'}</span>
                 </Button>
               </Link>
 
