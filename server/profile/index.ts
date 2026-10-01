@@ -3,6 +3,7 @@ import {
     changePassword, createContact, deleteContact, getContactLimit, getProfile, getProfileContacts,
     getMembershipOptions, getProfileGifts, getProfileOverview, getProfilePayments, updateContact,
 } from './data.js'
+import { cancelMembership } from '../membershipBilling.js'
 import { canAddContact, normalizePhone, validateContactInput } from './logic.js'
 import { authenticated } from '../middleware/authenticated.js'
 
@@ -88,13 +89,12 @@ profileRouter.post('/membership/cancel', async (req, res) => {
         return
     }
     await handle(res, async () => {
-        const { current } = await getMembershipOptions(userId(res))
-        if (!current) {
+        const canceled = await cancelMembership(userId(res))
+        if (!canceled) {
             res.status(409)
             return { error: 'Det finns inget aktivt medlemskap att säga upp.' }
         }
-        res.status(501)
-        return { error: 'Uppsägning av medlemskap är inte tillgänglig ännu.' }
+        return { success: true }
     }, 'Medlemskapet kunde inte sägas upp.')
 })
 

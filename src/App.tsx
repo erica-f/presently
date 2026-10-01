@@ -46,8 +46,8 @@ function App() {
                     <Route path="/cart/delivery" element={<ProtectedRoute><MembershipProtectedRoute><CartDelivery /></MembershipProtectedRoute></ProtectedRoute>} />
                     <Route path="/cart/checkout" element={<ProtectedRoute><MembershipProtectedRoute><CheckoutGifts /></MembershipProtectedRoute></ProtectedRoute>} />
                     <Route path="/cart/checkout/success" element={<ProtectedRoute><MembershipProtectedRoute><OrderSuccess /></MembershipProtectedRoute></ProtectedRoute>} />
-                    <Route path="/profile" element={<ProtectedRoute><MembershipProtectedRoute><Profile /></MembershipProtectedRoute></ProtectedRoute>} />
-                    <Route path="/profile/:section" element={<ProtectedRoute><MembershipProtectedRoute><Profile /></MembershipProtectedRoute></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/profile/:section" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 </Routes>
                 <SiteFooter />
             </div>

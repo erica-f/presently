@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode, type SubmitEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type SubmitEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowRight, CreditCard, KeyRound, Mail, Pencil, Plus, Trash2, UserRound, X } from 'lucide-react'
 import { Button } from '../components/Button'
+import { ProfileSkeleton } from '../components/ProfileSkeleton'
 import { ProfileApiError, normalizePhone, type Contact, type ContactForm, type Gift as GiftRecord, type Overview, type Payment, type Profile as ProfileData, profileApi, validateContactForm } from '../lib/profileApi'
 
 const formatDate = (value: unknown) => {
@@ -10,7 +11,7 @@ const formatDate = (value: unknown) => {
     return Number.isNaN(date.getTime()) ? 'Inte tillgängligt' : new Intl.DateTimeFormat('sv-SE', { dateStyle: 'medium' }).format(date)
 }
 const money = (value: unknown, currency = 'SEK') => value === null || value === undefined ? 'Inte tillgängligt' : `${Number(value).toLocaleString('sv-SE')} ${currency}`
-const membershipStatus = (value: string | null) => value === 'active' ? 'Aktivt' : value === 'canceled' ? 'Avslutat' : value === 'past_due' ? 'Betalning saknas' : value ?? 'Ej aktivt'
+const membershipStatus = (value: string | null) => value === 'active' ? 'Aktivt' : value === 'canceled' || value === 'cancelled' ? 'Avslutat' : value === 'past_due' ? 'Betalning saknas' : value ?? 'Ej aktivt'
 const emptyContact: ContactForm = { firstName: '', lastName: '', email: '', phone: '', address: '', postalCode: '', city: '' }
 const sections = [
     { key: 'overview', label: 'Översikt', path: '/profile' },
@@ -20,12 +21,13 @@ const sections = [
     { key: 'account', label: 'Konto', path: '/profile/account' },
 ] as const
 type SectionKey = typeof sections[number]['key']
+type DataSection = Exclude<SectionKey, 'account'>
 
-function Section({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
-    return <section className="border-t border-border py-8" aria-labelledby={`${title}-title`}><div className="mb-5 flex items-center justify-between gap-4"><h2 id={`${title}-title`} className="text-xl text-foreground">{title}</h2>{action}</div>{children}</section>
+function Section({ title, id, action, children }: { title: string; id?: string; action?: ReactNode; children: ReactNode }) {
+    return <section id={id} className="border-t border-border py-8" aria-labelledby={`${title}-title`}><div className="mb-5 flex items-center justify-between gap-4"><h2 id={`${title}-title`} className="text-xl text-foreground">{title}</h2>{action}</div>{children}</section>
 }
 
-function MembershipCard({ profile, onUpgrade, onCancel, actionMessage, actionBusy }: { profile: ProfileData; onUpgrade: (planId: unknown) => void; onCancel: () => void; actionMessage: string; actionBusy: boolean }) {
+function MembershipCard({ profile, onCancel, actionMessage, actionBusy }: { profile: ProfileData; onCancel: () => void; actionMessage: string; actionBusy: boolean }) {
     const { plan, membership } = profile
     return <div className="border border-primary bg-primary p-5 text-primary-foreground">
         <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-wide text-accent">Ditt medlemskap</p><h3 className="mt-2 text-xl text-primary-foreground">{plan?.name ?? 'Inget aktivt medlemskap'}</h3></div><span className="border border-accent/50 px-2 py-1 text-xs text-accent">{membershipStatus(membership.status)}</span></div>
@@ -35,8 +37,8 @@ function MembershipCard({ profile, onUpgrade, onCancel, actionMessage, actionBus
             <ul className="mt-5 space-y-2 border-t border-primary-foreground/20 pt-4 text-xs text-primary-foreground/80"><li>✓ {plan.monthlyPoints} poäng per månad</li><li>✓ {plan.maxSavedContacts === null ? 'Obegränsade' : plan.maxSavedContacts} sparade kontakter</li><li>✓ Gåvor enligt medlemsnivå {String(plan.level ?? '—')}</li></ul>
             {membership.cancelAtPeriodEnd && <p className="mt-4 border border-accent/50 bg-primary-foreground/10 p-3 text-xs">Medlemskapet avslutas {formatDate(membership.cancellationEffectiveDate || membership.periodEnd)}. Dina förmåner gäller till dess.</p>}
             {actionMessage && <p className="mt-4 text-xs text-accent" role="status">{actionMessage}</p>}
-            <div className="mt-5 flex flex-wrap items-center gap-3"><Button className="!bg-primary-foreground !text-primary hover:!bg-primary-foreground/90" disabled={actionBusy} onClick={() => onUpgrade(plan.id)} icon={<ArrowRight className="size-4" />}>Hantera medlemskap</Button>{!membership.cancelAtPeriodEnd && membership.operations.cancel && <Button className="!border-primary-foreground/30 !text-primary-foreground hover:!bg-primary-foreground/10" disabled={actionBusy} variant="ghost" onClick={onCancel}>Säg upp medlemskap</Button>}</div>
-        </> : <p className="mt-4 text-sm text-primary-foreground/80">Välj en nivå för att börja samla poäng och skicka gåvor.</p>}
+            {membership.status === 'active' && !membership.cancelAtPeriodEnd && <div className="mt-5 flex flex-wrap items-center gap-3"><Button className="!border-primary-foreground/30 !text-primary-foreground hover:!bg-primary-foreground/10" disabled={actionBusy} variant="ghost" onClick={onCancel} icon={<X className="size-4" />}>Säg upp medlemskap</Button></div>}
+        </> : <>{actionMessage && <p className="mt-4 text-xs text-accent" role="status">{actionMessage}</p>}<p className="mt-4 text-sm text-primary-foreground/80">Välj en nivå för att börja samla poäng och skicka gåvor.</p></>}
     </div>
 }
 
@@ -44,6 +46,8 @@ function Profile() {
     const navigate = useNavigate()
     const { section } = useParams<{ section?: string }>()
     const location = useLocation()
+    const navigateRef = useRef(navigate)
+    useEffect(() => { navigateRef.current = navigate }, [navigate])
     const hashSection = location.hash.startsWith('#receipt-') ? 'receipts' : null
     const activeSection: SectionKey = hashSection ?? (sections.some((item) => item.key === section) ? section as SectionKey : 'overview')
     const [profile, setProfile] = useState<ProfileData | null>(null)
@@ -53,6 +57,10 @@ function Profile() {
     const [payments, setPayments] = useState<Payment[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [sectionLoading, setSectionLoading] = useState<Partial<Record<DataSection, boolean>>>({})
+    const [sectionErrors, setSectionErrors] = useState<Partial<Record<DataSection, string>>>({})
+    const loadedSections = useRef(new Set<DataSection>())
+    const sectionRequests = useRef(new Map<DataSection, Promise<void>>())
     const [contactForm, setContactForm] = useState<ContactForm>(emptyContact)
     const [editingId, setEditingId] = useState<unknown>(null)
     const [contactMessage, setContactMessage] = useState('')
@@ -69,18 +77,56 @@ function Profile() {
     const load = useCallback(async () => {
         setLoading(true); setError('')
         try {
-            const [nextProfile, nextOverview, nextGifts, nextContacts, nextPayments] = await Promise.all([profileApi.get(), profileApi.overview(), profileApi.gifts(), profileApi.contacts(), profileApi.payments()])
-            setProfile(nextProfile); setOverview(nextOverview); setGifts(nextGifts); setContacts(nextContacts); setPayments(nextPayments)
+            setProfile(await profileApi.get())
         } catch (loadError) {
-            if (loadError instanceof ProfileApiError && loadError.status === 401) { navigate('/login', { replace: true }); return }
+            if (loadError instanceof ProfileApiError && loadError.status === 401) { navigateRef.current('/login', { replace: true }); return }
             setError(loadError instanceof Error ? loadError.message : 'Profilen kunde inte laddas.')
         } finally { setLoading(false) }
-    }, [navigate])
+    }, [])
 
     useEffect(() => {
         const timer = window.setTimeout(() => { void load() }, 0)
         return () => window.clearTimeout(timer)
     }, [load])
+
+    const loadSection = useCallback((key: DataSection, retry = false): Promise<void> => {
+        if (!retry && loadedSections.current.has(key)) return Promise.resolve()
+        const pending = sectionRequests.current.get(key)
+        if (!retry && pending) return pending
+
+        setSectionLoading((current) => ({ ...current, [key]: true }))
+        setSectionErrors((current) => ({ ...current, [key]: '' }))
+        const request = (async () => {
+            try {
+                if (key === 'overview') setOverview(await profileApi.overview())
+                else if (key === 'gifts') setGifts(await profileApi.gifts())
+                else if (key === 'contacts') setContacts(await profileApi.contacts())
+                else setPayments(await profileApi.payments())
+                loadedSections.current.add(key)
+            } catch (loadError) {
+                if (loadError instanceof ProfileApiError && loadError.status === 401) {
+                    navigateRef.current('/login', { replace: true })
+                    return
+                }
+                setSectionErrors((current) => ({ ...current, [key]: loadError instanceof Error ? loadError.message : 'Uppgifterna kunde inte laddas.' }))
+            } finally {
+                sectionRequests.current.delete(key)
+                setSectionLoading((current) => ({ ...current, [key]: false }))
+            }
+        })()
+        sectionRequests.current.set(key, request)
+        return request
+    }, [])
+
+    useEffect(() => {
+        const requiredSections: DataSection[] = activeSection === 'overview'
+            ? ['overview', 'gifts']
+            : activeSection === 'account' ? [] : [activeSection]
+        const timer = window.setTimeout(() => {
+            for (const key of requiredSections) void loadSection(key)
+        }, 0)
+        return () => window.clearTimeout(timer)
+    }, [activeSection, loadSection])
 
     useEffect(() => {
         if (!toastMessage) return
@@ -112,15 +158,17 @@ function Profile() {
         try { await profileApi.deleteContact(id); setContacts(await profileApi.contacts()) } catch (removeError) { setContactMessage(removeError instanceof Error ? removeError.message : 'Kontakten kunde inte tas bort.') }
     }
 
-    const startMembershipAction = async (planId: unknown) => {
-        setMembershipBusy(true); setMembershipMessage('')
-        try { await profileApi.startCheckout(planId) } catch (actionError) { setMembershipMessage(actionError instanceof Error ? actionError.message : 'Betalningshantering är inte tillgänglig ännu.') }
-        finally { setMembershipBusy(false) }
+    const startMembershipAction = (planId: unknown) => {
+        navigate(`/checkout/${encodeURIComponent(String(planId))}`)
     }
     const cancelMembership = async () => {
-        if (!window.confirm('Vill du säga upp ditt medlemskap vid slutet av den betalda perioden?')) return
+        if (!window.confirm('Vill du avsluta medlemskapet direkt? Dina poäng behålls, men medlemsförmånerna upphör.')) return
         setMembershipBusy(true); setMembershipMessage('')
-        try { await profileApi.cancelMembership(true) } catch (actionError) { setMembershipMessage(actionError instanceof Error ? actionError.message : 'Uppsägningen kunde inte genomföras.') }
+        try {
+            await profileApi.cancelMembership(true)
+            setProfile((current) => current ? { ...current, plan: null, membership: { ...current.membership, status: null, cancelAtPeriodEnd: false } } : current)
+            setMembershipMessage('Medlemskapet är avslutat. Dina poäng finns kvar på kontot.')
+        } catch (actionError) { setMembershipMessage(actionError instanceof Error ? actionError.message : 'Uppsägningen kunde inte genomföras.') }
         finally { setMembershipBusy(false) }
     }
     const changePassword = async (event: SubmitEvent<HTMLFormElement>) => {
@@ -139,8 +187,12 @@ function Profile() {
         finally { setPasswordBusy(false) }
     }
 
-    if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-6xl flex-1 py-16 sm:w-[calc(100%-3rem)]"><p className="text-muted-foreground" role="status">Laddar ditt Presently…</p></main>
+    const pageTitle = activeSection === 'account' ? 'Konto' : activeSection === 'overview' ? 'Översikt' : sections.find((item) => item.key === activeSection)?.label
+    const profileHeader = <header className="border-b border-border py-10 md:py-14"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><h1 className="text-3xl text-foreground sm:text-4xl">{pageTitle}</h1><div className="text-sm text-muted-foreground">{fullName}</div></div></header>
+    const profileNavigation = <nav className="flex gap-5 overflow-x-auto border-b border-border py-4" aria-label="Mitt Presently"><div className="flex min-w-max gap-5">{sections.map((item) => <Link className={`border-b-2 pb-3 text-sm transition-colors ${activeSection === item.key ? 'border-primary font-semibold text-primary' : 'border-transparent text-muted-foreground hover:text-primary'}`} aria-current={activeSection === item.key ? 'page' : undefined} to={item.path} key={item.key}>{item.label}</Link>)}</div></nav>
+
     if (error) return <main className="mx-auto w-[calc(100%-2rem)] max-w-6xl flex-1 py-16 sm:w-[calc(100%-3rem)]"><div className="border border-danger/30 bg-surface p-6"><h1 className="text-2xl text-foreground">Profilen kunde inte laddas</h1><p className="mt-2 text-muted-foreground">{error}</p><Button className="mt-5" onClick={() => void load()}>Försök igen</Button></div></main>
+    if (loading) return <ProfileSkeleton section={activeSection} />
     if (!profile) return null
 
     const overviewView = <>
@@ -161,17 +213,22 @@ function Profile() {
     const receiptsView = <Section title="Kvitton & betalningar">{payments.length === 0 ? <p className="text-sm text-muted-foreground">Inga betalningskvitton finns ännu.</p> : <div className="divide-y divide-border">{payments.map((payment) => <div id={`receipt-${String(payment.id)}`} className="scroll-mt-24 flex flex-col justify-between gap-2 py-4 sm:flex-row sm:items-center" key={String(payment.id)}><div className="flex items-center gap-3"><CreditCard className="size-5 text-accent" /><div><p className="font-semibold text-foreground">{payment.planName}</p><p className="text-sm text-muted-foreground">{formatDate(payment.date)} · {payment.status}</p>{payment.receiptNumber && <p className="font-mono text-[11px] text-muted-foreground">{payment.receiptNumber}</p>}</div></div><p className="font-semibold text-foreground">{money(payment.amount, payment.currency)}</p></div>)}</div>}</Section>
 
     const accountView = <>
-        <div className="grid items-start gap-6 lg:grid-cols-[1.35fr_0.65fr]"><div><Section title="Personuppgifter" action={<Button variant="secondary" onClick={() => { setPasswordDialogOpen(true); setPasswordMessage('') }} icon={<KeyRound className="size-4" />}>Ändra lösenord</Button>}><div className="space-y-4"><div className="flex items-start gap-3"><UserRound className="mt-1 size-5 text-accent" /><div><p className="text-sm text-muted-foreground">Namn</p><p className="font-semibold text-foreground">{fullName}</p></div></div><div className="flex items-start gap-3"><Mail className="mt-1 size-5 text-accent" /><div><p className="text-sm text-muted-foreground">E-post</p><p className="font-semibold text-foreground">{profile.user.email || 'Inte tillgängligt'}</p></div></div></div></Section></div><div><MembershipCard profile={profile} onUpgrade={(planId) => void startMembershipAction(planId)} onCancel={() => void cancelMembership()} actionMessage={membershipMessage} actionBusy={membershipBusy} /></div></div>
-        <Section title="Tillgängliga medlemskap"><div className="grid gap-4 md:grid-cols-3">{profile.availablePlans.length ? profile.availablePlans.map((plan) => <article className="border border-border bg-surface p-5" key={String(plan.id)}><div className="flex items-start justify-between gap-3"><h3 className="text-base text-foreground">{plan.name}</h3><span className="text-sm font-semibold text-primary">{money(plan.monthlyPrice, plan.currency ?? 'SEK')}</span></div><p className="mt-2 text-sm text-muted-foreground">{plan.monthlyPoints} poäng per månad.</p><p className="mt-2 text-sm text-muted-foreground">{plan.maxSavedContacts === null ? 'Obegränsade' : plan.maxSavedContacts} sparade kontakter.</p><Button className="mt-4" variant={String(profile.plan?.id) === String(plan.id) ? 'secondary' : 'primary'} disabled={String(profile.plan?.id) === String(plan.id) || membershipBusy} onClick={() => void startMembershipAction(plan.id)}>{String(profile.plan?.id) === String(plan.id) ? 'Nuvarande nivå' : 'Välj nivå'}</Button></article>) : <p className="text-sm text-muted-foreground">Medlemskapsalternativ är inte tillgängliga just nu.</p>}</div></Section>
+        <div className="grid items-start gap-6 lg:grid-cols-[1.35fr_0.65fr]"><div><Section title="Personuppgifter" action={<Button variant="secondary" onClick={() => { setPasswordDialogOpen(true); setPasswordMessage('') }} icon={<KeyRound className="size-4" />}>Ändra lösenord</Button>}><div className="space-y-4"><div className="flex items-start gap-3"><UserRound className="mt-1 size-5 text-accent" /><div><p className="text-sm text-muted-foreground">Namn</p><p className="font-semibold text-foreground">{fullName}</p></div></div><div className="flex items-start gap-3"><Mail className="mt-1 size-5 text-accent" /><div><p className="text-sm text-muted-foreground">E-post</p><p className="font-semibold text-foreground">{profile.user.email || 'Inte tillgängligt'}</p></div></div></div></Section></div><div><MembershipCard profile={profile} onCancel={() => void cancelMembership()} actionMessage={membershipMessage} actionBusy={membershipBusy} /></div></div>
+        <Section id="membership-plans" title="Tillgängliga medlemskap"><div className="grid gap-4 md:grid-cols-3">{profile.availablePlans.length ? profile.availablePlans.map((plan) => { const isCurrent = String(profile.plan?.id) === String(plan.id); return <article className="border border-border bg-surface p-5" key={String(plan.id)}><div className="flex items-start justify-between gap-3"><h3 className="text-base text-foreground">{plan.name}</h3><span className="text-sm font-semibold text-primary">{money(plan.monthlyPrice, plan.currency ?? 'SEK')}</span></div><p className="mt-2 text-sm text-muted-foreground">{plan.monthlyPoints} poäng per månad.</p><p className="mt-2 text-sm text-muted-foreground">{plan.maxSavedContacts === null ? 'Obegränsade' : plan.maxSavedContacts} sparade kontakter.</p><Button className="mt-4" variant={isCurrent ? 'secondary' : 'primary'} disabled={isCurrent || membershipBusy} onClick={() => void startMembershipAction(plan.id)}>{isCurrent ? 'Nuvarande nivå' : 'Välj nivå'}</Button></article> }) : <p className="text-sm text-muted-foreground">Medlemskapsalternativ är inte tillgängliga just nu.</p>}</div></Section>
         {passwordDialogOpen && <div className="fixed inset-0 z-[60] grid place-items-center bg-foreground/40 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPasswordDialogOpen(false) }}><div aria-labelledby="password-dialog-title" aria-modal="true" className="w-full max-w-md border border-border bg-surface p-6 shadow-lg" role="dialog"><div className="flex items-start justify-between gap-4"><div><h2 className="text-xl text-foreground" id="password-dialog-title">Ändra lösenord</h2><p className="mt-1 text-sm text-muted-foreground">Använd minst 8 tecken och välj ett lösenord du inte använder någon annanstans.</p></div><button aria-label="Stäng dialog" className="text-muted-foreground hover:text-foreground" onClick={() => setPasswordDialogOpen(false)} type="button"><X className="size-5" /></button></div><form className="mt-6 grid gap-4" onSubmit={changePassword}><input aria-hidden="true" autoComplete="username" className="hidden" tabIndex={-1} type="text" value={profile.user.email} readOnly /><label className="block text-sm text-foreground"><span className="block">Nuvarande lösenord</span><input autoComplete="current-password" className="mt-1 block w-full rounded-control border border-border bg-surface px-3 py-2" required type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm({ ...passwordForm, currentPassword: event.target.value })} /></label><label className="block text-sm text-foreground"><span className="block">Nytt lösenord</span><input autoComplete="new-password" className="mt-1 block w-full rounded-control border border-border bg-surface px-3 py-2" minLength={8} required type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm({ ...passwordForm, newPassword: event.target.value })} /></label><label className="block text-sm text-foreground"><span className="block">Upprepa nytt lösenord</span><input autoComplete="new-password" className="mt-1 block w-full rounded-control border border-border bg-surface px-3 py-2" minLength={8} required type="password" value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm({ ...passwordForm, confirmPassword: event.target.value })} /></label>{passwordMessage && <p className="text-sm text-danger" role="alert">{passwordMessage}</p>}<div className="flex justify-end gap-3 pt-2"><Button variant="ghost" onClick={() => setPasswordDialogOpen(false)}>Avbryt</Button><Button disabled={passwordBusy} type="submit">{passwordBusy ? 'Uppdaterar…' : 'Uppdatera lösenord'}</Button></div></form></div></div>}
     </>
 
     const view = activeSection === 'overview' ? overviewView : activeSection === 'gifts' ? giftsView : activeSection === 'contacts' ? contactsView : activeSection === 'receipts' ? receiptsView : accountView
-    const pageDescription = activeSection === 'overview' ? 'Här ser du ditt saldo, din aktivitet och dina senaste gåvor.' : activeSection === 'account' ? 'Hantera dina uppgifter, ditt medlemskap och ditt lösenord.' : ''
+    const requiredSections: DataSection[] = activeSection === 'overview'
+        ? ['overview', 'gifts']
+        : activeSection === 'account' ? [] : [activeSection]
+    const activeSectionError = requiredSections.map((key) => sectionErrors[key]).find(Boolean)
+    const activeSectionLoading = requiredSections.some((key) => sectionLoading[key] || (!loadedSections.current.has(key) && !sectionErrors[key]))
+    const retryActiveSection = () => Promise.all(requiredSections.map((key) => loadSection(key, true)))
     return <main className="mx-auto w-[calc(100%-2rem)] max-w-6xl flex-1 sm:w-[calc(100%-3rem)]">
-        <header className="border-b border-border py-10 md:py-14"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><h1 className="text-3xl text-foreground sm:text-4xl">{activeSection === 'account' ? 'Konto' : activeSection === 'overview' ? 'Översikt' : sections.find((item) => item.key === activeSection)?.label}</h1>{pageDescription && <p className="mt-2 max-w-xl text-muted-foreground">{pageDescription}</p>}</div><div className="text-sm text-muted-foreground">{fullName}</div></div></header>
-        <nav className="flex gap-5 overflow-x-auto border-b border-border py-4" aria-label="Mitt Presently"><div className="flex min-w-max gap-5">{sections.map((item) => <Link className={`border-b-2 pb-3 text-sm transition-colors ${activeSection === item.key ? 'border-primary font-semibold text-primary' : 'border-transparent text-muted-foreground hover:text-primary'}`} aria-current={activeSection === item.key ? 'page' : undefined} to={item.path} key={item.key}>{item.label}</Link>)}</div></nav>
-        {view}
+        {profileHeader}
+        {profileNavigation}
+        {activeSectionLoading ? <p className="py-8 text-sm text-muted-foreground" role="status">Laddar innehåll…</p> : activeSectionError ? <div className="py-8" role="alert"><p className="text-sm text-danger">{activeSectionError}</p><Button className="mt-4" variant="secondary" onClick={() => void retryActiveSection()}>Försök igen</Button></div> : view}
         {toastMessage && <div className="fixed right-4 bottom-4 z-[70] flex max-w-sm items-center gap-4 border border-success bg-success px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg" role="status"><span>{toastMessage}</span><button aria-label="Stäng notifiering" className="text-primary-foreground/80 hover:text-primary-foreground" onClick={() => setToastMessage('')} type="button"><X className="size-4" /></button></div>}
     </main>
 }
