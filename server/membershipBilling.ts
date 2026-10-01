@@ -90,8 +90,8 @@ export async function checkout(userId: UserId, plan: ReturnType<typeof planFromR
         const isActive = first(subscription.row ?? undefined, ['status']) === 'active'
         const currentPlanRow = currentPlanId === null || !isActive ? null : rows(await connection.query('SELECT id, name, level, monthly_points, max_saved_contacts, price FROM membership_plans WHERE id = ? LIMIT 1', [currentPlanId]))[0] ?? null
         const currentPlan = currentPlanRow ? planFromRow(currentPlanRow) : null
-        if (currentPlan) throw new MembershipCheckoutError('Du har redan ett aktivt medlemskap.')
-        const paymentType = 'new_membership' as const
+        if (currentPlan && plan.id === currentPlan.id) throw new MembershipCheckoutError('Du har redan det här medlemskapet.')
+        const paymentType = currentPlan ? 'plan_change' as const : 'new_membership' as const
         const payment = await createPendingPayment(connection, userId, plan, paymentType)
         if (cardLast4 === '0000') { await updatePayment(connection, payment.id, 'failed'); await connection.commit(); return { success: false, paymentStatus: 'failed' } }
         await updatePayment(connection, payment.id, 'completed')
@@ -118,6 +118,32 @@ export async function getBillingOverview(userId: UserId) {
     const pointBalance = pointRows.reduce((sum, row) => sum + numberValue(row.points), 0)
     const nextPeriod = subscription.row ? periodFromSubscription(subscription.row) : null
     return { subscription: subscription.row, plan, pointBalance, nextAllocationDate: nextPeriod?.end ?? null, nextPaymentDate: null, nextPaymentAmount: null, payments }
+}
+
+export async function hasActiveMembership(userId: UserId) {
+    const subscription = rows(await db.query('SELECT s.status FROM subscriptions s INNER JOIN membership_plans p ON p.id = s.membership_plan_id WHERE s.user_id = ? LIMIT 1', [userId]))[0]
+    return subscription?.status === 'active'
+}
+
+export async function cancelMembership(userId: UserId) {
+    const connection = await db.getConnection()
+    try {
+        await connection.beginTransaction()
+        await connection.query('SELECT id FROM users WHERE id = ? FOR UPDATE', [userId])
+        const subscription = await subscriptionForUser(userId, connection)
+        if (!subscription.id || first(subscription.row ?? undefined, ['status']) !== 'active') {
+            await connection.rollback()
+            return false
+        }
+        await connection.query('UPDATE subscriptions SET status = \'cancelled\', updated_at = CURRENT_TIMESTAMP WHERE id = ?', [subscription.id])
+        await connection.commit()
+        return true
+    } catch (error) {
+        await connection.rollback()
+        throw error
+    } finally {
+        connection.release()
+    }
 }
 
 export async function getPaymentConfirmation(userId: UserId, paymentId: string | number) {

@@ -24,4 +24,5 @@ export const membershipApi = {
     complete: (plan: number, cardLast4: string) => request<{ success: boolean; paymentStatus: string; subscriptionId?: unknown; paymentId?: unknown }>(`/checkout/${plan}`, { method: 'POST', body: JSON.stringify({ cardLast4 }) }),
     confirmation: (paymentId: string) => request<PaymentConfirmation>(`/confirmation/${encodeURIComponent(paymentId)}`),
     overview: () => request<BillingOverview>('/overview'),
+    status: () => request<{ active: boolean }>('/status', { signal: AbortSignal.timeout(12000) }),
 }

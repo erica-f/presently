@@ -187,11 +187,13 @@ async function gifts(userId: string | number) {
 
 export async function getProfile(userId: string | number) {
     const [user, membership, balance, availablePlans] = await Promise.all([getUser(userId), getMembership(userId), pointBalance(userId), getAvailablePlans()])
+    const normalizedMembership = normalizeMembership(membership.subscription)
+    const isCanceled = normalizedMembership.status === 'cancelled' || normalizedMembership.status === 'canceled'
     return {
         user: normalizeUser(user),
         subscription: membership.subscription,
-        plan: normalizePlan(membership.plan),
-        membership: normalizeMembership(membership.subscription),
+        plan: isCanceled ? null : normalizePlan(membership.plan),
+        membership: isCanceled ? { ...normalizedMembership, status: null } : normalizedMembership,
         availablePlans,
         pointBalance: balance,
     }
