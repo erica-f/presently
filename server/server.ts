@@ -65,14 +65,4 @@ app.get('/api/health', async (_req: Request, res: Response) => {
     }
 });
 
-app.get("/api/", (_req: Request, res: Response) => {
-    res.json({ "test": true });
-});
-
-app.get(/^(.*)$/, (_req: Request, res: Response) => {
-    res.send("Hello from Vercel");
-});
-
-
-
 export default app;
