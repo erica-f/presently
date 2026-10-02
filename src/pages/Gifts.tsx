@@ -101,10 +101,10 @@ const Gifts = () => {
     setCurrentPage(1);
   }
 
-  if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
+  if (loading) return <main className="grid min-h-[50vh] flex-1 place-items-center text-sm text-muted-foreground">
     <p className="text-muted-foreground" role="status">Laddar gåvor…</p>
   </main>
-  if (error) return <main className="mx-auto w-[calc(100%-2rem)] max-w-5xl flex-1 py-16 sm:w-[calc(100%-3rem)]">
+  if (error) return <main className="grid min-h-[50vh] flex-1 place-items-center text-sm">
     <div className="border border-danger/30 bg-surface p-6">
       <h1 className="text-2xl text-foreground">Kunde inte hämta in gåvor</h1>
       <p className="mt-2 text-muted-foreground">{error}</p>
