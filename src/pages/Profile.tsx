@@ -139,7 +139,7 @@ function Profile() {
         finally { setPasswordBusy(false) }
     }
 
-    if (loading) return <main className="mx-auto w-[calc(100%-2rem)] max-w-6xl flex-1 py-16 sm:w-[calc(100%-3rem)]"><p className="text-muted-foreground" role="status">Laddar ditt Presently…</p></main>
+    if (loading) return <main className="grid min-h-[50vh] flex-1 place-items-center text-sm text-muted-foreground"><p className="text-muted-foreground" role="status">Laddar ditt Presently…</p></main>
     if (error) return <main className="mx-auto w-[calc(100%-2rem)] max-w-6xl flex-1 py-16 sm:w-[calc(100%-3rem)]"><div className="border border-danger/30 bg-surface p-6"><h1 className="text-2xl text-foreground">Profilen kunde inte laddas</h1><p className="mt-2 text-muted-foreground">{error}</p><Button className="mt-5" onClick={() => void load()}>Försök igen</Button></div></main>
     if (!profile) return null
 
